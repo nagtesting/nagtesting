@@ -6,7 +6,9 @@
 
 export default function handler(req, res) {
   // Allow CORS for your domain only
-  res.setHeader('Access-Control-Allow-Origin', 'https://multicalci.com');
+  const origin = req.headers.origin || '';
+  const allowed = origin.endsWith('.vercel.app') || origin === 'https://multicalci.com';
+  res.setHeader('Access-Control-Allow-Origin', allowed ? origin : 'https://multicalci.com');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
