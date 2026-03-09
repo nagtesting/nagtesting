@@ -832,6 +832,7 @@ For critical engineering decisions, always verify against certified IAPWS-IF97 t
 let SYS = 'SI';
 let _lastResult = null;
 let _activeType = '';
+let _specBy = 'P'; // tracks "Specify saturation by" across type switches
 
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -871,16 +872,14 @@ function setSys(sys) {
   const prevP = document.getElementById('fPres')?.value || '';
   const prevT = document.getElementById('fTemp')?.value || '';
   const prevQ = document.getElementById('fQual')?.value || '';
-  const prevBy = document.getElementById('fBy')?.value || 'P';
+  // _specBy is already tracked globally — no need to read from DOM
 
   SYS = sys;
   document.getElementById('btnSI').classList.toggle('on',  sys === 'SI');
   document.getElementById('btnIMP').classList.toggle('on', sys === 'IMP');
   if (_activeType) {
     renderFields(_activeType);
-    // Restore 'By' selector first
-    const byEl = document.getElementById('fBy');
-    if (byEl && prevBy) { byEl.value = prevBy; renderFields(_activeType); }
+    // Restore 'By' selector — _specBy is already correct, just re-render
     // Convert and restore inputs
     const pEl = document.getElementById('fPres');
     const tEl = document.getElementById('fTemp');
@@ -942,9 +941,9 @@ function renderFields(type) {
   const byField = t => `
     <div class="fg">
       <label>Specify saturation by</label>
-      <select id="fBy" onchange="renderFields('${t}')">
-        <option value="P">Pressure</option>
-        <option value="T">Temperature</option>
+      <select id="fBy" onchange="_specBy=this.value;renderFields('${t}')">
+        <option value="P"${_specBy==='P'?' selected':''}>Pressure</option>
+        <option value="T"${_specBy==='T'?' selected':''}>Temperature</option>
       </select>
     </div>`;
 
@@ -954,13 +953,11 @@ function renderFields(type) {
       break;
     case 'sat-liq':
     case 'sat-vap': {
-      const by = document.getElementById('fBy')?.value || 'P';
-      el.innerHTML = byField(type) + (by==='P' ? pField() : tField());
+      el.innerHTML = byField(type) + (_specBy==='P' ? pField() : tField());
       break;
     }
     case 'wet': {
-      const by2 = document.getElementById('fBy')?.value || 'P';
-      el.innerHTML = byField(type) + (by2==='P' ? pField() : tField()) + `
+      el.innerHTML = byField(type) + (_specBy==='P' ? pField() : tField()) + `
         <div class="fg">
           <label>Steam Quality x <span class="uh">(0 = saturated liquid &nbsp;·&nbsp; 1 = saturated vapor)</span></label>
           <input type="number" id="fQual" step="0.001" min="0" max="1" required placeholder="e.g. 0.85">
@@ -1026,7 +1023,7 @@ async function doCalcClick() {
   const pRaw = parseFloat(document.getElementById('fPres')?.value);
   const tRaw = parseFloat(document.getElementById('fTemp')?.value);
   const xRaw = parseFloat(document.getElementById('fQual')?.value);
-  const by   = document.getElementById('fBy')?.value || 'P';
+  const by   = _specBy;
 
   // Convert display units → SI (bar / °C) for the API
   const P_bar = isFinite(pRaw) ? (SYS==='SI' ? pRaw : pRaw / 14.5038) : null;
