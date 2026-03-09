@@ -1213,7 +1213,7 @@ function showResults(r) {
     notes += `<div class="warn wa fade-up">⚠️ <strong>Low quality steam:</strong> x = ${(r.x*100).toFixed(1)}%. Turbine exhaust should maintain x ≥ 88% to prevent blade erosion from liquid droplet impingement.</div>`;
   if (r.P > 210 && r.P < 222)
     notes += `<div class="warn wa fade-up">⚠️ <strong>Near critical pressure:</strong> Properties change very rapidly approaching T_c = 374.14°C, P_c = 220.9 bar. Interpolation accuracy is reduced in this region.</div>`;
-  notes += `<div class="warn wi fade-up">ℹ &nbsp;<strong>${_pyReady ? 'pyXSteam (IAPWS-IF97)' : 'IAPWS-IF97 · NIST Table Engine'}:</strong> ${_pyReady ? 'Full IAPWS-IF97 equations via pyXSteam — ±0.01 kJ/kg accuracy.' : 'Wagner saturation + NIST cubic-spline interpolation — ±0.1–0.3%. Open in a full browser for pyXSteam accuracy.'}</div>`;
+  notes += `<div class="warn wi fade-up">ℹ &nbsp;<strong>IAPWS-IF97 · Server-Side Engine:</strong> All calculations run securely on the server. Wagner saturation + NIST cubic-spline interpolation — ±0.1–0.3% accuracy.</div>`;
 
   document.getElementById('results').innerHTML = banHTML + stateHTML + thermHTML + satHTML + notes;
 }
@@ -1761,9 +1761,6 @@ function genPDF() {
 /* ═══════════════════════════════════════════════════════════════════
    SOCIAL SHARE SYSTEM
 ═══════════════════════════════════════════════════════════════════ */
-// Probe environment then start engine (silently skips if WASM unavailable)
-loadPyodideEngine();
-
 const SHARE_URL   = window.location.href;
 const SHARE_TITLE = 'Steam & Water Properties Calculator — IAPWS-IF97';
 const SHARE_TXT   = '💧 Free Steam & Water Properties Calculator — IAPWS-IF97. Compressed liquid, saturated, wet steam & superheated. SI & Imperial.';
