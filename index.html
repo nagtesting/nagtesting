@@ -3,30 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>multicalci-test — Hybrid API Testing</title>
+<title>multicalci — Engineering Calculators</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',sans-serif;background:#0f1117;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;}
-.card{background:#1e2330;border:1px solid #2d3347;border-radius:12px;padding:40px;max-width:560px;width:90%;text-align:center;}
-h1{font-size:1.6rem;margin-bottom:8px;color:#88c9ee;}
-.badge{display:inline-block;padding:4px 12px;background:rgba(10,92,140,.3);border:1px solid rgba(14,122,186,.5);border-radius:20px;font-size:.75rem;color:#88c9ee;margin-bottom:24px;}
-p{color:#b8bed4;margin-bottom:24px;line-height:1.6;}
-.btn{display:inline-block;padding:12px 28px;background:#0a5c8c;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:.95rem;}
-.status{margin-top:24px;padding:14px;background:rgba(6,95,70,.2);border:1px solid rgba(6,95,70,.4);border-radius:8px;font-size:.85rem;color:#6ee7b7;text-align:left;line-height:1.8;}
+body{font-family:'Segoe UI',sans-serif;background:#0d1520;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.wrap{max-width:780px;width:100%;text-align:center;}
+.logo{font-size:1.8rem;font-weight:800;color:#00d4ff;margin-bottom:6px;letter-spacing:-0.5px;}
+.sub{color:#637d96;font-size:.88rem;margin-bottom:36px;letter-spacing:.3px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:560px){.grid{grid-template-columns:1fr;}}
+.card{background:#1a2840;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:28px 24px;text-align:left;display:flex;flex-direction:column;gap:12px;transition:transform .2s,border-color .2s;}
+.card:hover{transform:translateY(-3px);border-color:rgba(0,212,255,.3);}
+.card-ico{font-size:2rem;margin-bottom:4px;}
+.card-title{font-size:1.1rem;font-weight:700;color:#e8f4ff;line-height:1.2;}
+.card-desc{font-size:.82rem;color:#637d96;line-height:1.6;flex:1;}
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.tag{padding:2px 9px;border-radius:10px;font-size:.65rem;font-weight:700;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:#00d4ff;}
+.btn{display:inline-block;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:.85rem;text-align:center;transition:all .15s;}
+.btn-steam{background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;}
+.btn-steam:hover{background:linear-gradient(135deg,#a93226,#c0392b);}
+.btn-ct{background:linear-gradient(135deg,#0096cc,#00c9a7);color:#fff;}
+.btn-ct:hover{background:linear-gradient(135deg,#0078a8,#00a88a);}
+.footer{margin-top:28px;font-size:.75rem;color:#3d5166;letter-spacing:.3px;}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="badge">🧪 HYBRID TEST ENVIRONMENT</div>
-  <h1>multicalci-test</h1>
-  <p>Testing hybrid approach — instant client-side results + secure server API verification running simultaneously.</p>
-  <a href="/steam-properties-calculator/" class="btn">🔥 Test Steam Calculator</a>
-  <div class="status">
-    ⚡ Step 1 — Instant client result (original speed)<br>
-    🔐 Step 2 — Silent API call to /api/steam<br>
-    ✨ Step 3 — Server result updates display<br>
-    ✅ All 38 functions intact and working
+<div class="wrap">
+  <div class="logo">multicalci</div>
+  <div class="sub">Engineering Calculators — Server-Side API Powered</div>
+
+  <div class="grid">
+
+    <!-- Steam Calculator -->
+    <div class="card">
+      <div class="card-ico">🔥</div>
+      <div class="card-title">Steam Properties Calculator</div>
+      <div class="card-desc">IAPWS-IF97 steam &amp; water properties. Enthalpy, entropy, specific volume, viscosity, thermal conductivity across all regions.</div>
+      <div class="card-tags">
+        <span class="tag">IAPWS-IF97</span>
+        <span class="tag">All Regions</span>
+        <span class="tag">SI &amp; IMP</span>
+        <span class="tag">Transport Props</span>
+      </div>
+      <a href="/steam-properties-calculator/" class="btn btn-steam">Open Calculator →</a>
+    </div>
+
+    <!-- Cooling Tower Calculator -->
+    <div class="card">
+      <div class="card-ico">🌬️</div>
+      <div class="card-title">Cooling Tower Performance Monitor</div>
+      <div class="card-desc">CTI ATC-105 Merkel method. κ-corrected WBT sensitivity, KaV/L NTU, L/G ratio, fill efficiency and performance diagnostics.</div>
+      <div class="card-tags">
+        <span class="tag">CTI ATC-105</span>
+        <span class="tag">Merkel NTU</span>
+        <span class="tag">κ-Correction</span>
+        <span class="tag">PDF Report</span>
+      </div>
+      <a href="/cooling-tower-performance/" class="btn btn-ct">Open Calculator →</a>
+    </div>
+
   </div>
+
+  <div class="footer">multicalci.com · All calculation logic runs server-side · Never exposed in browser source</div>
 </div>
 </body>
 </html>
