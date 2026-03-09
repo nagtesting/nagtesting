@@ -240,18 +240,23 @@ function calcProps(type, P_bar, T_C, x, specBy) {
     return { phase:'Compressed Liquid', phaseCls:'compressed', T:T_C, P:P_bar, Tsat:T_sat, h, s, v, rho:1/v, u:h-P_bar*100*v, x:null, hf:sat.hf, hfg:sat.hfg, hg:sat.hg };
   }
   if (type === 'sat-liq') {
+    if (specBy==='P' && (!isFinite(P_bar)||P_bar<0.006||P_bar>220.9)) return { error:'Saturation pressure must be 0.006 – 220.9 bar.' };
+    if (specBy==='T' && (!isFinite(T_C)||T_C<0.01||T_C>374.14)) return { error:'Saturation temperature must be 0.01 – 374.14°C (above 374.14°C there is no liquid-vapor saturation).' };
     const sat = (specBy==='P') ? satByP_fb(P_bar) : satByT_fb(T_C);
     if (!sat) return { error:'Input out of valid range (0.006–220.9 bar / 0.01–374.14°C).' };
     return { phase:'Saturated Liquid', phaseCls:'sat-liq', T:sat.T, P:sat.P, Tsat:sat.T, h:sat.hf, s:sat.sf, v:sat.vf, rho:1/sat.vf, u:sat.hf-sat.P*100*sat.vf, x:0, hf:sat.hf, hfg:sat.hfg, hg:sat.hg, sf:sat.sf, sfg:sat.sfg, sg:sat.sg, vf:sat.vf, vg:sat.vg };
   }
   if (type === 'wet') {
-    if (!isFinite(x)||x<0||x>1) return { error:'Steam quality x must be between 0 and 1.' };
+    if (x === null || x === undefined || !isFinite(Number(x)) || Number(x)<0 || Number(x)>1) return { error:'Steam quality x must be between 0 and 1.' };
+    x = Number(x);
     const sat = (specBy==='P') ? satByP_fb(P_bar) : satByT_fb(T_C);
     if (!sat) return { error:'Input out of valid range.' };
     const h=sat.hf+x*sat.hfg, s=sat.sf+x*sat.sfg, v=sat.vf+x*(sat.vg-sat.vf);
     return { phase:`Wet Steam (x = ${x.toFixed(3)})`, phaseCls:'wet', T:sat.T, P:sat.P, Tsat:sat.T, h, s, v, rho:1/v, u:h-sat.P*100*v, x, hf:sat.hf, hfg:sat.hfg, hg:sat.hg, sf:sat.sf, sfg:sat.sfg, sg:sat.sg, vf:sat.vf, vg:sat.vg };
   }
   if (type === 'sat-vap') {
+    if (specBy==='P' && (!isFinite(P_bar)||P_bar<0.006||P_bar>220.9)) return { error:'Saturation pressure must be 0.006 – 220.9 bar.' };
+    if (specBy==='T' && (!isFinite(T_C)||T_C<0.01||T_C>374.14)) return { error:'Saturation temperature must be 0.01 – 374.14°C. Above 374.14°C is supercritical — no distinct vapor phase.' };
     const sat = (specBy==='P') ? satByP_fb(P_bar) : satByT_fb(T_C);
     if (!sat) return { error:'Input out of valid range.' };
     return { phase:'Saturated Vapor (Dry)', phaseCls:'sat-vap', T:sat.T, P:sat.P, Tsat:sat.T, h:sat.hg, s:sat.sg, v:sat.vg, rho:1/sat.vg, u:sat.hg-sat.P*100*sat.vg, x:1, hf:sat.hf, hfg:sat.hfg, hg:sat.hg, sf:sat.sf, sfg:sat.sfg, sg:sat.sg, vf:sat.vf, vg:sat.vg };
