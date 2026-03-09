@@ -856,9 +856,8 @@ function setCharType(type,el){
   buildCharChart();
 }
 
-// ── MAIN CALC — calls Vercel API for core IEC 60534-2-1 math ──────────────
-// Client side: input reading, unit conversion, validation, display rendering
-// Server side (API): Cv/Kv equations, choked flow, cavitation, noise, sizing
+// ── MAIN CALC — API only, no math client side ─────────────────────────────
+const _K = ['c','v','-','k','3','y','9','x'].join('');
 const API_URL = 'https://nagtesting.vercel.app/api/control-valve';
 let _calcDebounce = null;
 function calc(){
@@ -866,135 +865,57 @@ function calc(){
   _calcDebounce = setTimeout(_calcAsync, 80);
 }
 async function _calcAsync(){
-  const m=UNITS==='met',isL=PHASE.includes('liq'),isG=PHASE.includes('gas'),isS=PHASE==='steam';
+  const m=UNITS==='met', isL=PHASE.includes('liq'), isG=PHASE.includes('gas'), isS=PHASE==='steam';
 
-  let Q=parseFloat(document.getElementById('flow').value)||0;
-  let P1=parseFloat(document.getElementById('p1').value)||0;
-  let P2=parseFloat(document.getElementById('p2').value)||0;
-  let SG=parseFloat(document.getElementById('sg').value)||1;  // liquid SG or gas MW
-  let T=parseFloat(document.getElementById('temp').value)||60;
-  let Pv=parseFloat(document.getElementById('pv').value)||0;
-  let D=parseFloat(document.getElementById('pipeD').value)||(m?52.5:2.067);
-  let FL=parseFloat(document.getElementById('rec').value)||0.9;
-  let k=parseFloat(document.getElementById('kval').value)||1.4;
-  let Z=parseFloat(document.getElementById('zf').value)||1.0;
-
-  // ── INPUT VALIDATION (BUG #2: negative pressures, P2>P1, zero flow) ────
-  const warns=[];
-  let hasError=false;
-
-  if(P1<=0){warns.push({cls:'warn-red',txt:'❌ Inlet pressure P₁ must be positive and in absolute terms (psia or bara).'});hasError=true;}
-  if(P2<0){warns.push({cls:'warn-red',txt:'❌ Outlet pressure P₂ cannot be negative.'});hasError=true;}
-  if(!hasError && P2>=P1){warns.push({cls:'warn-red',txt:'❌ P₂ ≥ P₁: Outlet pressure must be less than inlet pressure. Check pressure gauge vs. absolute.'});hasError=true;}
-  if(Q<=0){warns.push({cls:'warn-red',txt:'❌ Flow rate must be greater than zero.'});hasError=true;}
-  if(isL && SG<=0){warns.push({cls:'warn-red',txt:'❌ Specific gravity must be positive.'});hasError=true;}
-  if(isG && SG<=0){warns.push({cls:'warn-red',txt:'❌ Molecular weight must be positive.'});hasError=true;}
-  if(FL<=0||FL>1){warns.push({cls:'warn-amber',txt:'⚠ FL/xT should be between 0.1 and 1.0. Typical globe valve FL = 0.85–0.92.'});}
-  if(Z<=0||Z>1.5){warns.push({cls:'warn-amber',txt:'⚠ Compressibility Z outside typical range (0.7–1.05). Verify for your gas at P₁ and T.'});}
-
-  // ── BUG #4: Pressure absolute vs gauge warning ───────────────────────────
-  // If P1 looks like gauge (very common error), warn
-  if(!hasError && isL && !m && P1<14.5 && P1>0){
-    warns.push({cls:'warn-amber',txt:`⚠ P₁ = ${P1} psi looks like gauge pressure (typical atmospheric = 14.7 psia). IEC 60534 requires ABSOLUTE pressures. Add 14.7 psia if entering gauge pressure.`});
-  }
-  if(!hasError && m && P1<1.013 && P1>0 && isL){
-    warns.push({cls:'warn-amber',txt:`⚠ P₁ = ${P1} bar looks like gauge pressure. IEC 60534 requires ABSOLUTE pressures (bara). Add 1.013 bara atmospheric.`});
-  }
-  // Pv unit check — Pv must be absolute, less than P1
-  if(isL && Pv>0 && Pv>=P1){
-    warns.push({cls:'warn-red',txt:'❌ Vapour pressure Pv ≥ P₁: Fluid is already vaporised at inlet. Check Pv units (must be absolute: psia or bara).'});hasError=true;
-  }
-
-  if(hasError){
-    renderWarnings(warns);clearResults();return;
-  }
-
-  // ── UNIT CONVERSIONS to US base (psia, GPM/SCFH/lb/h, °F, inches) ────────
-  let P1a=P1, P2a=P2, Pva=Pv;
-  let T_working=T, D_in=D;
-  if(m){
-    P1a*=14.5038; P2a*=14.5038; Pva*=14.5038;
-    D_in=D/25.4;
-    T_working=T*9/5+32;
-  }
-  const dP=Math.max(P1a-P2a,0.0001);
-  const TR=T_working+459.67;
-  const A_in2=Math.PI/4*D_in*D_in;
-
-  // ── FLOW CONVERSION to canonical units ────────────────────────────────────
-  let Qc=Q;
-  if(isL){
-    if(FTYPE==='vol'){ if(m) Qc=Q*4.40287; }
-    else if(FTYPE==='mass'){
-      const rho_lbgal=SG*8.3454;
-      Qc=m?(Q*2.20462)/(rho_lbgal*60):Q/(rho_lbgal*60);
-    } else { if(m) Qc=Q*4.40287; }
-  } else if(isG){
-    if(FTYPE==='vol'){ if(m) Qc=Q*35.3147; }
-    else if(FTYPE==='mass'){ const lbh=m?Q*2.20462:Q; Qc=(lbh/SG)*379.5; }
-    else { if(m) Qc=Q*35.3147; }
-  } else {
-    Qc=m?Q*2.20462:Q;
-  }
-
-  // Determine steam type for API
-  const steamType = selFluid&&selFluid.n==='Superheated Steam'?'sup':
-                    selFluid&&selFluid.n==='Wet Steam (90%)'?'wet':'sat';
-  const Pc_psia = selFluid&&selFluid.Pc ? selFluid.Pc*14.5038 : 3208;
-  const visc_cSt = selFluid&&selFluid.visc ? selFluid.visc : 1.0;
-
-  // ── API CALL — send canonical US-unit inputs, receive Cv + diagnostics ───
-  // Show a subtle loading state on the Cv display
+  // ── SEND RAW INPUTS ONLY — all conversions and math done server side ──────
   setEl('resCv','…'); setEl('resKv','…');
+
+  const steamFluid = selFluid ? selFluid.n : '';
+  const fluidVisc  = selFluid && selFluid.visc ? selFluid.visc : 1.0;
+  const fluidPc    = selFluid && selFluid.Pc   ? selFluid.Pc   : null;
 
   let apiResult;
   try {
     const resp = await fetch(API_URL, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: { 'Content-Type':'application/json', 'x-api-key': _K },
       body: JSON.stringify({
-        phase: PHASE, Qc, P1a, P2a, Pva, SG, TR, FL, k, Z,
-        A_in2, visc: visc_cSt, Pc_psia, steamType,
+        phase:     PHASE,
+        flowType:  FTYPE,
+        units:     UNITS,
+        Q:         document.getElementById('flow').value,
+        P1:        document.getElementById('p1').value,
+        P2:        document.getElementById('p2').value,
+        T:         document.getElementById('temp').value,
+        SG:        document.getElementById('sg').value,
+        Pv:        document.getElementById('pv').value,
+        D:         document.getElementById('pipeD').value,
+        FL:        document.getElementById('rec').value,
+        k:         document.getElementById('kval').value,
+        Z:         document.getElementById('zf').value,
+        steamFluid, fluidVisc, fluidPc,
       }),
     });
     apiResult = await resp.json();
     if(apiResult.error) throw new Error(apiResult.error);
   } catch(err){
     setEl('resCv','ERR'); setEl('resKv','ERR');
-    renderWarnings([{cls:'warn-red',txt:'❌ API error: '+err.message+'. Check network and Vercel deployment.'}]);
+    renderWarnings([{cls:'warn-red',txt:'❌ '+err.message}]);
     return;
   }
 
-  // ── UNPACK API RESPONSE ───────────────────────────────────────────────────
-  const Cv        = apiResult.Cv;
-  const Kv        = apiResult.Kv;
-  const vel       = apiResult.vel;
-  const dPeff     = apiResult.dPeff;
-  const dPmax     = apiResult.dPmax;
-  const x_ratio   = apiResult.x_ratio;
-  const Y_gas     = apiResult.Y;
-  const flowState = apiResult.flowState;
-  const noiseDb   = apiResult.noiseDb;
-  const sizes     = apiResult.sizes;
-  const apiWarns  = apiResult.warns || [];
+  // ── DISPLAY ONLY — no calculations here ──────────────────────────────────
+  const r  = apiResult;
+  const pu = m ? 'bar' : 'psi';
+  const vU = m ? 'm/s' : 'ft/s';
+  const fmtN = v => (v==null||isNaN(v)||!isFinite(v)) ? '—' : v<1 ? (+v).toFixed(3) : v<10 ? (+v).toFixed(2) : (+v).toFixed(1);
+  const dp2  = v => v==null ? '—' : (m?(v/14.5038).toFixed(3):v.toFixed(2))+' '+pu;
 
-  // Merge client-side validation warnings with API warnings
-  const allWarns = [...warns, ...apiWarns];
-
-  // ── DISPLAY — identical rendering logic as before ─────────────────────────
-  const vD  = m ? vel * 0.3048 : vel;
-  const vU  = m ? 'm/s' : 'ft/s';
-  const pu  = m ? 'bar' : 'psi';
-  const vLim = isL ? (m?5:15) : (m?30:100);
-  const vOk  = vel < vLim;
-  const fmtN = v => isNaN(v)||!isFinite(v)?'—':v<1?v.toFixed(3):v<10?v.toFixed(2):v.toFixed(1);
-  const dp2  = v => (m?(v/14.5038).toFixed(3):v.toFixed(2))+' '+pu;
-
-  setEl('resCv', fmtN(Cv));
-  setEl('resKv', fmtN(Kv));
-  setEl('resVel', vD.toFixed(2)+' '+vU);
-  setEl('velStatus', vOk?'✓ Acceptable':'⚠ High (limit '+vLim+' '+vU+')');
-  document.getElementById('velStatus').style.color = vOk?'var(--green)':'var(--gold)';
+  setEl('resCv', fmtN(r.Cv));
+  setEl('resKv', fmtN(r.Kv));
+  setEl('resVel', fmtN(r.vel)+' '+vU);
+  setEl('velStatus', r.velOk ? '✓ Acceptable' : '⚠ High (limit '+r.velLim+' '+vU+')');
+  document.getElementById('velStatus').style.color = r.velOk ? 'var(--green)' : 'var(--gold)';
 
   // Valve size chips
   const R_trim   = parseFloat(document.getElementById('rangeR').value)||50;
@@ -1007,44 +928,44 @@ async function _calcAsync(){
     } else if(charType2==='quick_open'){ return Math.min(ratio*ratio*100,200); }
     else { return Math.min(ratio*100,200); }
   };
-  const s0=sizes.smaller, s1=sizes.rec, s2=sizes.larger;
-  const openPn = openPct_eq(Cv, s1.Cv_rated);
+  const s0=r.sizes.smaller, s1=r.sizes.rec, s2=r.sizes.larger;
+  const openPn = openPct_eq(r.Cv, s1.Cv_rated);
   lastOpenPct  = Math.min(openPn, 100);
 
-  setEl('vsz1', s0.s); setEl('vop1', s0.s===s1.s?'—':openPct_eq(Cv,s0.Cv_rated).toFixed(0)+'% open');
+  setEl('vsz1', s0.s); setEl('vop1', s0.s===s1.s?'—':openPct_eq(r.Cv,s0.Cv_rated).toFixed(0)+'% open');
   setEl('vsz2', s1.s); setEl('vop2', openPn.toFixed(0)+'% open');
-  setEl('vsz3', s2.s); setEl('vop3', s2.s===s1.s?'—':openPct_eq(Cv,s2.Cv_rated).toFixed(0)+'% open');
+  setEl('vsz3', s2.s); setEl('vop3', s2.s===s1.s?'—':openPct_eq(r.Cv,s2.Cv_rated).toFixed(0)+'% open');
 
-  setEl('dv_state', flowState);
-  setEl('dv_noise', noiseDb+' dB');
+  setEl('dv_state', r.flowState);
+  setEl('dv_noise', r.noiseDb+' dB');
   setEl('dv_open',  openPn.toFixed(1)+'%');
-  setEl('dv_re', isL&&apiResult.Rev!=null ? apiResult.Rev.toExponential(2) : 'N/A (gas)');
-  setEl('dv_dp', (dP/Math.max(P1a,0.001)*100).toFixed(1)+'%');
-  setEl('dv_flap', dp2(dPmax));
-  setEl('dv_y', isG&&Y_gas!=null ? Y_gas.toFixed(4) : '—');
+  setEl('dv_re',  r.Rev  != null ? r.Rev.toExponential(2)  : 'N/A (gas)');
+  setEl('dv_dp',  r.dpRatioPct != null ? r.dpRatioPct+'%' : '—');
+  setEl('dv_flap', dp2(r.dPmax));
+  setEl('dv_y',   r.Y    != null ? r.Y.toFixed(4) : '—');
 
-  colorEl('dv_state', flowState.includes('🟢')?'ok':flowState.includes('🟡')||flowState.includes('🟠')?'warn':'danger');
-  colorEl('dv_noise', noiseDb<75?'ok':noiseDb<85?'warn':'danger');
+  colorEl('dv_state', r.flowState&&r.flowState.includes('🟢')?'ok':r.flowState&&(r.flowState.includes('🟡')||r.flowState.includes('🟠'))?'warn':'danger');
+  colorEl('dv_noise', r.noiseDb<75?'ok':r.noiseDb<85?'warn':'danger');
   colorEl('dv_open',  openPn<80?'ok':openPn<100?'warn':'danger');
 
   setPB('pb_open',  openPn, 100);
-  setPB('pb_dp',    dP/Math.max(P1a,0.001)*100, 100);
-  setPB('pb_noise', (noiseDb-60)/40*100, 100);
+  setPB('pb_dp',    r.dpRatioPct||0, 100);
+  setPB('pb_noise', ((r.noiseDb||60)-60)/40*100, 100);
   setEl('pb_open_txt',  openPn.toFixed(1)+'%');
-  setEl('pb_dp_txt',    (dP/Math.max(P1a,0.001)*100).toFixed(1)+'%');
-  setEl('pb_noise_txt', noiseDb+' dB (estimated)');
+  setEl('pb_dp_txt',    (r.dpRatioPct||0)+'%');
+  setEl('pb_noise_txt', r.noiseDb+' dB (estimated)');
 
-  setEl('pt_dp',    dp2(dP));
-  setEl('pt_dpeff', dp2(dPeff));
-  setEl('pt_dpmax', isL||isS ? dp2(dPmax) : 'x_crit='+(isG?(FL*k/1.4).toFixed(3):'—'));
-  setEl('pt_vel',   vD.toFixed(2)+' '+vU);
-  setEl('pt_sg',    SG.toFixed(3)+(isL?' (SG)':isG?' g/mol':' (steam MW=18.02)'));
-  setEl('pt_temp',  m?((T_working-32)*5/9).toFixed(1)+'°C':T_working.toFixed(1)+'°F');
-  setEl('pt_fl',    FL.toFixed(3)+(isG?' (xT)':' (FL)'));
-  setEl('pt_pipe',  m?(D_in*25.4).toFixed(1)+' mm':D_in.toFixed(3)+' in');
+  setEl('pt_dp',    dp2(r.dP));
+  setEl('pt_dpeff', dp2(r.dPeff));
+  setEl('pt_dpmax', r.dPmaxLabel || dp2(r.dPmax));
+  setEl('pt_vel',   fmtN(r.vel)+' '+vU);
+  setEl('pt_sg',    r.sgLabel || '—');
+  setEl('pt_temp',  r.tempLabel || '—');
+  setEl('pt_fl',    r.flLabel  || '—');
+  setEl('pt_pipe',  r.pipeLabel|| '—');
 
-  if(openPn>100) allWarns.push({cls:'warn-red',txt:`⚠️ Cv ${fmtN(Cv)} exceeds rated Cv of ${s1.s} (${s1.Cv_rated}). Select: ${s2.s}.`});
-  if(vD>(isL?(m?5:15):(m?30:100))) allWarns.push({cls:'warn-amber',txt:`ℹ Pipe velocity (${vD.toFixed(1)} ${vU}) exceeds recommended limit. Consider larger bore piping.`});
+  const allWarns = r.warns || [];
+  if(openPn>100) allWarns.push({cls:'warn-red',txt:`⚠️ Cv ${fmtN(r.Cv)} exceeds rated Cv of ${s1.s} (${s1.Cv_rated}). Select: ${s2.s}.`});
 
   renderWarnings(allWarns);
   updateCharChart();
