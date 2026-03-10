@@ -16,14 +16,6 @@
 //  Client only receives final results + warnings JSON.
 // ═══════════════════════════════════════════════════════════════════════
 
-// ── CORS HEADERS ──────────────────────────────────────────────────────
-const CORS = {
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Content-Type': 'application/json',
-};
-
 // ── REFERENCE CONDITIONS ──────────────────────────────────────────────
 const REF_COND = {
   normal:   { T_K: 273.15, P_Pa: 101325 },   // 0°C, 1 atm
@@ -600,24 +592,54 @@ function calculate(params) {
 }
 
 // ═════════════════════════════════════════════════════════════════════
-//  VERCEL HANDLER
+//  VERCEL HANDLER  (CommonJS — works with all Vercel Node runtimes)
 // ═════════════════════════════════════════════════════════════════════
-export default async function handler(req, res) {
+
+// Helper: set all CORS headers on a response object
+function setCORS(res) {
+  res.setHeader('Access-Control-Allow-Origin',  '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Type', 'application/json');
+}
+
+// Helper: read raw POST body as text, then JSON-parse
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    // Vercel may pre-parse body when Content-Type is application/json
+    if (req.body && typeof req.body === 'object') {
+      return resolve(req.body);
+    }
+    let data = '';
+    req.on('data', chunk => { data += chunk; });
+    req.on('end',  () => {
+      try { resolve(data ? JSON.parse(data) : {}); }
+      catch(e) { resolve({}); }
+    });
+    req.on('error', reject);
+  });
+}
+
+module.exports = async function handler(req, res) {
+  setCORS(res);
+
   // OPTIONS preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).set(CORS).end();
+    res.statusCode = 200;
+    return res.end();
   }
   if (req.method !== 'POST') {
-    return res.status(405).set(CORS).json({ error: 'Method not allowed' });
+    res.statusCode = 405;
+    return res.end(JSON.stringify({ error: 'Method not allowed' }));
   }
 
   try {
-    const body = req.body ?? {};
+    const body = await readBody(req);
 
     // ── PARSE & NORMALISE ALL INPUTS TO SI ──────────────────────────
-    const mode    = body.mode    || 'flow';
-    const cat     = body.cat     || 'gas';
-    const tapType = body.tapType || 'sharp_corner';
+    const mode     = body.mode    || 'flow';
+    const cat      = body.cat     || 'gas';
+    const tapType  = body.tapType || 'sharp_corner';
     const isMetric = (body.unitSys || 'metric') === 'metric';
 
     // Pressure & temperature
@@ -633,7 +655,7 @@ export default async function handler(req, res) {
     const dp_Pa_in = dpToPa(parseFloat(body.dp) || 0, body.dp_unit || 'mmH2O');
 
     // Flow input
-    const flow_in  = parseFloat(body.flow) || 0;
+    const flow_in   = parseFloat(body.flow) || 0;
     const flow_unit = body.flow_unit || 'Nm3hr';
 
     const params = {
@@ -651,10 +673,12 @@ export default async function handler(req, res) {
 
     const result = calculate(params);
 
-    return res.status(200).set(CORS).json({ ok: true, ...result });
+    res.statusCode = 200;
+    return res.end(JSON.stringify({ ok: true, ...result }));
 
   } catch (err) {
-    console.error('calculate.js error:', err);
-    return res.status(500).set(CORS).json({ ok: false, error: err.message });
+    console.error('orifice-flow.js error:', err);
+    res.statusCode = 500;
+    return res.end(JSON.stringify({ ok: false, error: err.message }));
   }
-}
+};
