@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Steam Quench Calculator — Desuperheater Design | multicalci.com</title>
+<meta name="description" content="Free steam desuperheating calculator using IAPWS-IF97 for quench water flow rate calculation.">
+<link rel="canonical" href="https://multicalci.com/steam-quench-calculator/">
+<meta property="og:title" content="Steam Quench Calculator — Desuperheater Design | multicalci.com">
+<meta property="og:description" content="Free steam desuperheating calculator using IAPWS-IF97 for quench water flow rate calculation.">
+<meta property="og:url" content="https://multicalci.com/steam-quench-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://multicalci.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Steam Quench Calculator — Desuperheater Design | multicalci.com">
+<meta name="twitter:image" content="https://multicalci.com/assets/og-image.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Steam Quench Desuperheater Calculator","description":"Steam desuperheating and quench water flow calculator using IAPWS-IF97 steam properties for desuperheater design.","applicationCategory":"EngineeringApplication","operatingSystem":"Web","url":"https://multicalci.com/steam-quench-calculator/","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<meta name="robots" content="index, follow">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f1117;--ink2:#1e2330;--ink3:#2d3347;--mid:#4a5068;--subtle:#6b7491;
+  --pale:#b8bed4;--ghost:#d8dce8;--tint:#eceef5;
+  --bg:#f4f5f9;--sur:#fff;--sur2:#f8f9fc;
+  --bl:#0e5fa8;--bl2:#1a6fe0;--bl-p:#eef4ff;--bl-m:#bdd3fc;
+  --tl:#0a6b5c;--tl-p:#e8f5f2;--tl-m:#a5d9ce;
+  --gn:#065f46;--gn-p:#d1fae5;--gn-m:#6ee7b7;
+  --am:#b85c00;--am-p:#fef4e6;--am-m:#fddba8;
+  --rd:#8b1a1a;--rd-p:#fde8e8;--rd-m:#f5a0a0;
+  --pu:#5b21b6;--pu-p:#ede9fe;--pu-m:#c4b5fd;
+  --bd:#d0d4e0;--bd2:#b8bece;--r:10px;
+  --sh:0 1px 3px rgba(15,17,23,.08),0 4px 16px rgba(15,17,23,.06);
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.55}
+
+.hdr{background:var(--ink2);padding:24px 28px 20px;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-55deg,transparent,transparent 18px,rgba(255,255,255,.018) 18px,rgba(255,255,255,.018) 19px)}
+.hdr::after{content:'';position:absolute;right:-60px;top:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(14,95,168,.4) 0%,transparent 70%)}
+.hdr-in{position:relative;z-index:1;max-width:1380px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.hdr-ico{width:50px;height:50px;background:var(--bl);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:0 4px 16px rgba(14,95,168,.4)}
+.hdr-title{font-family:'Syne',sans-serif;font-size:1.65rem;font-weight:800;letter-spacing:-.3px;color:#fff;line-height:1;margin-bottom:5px}
+.hdr-sub{font-size:.8rem;color:var(--ghost);font-weight:500}
+.hdr-bs{display:flex;gap:6px;flex-wrap:wrap}
+.hb{padding:3px 11px;border-radius:20px;font-size:.67rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;border:1px solid}
+.hb.bl{border-color:rgba(14,95,168,.55);color:#90b8f8;background:rgba(14,95,168,.2)}
+.hb.st{border-color:rgba(255,255,255,.2);color:var(--ghost);background:rgba(255,255,255,.07)}
+
+.page{max-width:1380px;margin:0 auto;padding:20px 16px}
+.layout{display:grid;grid-template-columns:420px 1fr;gap:18px;align-items:start}
+@media(max-width:1040px){.layout{grid-template-columns:1fr}}
+
+.sys-tabs{display:flex;background:var(--tint);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.stab{flex:1;padding:8px 5px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;color:var(--subtle);cursor:pointer;transition:all .15s;text-align:center}
+.stab.on{background:var(--bl);color:#fff}
+
+.preset-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{padding:7px 11px;border:1.5px solid var(--bd);border-radius:8px;background:var(--sur2);cursor:pointer;transition:all .15s;font-size:.75rem;font-weight:700;color:var(--ink2);display:flex;flex-direction:column;gap:1px;text-align:left}
+.pchip:hover,.pchip.on{border-color:var(--bl);background:var(--bl-p);color:var(--bl)}
+.pchip.on{box-shadow:0 0 0 3px rgba(14,95,168,.12)}
+.pchip .pn{font-size:.78rem;font-weight:700}
+.pchip .ps{font-size:.63rem;color:var(--subtle);font-weight:500}
+
+.card{background:var(--sur);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.card:last-child{margin-bottom:0}
+.ch{padding:11px 16px;border-bottom:1px solid var(--bd);background:var(--sur2);display:flex;align-items:center;gap:7px}
+.ch-ico{font-size:14px}.ch-ttl{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2)}
+.cb{padding:15px}
+
+.fg{margin-bottom:10px}.fg:last-child{margin-bottom:0}
+.fg label{display:block;font-size:.8rem;font-weight:700;color:var(--ink3);margin-bottom:4px}
+.fg label .uh{font-weight:500;color:var(--subtle);font-size:.72rem}
+.fi{width:100%;padding:8px 10px;border:1.5px solid var(--bd);border-radius:7px;font-size:.92rem;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--ink);background:var(--sur);transition:border-color .15s,box-shadow .15s;outline:none}
+.fi:focus{border-color:var(--bl);box-shadow:0 0 0 3px rgba(14,95,168,.1)}
+.fi:hover:not(:focus){border-color:var(--bd2)}
+.fi.ro{background:var(--tint);color:var(--mid);cursor:default;border-style:dashed}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.vu-row{display:grid;grid-template-columns:1fr auto;gap:7px}
+.vu-sel{padding:8px 9px;border:1.5px solid var(--bd);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;color:var(--ink2);background:var(--sur);cursor:pointer;outline:none}
+.vu-sel:focus{border-color:var(--bl)}
+
+.calc-btn{width:100%;padding:12px;background:var(--bl);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.93rem;font-weight:700;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px}
+.calc-btn:hover:not(:disabled){background:var(--bl2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(14,95,168,.3)}
+.calc-btn:disabled{opacity:.6;cursor:not-allowed}
+.sec-btn{width:100%;padding:9px;border:1.5px solid var(--bd);border-radius:7px;background:var(--sur);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;color:var(--mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.sec-btn:hover{border-color:var(--bl);color:var(--bl);background:var(--bl-p)}
+.sec-btn.dng:hover{border-color:var(--rd);color:var(--rd);background:var(--rd-p)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+
+.wbox{padding:9px 12px;border-radius:7px;font-size:.79rem;font-weight:600;margin:7px 0;line-height:1.5;display:none;border-left:3px solid}
+.wbox.show{display:block}
+.wbox.err{background:var(--rd-p);border-color:var(--rd);color:var(--rd)}
+.wbox.wa{background:var(--am-p);border-color:var(--am);color:#7a3d00}
+.wbox.inf{background:var(--bl-p);border-color:var(--bl);color:var(--bl)}
+.wbox.ok{background:var(--gn-p);border-color:var(--gn);color:var(--gn)}
+
+.ph{padding:64px 24px;text-align:center}
+.ph-ico{font-size:3.5rem;margin-bottom:14px;opacity:.25}
+.ph-txt{font-size:1rem;color:#8e97b3;font-weight:700;margin-bottom:8px;font-family:'Syne',sans-serif}
+.ph-sub{font-size:.82rem;color:#a0a8c0;font-weight:500;max-width:400px;margin:0 auto;line-height:1.65}
+
+.prop-strip{background:var(--tint);border:1px solid var(--bd);border-radius:7px;padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--mid);line-height:1.9;display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:6px}
+.prop-strip strong{color:var(--ink2)}
+
+.banner{background:linear-gradient(135deg,var(--ink2) 0%,#0e3060 55%,#0a5488 100%);border-radius:10px;padding:22px 26px;margin-bottom:14px;position:relative;overflow:hidden}
+.banner::before{content:'💧';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:.07}
+.ban-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;position:relative;z-index:1}
+.ban-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--pale);margin-bottom:3px}
+.ban-val{font-family:'Bebas Neue',sans-serif;font-size:2.7rem;letter-spacing:.5px;color:#fff;line-height:1;margin-bottom:2px}
+.ban-val .bmu{font-size:1.1rem;opacity:.7;margin-left:3px}
+.ban-sub{font-size:.68rem;color:var(--pale);font-weight:600}
+.ban-item{display:flex;flex-direction:column;justify-content:flex-start}
+.ban-bdg{display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:.64rem;font-weight:700;margin-top:4px;border:1px solid}
+.bb-ok{background:rgba(6,95,70,.3);border-color:#6ee7b7;color:#6ee7b7}
+.bb-wa{background:rgba(184,92,0,.25);border-color:var(--am-m);color:var(--am-m)}
+.bb-bd{background:rgba(139,26,26,.3);border-color:var(--rd-m);color:var(--rd-m)}
+.bb-inf{background:rgba(14,95,168,.2);border-color:#90b8f8;color:#90b8f8}
+.bb-nt{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.2);color:var(--pale)}
+
+.mg2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.mg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:12px}
+.mg4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
+.mc{background:var(--sur);border:1px solid var(--bd);border-radius:9px;padding:13px 14px;border-left:3px solid var(--bd2)}
+.mc.bl{border-left-color:var(--bl)}.mc.tl{border-left-color:var(--tl)}.mc.gn{border-left-color:var(--gn)}
+.mc.am{border-left-color:var(--am)}.mc.rd{border-left-color:var(--rd)}.mc.pu{border-left-color:var(--pu)}
+.mc-lbl{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--subtle);margin-bottom:5px}
+.mc-val{font-family:'JetBrains Mono',monospace;font-size:1.18rem;font-weight:700;color:var(--ink);line-height:1.2}
+.mc-u{font-size:.7rem;color:var(--mid);margin-left:2px;font-weight:600}
+.mc-sub{font-size:.67rem;color:var(--subtle);margin-top:3px;line-height:1.4}
+
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:9px;font-size:.7rem;font-weight:700;border:1px solid}
+.b-g{background:var(--gn-p);color:var(--gn);border-color:var(--gn-m)}
+.b-a{background:var(--am-p);color:var(--am);border-color:var(--am-m)}
+.b-r{background:var(--rd-p);color:var(--rd);border-color:var(--rd-m)}
+.b-b{background:var(--bl-p);color:var(--bl);border-color:var(--bl-m)}
+.b-t{background:var(--tl-p);color:var(--tl);border-color:var(--tl-m)}
+.b-p{background:var(--pu-p);color:var(--pu);border-color:var(--pu-m)}
+
+.sec{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2);padding-bottom:7px;margin-bottom:10px;margin-top:14px;border-bottom:2px solid var(--bd);display:flex;align-items:center;gap:6px;font-family:'Syne',sans-serif}
+.sec:first-child{margin-top:0}
+
+.fbox{background:var(--ink);border-radius:9px;padding:13px 16px;margin-top:8px}
+.fbox-t{font-size:.68rem;font-weight:700;color:var(--pale);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.fbox pre{font-family:'JetBrains Mono',monospace;font-size:.76rem;color:#a8bfd8;line-height:2.0;white-space:pre-wrap;word-break:break-word}
+.fbox pre .hl{color:#f9c580}.fbox pre .gr{color:#6ee7b7}.fbox pre .cy{color:#7dd3fc}
+.fbox pre .rd{color:#f9a0a0}.fbox pre .wh{color:#fff;font-weight:700}
+
+.ibox{padding:9px 12px;border-radius:7px;border-left:3px solid;margin-top:8px;font-size:.79rem;line-height:1.55;font-weight:500}
+.ibox.ok{background:var(--gn-p);border-color:var(--gn);color:#064e3b}
+.ibox.wa{background:var(--am-p);border-color:var(--am);color:#78350f}
+.ibox.bd{background:var(--rd-p);border-color:var(--rd);color:#7f1d1d}
+.ibox.inf{background:var(--bl-p);border-color:var(--bl);color:#1e3a8a}
+.ibox-t{font-weight:800;margin-bottom:3px;font-size:.8rem}
+
+.flow-dg{background:var(--ink);border-radius:10px;padding:18px;margin-bottom:14px;overflow-x:auto}
+.flow-dg svg{display:block;margin:0 auto}
+
+.dtbl{width:100%;border-collapse:collapse;font-size:.81rem}
+.dtbl th{background:var(--ink2);color:#fff;padding:7px 9px;text-align:left;font-size:.68rem;font-weight:700;letter-spacing:.3px}
+.dtbl th:not(:first-child){text-align:right}
+.dtbl td{padding:6px 9px;border-bottom:1px solid var(--bd);color:var(--ink2);font-weight:600}
+.dtbl td.num{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ink);text-align:right}
+.dtbl td.hi{color:var(--bl)!important;font-weight:800}
+.dtbl tr:nth-child(even) td{background:var(--sur2)}
+.dtbl tr.tot td{background:var(--tint);font-weight:800;border-top:2px solid var(--bd2)}
+.dtbl tr:hover td{background:var(--bl-p)}
+
+.stbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.stbl th{background:var(--ink2);color:#fff;padding:6px 9px;text-align:center;font-size:.66rem;font-weight:700}
+.stbl th:first-child{text-align:left}
+.stbl td{padding:5px 9px;border-bottom:1px solid var(--bd);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.76rem;color:var(--ink)}
+.stbl td:first-child{text-align:left;color:var(--mid);font-weight:700;font-family:'DM Sans',sans-serif}
+.stbl tr:nth-child(even) td{background:var(--sur2)}
+.stbl .hlr td{background:var(--bl-p)!important;color:var(--bl)!important;font-weight:700}
+
+.gtbl{width:100%;border-collapse:collapse;font-size:.79rem}
+.gtbl th{background:var(--ink2);color:#fff;padding:7px 9px;font-size:.67rem;font-weight:700;letter-spacing:.4px}
+.gtbl td{padding:7px 9px;border-bottom:1px solid var(--bd);line-height:1.5;vertical-align:top}
+.gtbl tr:nth-child(even) td{background:var(--sur2)}
+.gtbl td:first-child{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--bl);white-space:nowrap;font-size:.75rem}
+.gtbl td:nth-child(2){color:var(--mid);font-size:.72rem;white-space:nowrap}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(15,17,23,.5);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.loading-overlay.show{display:flex}
+.loading-box{background:var(--ink2);border-radius:14px;padding:28px 40px;text-align:center;color:#fff;box-shadow:0 8px 40px rgba(0,0,0,.4)}
+.loading-spinner{width:44px;height:44px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--bl2);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--pale);margin-bottom:4px}
+.loading-sub{font-size:.72rem;color:var(--subtle)}
+
+@media(max-width:700px){.ban-grid{grid-template-columns:1fr 1fr}.mg3,.mg4{grid-template-columns:1fr 1fr}.r2,.r3{grid-template-columns:1fr}}
+@keyframes fi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.home-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.35);border-radius:20px;color:#6ee7b7;font-size:.72rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.home-btn:hover{background:#10b981;border-color:#10b981;color:#fff}
+@media(max-width:500px){.home-btn span{display:none}}
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div class="loading-txt">Computing Steam Properties</div>
+    <div class="loading-sub">IAPWS-IF97 · Mass &amp; Energy Balance</div>
+  </div>
+</div>
+
+<div class="hdr">
+  <div class="hdr-in">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="hdr-ico">💧</div>
+      <div>
+        <div class="hdr-title">Steam Quench / Desuperheater Calculator</div>
+        <div class="hdr-sub">Attemperator Spray Water Flow · Heat &amp; Mass Balance · IAPWS-IF97 · Valve Sizing · Sensitivity Analysis</div>
+      </div>
+    </div>
+    <div class="hdr-bs">
+      <a class="home-btn" href="https://multicalci.com/">🏠 <span>Home</span></a>
+      <div class="hb bl">IAPWS-IF97</div>
+      <div class="hb st">Server-Side Engine</div>
+      <div class="hb st">ISA S75 Cv</div>
+      <div class="hb st">Deterministic</div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+<div class="layout">
+
+<!-- ══════════ LEFT PANEL ══════════ -->
+<div>
+
+<div class="card">
+  <div class="ch"><span class="ch-ico">⚙️</span><span class="ch-ttl">Unit System</span></div>
+  <div class="cb" style="padding-bottom:10px">
+    <div class="sys-tabs">
+      <button class="stab on" id="btn_SI"  onclick="setUnit('SI')">SI Metric  (°C · bara · kg/h)</button>
+      <button class="stab"    id="btn_IMP" onclick="setUnit('IMP')">Imperial  (°F · psia · lb/h)</button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><span class="ch-ico">⚡</span><span class="ch-ttl">Quick Presets</span></div>
+  <div class="cb" style="padding-bottom:12px">
+    <div class="preset-wrap" id="presetWrap">
+      <button class="pchip on" onclick="loadPreset('boiler',this)">
+        <span class="pn">🔵 Boiler Superheater</span><span class="ps">500°C → 420°C @ 100 bara</span>
+      </button>
+      <button class="pchip" onclick="loadPreset('turbine',this)">
+        <span class="pn">🟢 Turbine Extraction</span><span class="ps">380°C → 320°C @ 60 bara</span>
+      </button>
+      <button class="pchip" onclick="loadPreset('header',this)">
+        <span class="pn">🟠 Steam Header</span><span class="ps">280°C → 220°C @ 30 bara</span>
+      </button>
+      <button class="pchip" onclick="loadPreset('lp',this)">
+        <span class="pn">🔴 LP Steam</span><span class="ps">180°C → 150°C @ 5 bara</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><span class="ch-ico">♨️</span><span class="ch-ttl">Inlet Steam Conditions</span></div>
+  <div class="cb">
+    <div class="r2">
+      <div class="fg">
+        <label>Steam Pressure <span class="uh" id="u_P">(bara)</span></label>
+        <input class="fi" id="P_s" type="number" step="0.5" value="100" min="0.01">
+      </div>
+      <div class="fg">
+        <label>Inlet Temperature <span class="uh" id="u_T1">(°C)</span></label>
+        <input class="fi" id="T1" type="number" step="1" value="500">
+      </div>
+    </div>
+    <div class="r2">
+      <div class="fg">
+        <label>Steam Flow <span class="uh" id="u_ms">(kg/h)</span></label>
+        <div class="vu-row">
+          <input class="fi" id="ms_v" type="number" step="500" value="100000" min="0.01" style="margin:0">
+          <select class="vu-sel" id="ms_u"></select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Sat. Temp (auto) <span class="uh" id="u_Ts">(°C)</span></label>
+        <input class="fi ro" id="Tsat_disp" readonly value="—">
+      </div>
+    </div>
+    <div id="props_in" class="prop-strip">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><span class="ch-ico">💧</span><span class="ch-ttl">Quench / Spray Water</span></div>
+  <div class="cb">
+    <div class="r2">
+      <div class="fg">
+        <label>Water Inlet Temp <span class="uh" id="u_Tw">(°C)</span></label>
+        <input class="fi" id="Tw" type="number" step="1" value="105">
+      </div>
+      <div class="fg">
+        <label>Water Supply Pressure <span class="uh" id="u_Pw">(bara)</span></label>
+        <input class="fi" id="Pw" type="number" step="0.5" value="120">
+      </div>
+    </div>
+    <div id="props_w" class="prop-strip">—</div>
+    <div class="ibox inf" style="margin-top:10px;font-size:.74rem">
+      <div class="ibox-t">💡 Water Supply Pressure</div>
+      Water pressure must exceed steam line pressure by ≥ 3–5 bar minimum (recommend 10–15% margin) to ensure reliable injection.
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><span class="ch-ico">🎯</span><span class="ch-ttl">Target Outlet Conditions</span></div>
+  <div class="cb">
+    <div class="r2">
+      <div class="fg">
+        <label>Target Outlet Temp <span class="uh" id="u_T2">(°C)</span></label>
+        <input class="fi" id="T2" type="number" step="1" value="420">
+      </div>
+      <div class="fg">
+        <label>Min. Superheat Margin <span class="uh" id="u_sh">(°C)</span></label>
+        <input class="fi" id="sh_min" type="number" step="1" value="10" min="0">
+      </div>
+    </div>
+    <div id="props_out" class="prop-strip">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><span class="ch-ico">🔧</span><span class="ch-ttl">Control Range &amp; Valve Sizing</span></div>
+  <div class="cb">
+    <div class="r3">
+      <div class="fg">
+        <label>Min Load <span class="uh">(%)</span></label>
+        <input class="fi" id="f_min" type="number" value="30" step="5" min="5">
+      </div>
+      <div class="fg">
+        <label>Max Load <span class="uh">(%)</span></label>
+        <input class="fi" id="f_max" type="number" value="110" step="5">
+      </div>
+      <div class="fg">
+        <label>Valve Cv <span class="uh">(optional)</span></label>
+        <input class="fi" id="cv_in" type="number" step="0.1" placeholder="gpm/√psi">
+      </div>
+    </div>
+    <div id="alertBox" class="wbox"></div>
+    <div style="margin-top:10px">
+      <button class="calc-btn" id="calcBtn" onclick="calculate()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Calculate Quench Water Flow
+      </button>
+      <div class="btn-row">
+        <button class="sec-btn" onclick="generatePDF()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          PDF Report
+        </button>
+        <button class="sec-btn dng" onclick="clearAll()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end left -->
+
+<!-- ══════════ RIGHT PANEL ══════════ -->
+<div id="RP">
+  <div class="ph">
+    <div class="ph-ico">💧</div>
+    <div class="ph-txt">Steam Quench / Desuperheater Calculator</div>
+    <div class="ph-sub">Select a preset or enter operating conditions. Click <strong>Calculate</strong> to compute required spray water flow.</div>
+    <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:480px;margin-left:auto;margin-right:auto;text-align:left">
+      <div style="background:var(--sur);border:1px solid var(--bd);border-radius:8px;padding:12px;border-left:3px solid var(--bl)">
+        <div style="font-size:.68rem;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Energy Balance</div>
+        <div style="font-size:.78rem;color:var(--ink2);font-weight:600;line-height:1.55">ṁ_in·h₁ + ṁ_w·h_w = ṁ_out·h₂</div>
+      </div>
+      <div style="background:var(--sur);border:1px solid var(--bd);border-radius:8px;padding:12px;border-left:3px solid var(--tl)">
+        <div style="font-size:.68rem;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Quench Water</div>
+        <div style="font-size:.78rem;color:var(--ink2);font-weight:600;line-height:1.55">ṁ_w = ṁ_in × (h₁−h₂)/(h₂−h_w)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div><!-- end page -->
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════
+   CLIENT STATE — no physics here
+   All calculations happen on the server via /api/calculate
+══════════════════════════════════════════════════ */
+
+// API endpoint — auto-detects same origin (works on Vercel + local dev)
+const API_URL = '/api/calculate';
+
+const CALC_VERSION = 'v4.0-api';
+const CALC_ID = 'SQC-' + Date.now().toString(36).toUpperCase();
+
+let SYS = 'SI';
+let lastUnit = 'SI';
+let lastR = null;   // last result from API
+
+const E  = id => document.getElementById(id);
+const gv = id => parseFloat(E(id).value) || 0;
+const f0 = n => n.toFixed(0);
+const f1 = n => n.toFixed(1);
+const f2 = n => n.toFixed(2);
+const f3 = n => n.toFixed(3);
+const f4 = n => n.toFixed(4);
+
+/* ── Unit conversion helpers (client-only, no physics) ── */
+function toC(v)   { return SYS === 'IMP' ? (v - 32) * 5 / 9 : v; }
+function frC(v)   { return SYS === 'IMP' ? v * 9 / 5 + 32 : v; }
+const fromC = v => frC(v);
+const toMPa = v => SYS === 'IMP' ? v * 0.006894757 : v * 0.1;
+const frPd  = v => SYS === 'IMP' ? v / 0.006894757 : v * 10;
+
+/* ── Flow units ── */
+const FU = [
+  { id:'kgh',  lbl:'kg/h',  f:1,           sys:['SI','IMP'] },
+  { id:'th',   lbl:'t/h',   f:1000,        sys:['SI'] },
+  { id:'kgs',  lbl:'kg/s',  f:3600,        sys:['SI'] },
+  { id:'lbh',  lbl:'lb/h',  f:0.453592,    sys:['IMP'] },
+  { id:'lbm',  lbl:'lb/min',f:0.453592*60, sys:['IMP'] },
+  { id:'klbh', lbl:'klb/h', f:453.592,     sys:['IMP'] },
+];
+function popFlowU(id) {
+  const s = E(id), cv = s.value; s.innerHTML = '';
+  FU.filter(u => u.sys.includes(SYS)).forEach(u => s.add(new Option(u.lbl, u.id)));
+  s.value = FU.filter(u => u.sys.includes(SYS)).some(u => u.id === cv) ? cv : (SYS === 'IMP' ? 'lbh' : 'kgh');
+}
+function toKgh(v, uid) { const u = FU.find(x => x.id === uid); return u ? v * u.f : v; }
+function fromKgh(v, uid) { const u = FU.find(x => x.id === uid); return u ? v / u.f : v; }
+
+/* ── Unit switching ── */
+function setUnit(sys) {
+  SYS = sys;
+  E('btn_SI').classList.toggle('on', sys === 'SI');
+  E('btn_IMP').classList.toggle('on', sys === 'IMP');
+  const T = sys === 'IMP' ? '°F' : '°C', P = sys === 'IMP' ? 'psia' : 'bara';
+  [['u_T1',T],['u_T2',T],['u_Tw',T],['u_Ts',T],['u_sh',T]].forEach(([id,v]) => { const e = E(id); if(e) e.textContent = '(' + v + ')'; });
+  [['u_P',P],['u_Pw',P]].forEach(([id,v]) => { const e = E(id); if(e) e.textContent = '(' + v + ')'; });
+  popFlowU('ms_u');
+  E('u_ms').textContent = '(' + (sys === 'IMP' ? 'lb/h' : 'kg/h') + ')';
+
+  const curP = parseFloat(E('P_s').value)||0;
+  const curT1 = parseFloat(E('T1').value)||0;
+  const curTw = parseFloat(E('Tw').value)||0;
+  const curPw = parseFloat(E('Pw').value)||0;
+  const curT2 = parseFloat(E('T2').value)||0;
+  const curMs = parseFloat(E('ms_v').value)||0;
+
+  if (sys === 'IMP' && lastUnit === 'SI') {
+    if(curP)  E('P_s').value = (curP*14.5038).toFixed(1);
+    if(curT1) E('T1').value  = (curT1*9/5+32).toFixed(1);
+    if(curTw) E('Tw').value  = (curTw*9/5+32).toFixed(1);
+    if(curPw) E('Pw').value  = (curPw*14.5038).toFixed(1);
+    if(curT2) E('T2').value  = (curT2*9/5+32).toFixed(1);
+    if(curMs) E('ms_v').value = (curMs*2.20462).toFixed(0);
+    E('sh_min').value = ((parseFloat(E('sh_min').value)||10)*9/5).toFixed(1);
+  } else if (sys === 'SI' && lastUnit === 'IMP') {
+    if(curP)  E('P_s').value = (curP/14.5038).toFixed(2);
+    if(curT1) E('T1').value  = ((curT1-32)*5/9).toFixed(1);
+    if(curTw) E('Tw').value  = ((curTw-32)*5/9).toFixed(1);
+    if(curPw) E('Pw').value  = (curPw/14.5038).toFixed(2);
+    if(curT2) E('T2').value  = ((curT2-32)*5/9).toFixed(1);
+    if(curMs) E('ms_v').value = (curMs/2.20462).toFixed(0);
+    E('sh_min').value = ((parseFloat(E('sh_min').value)||18)*5/9).toFixed(1);
+  }
+  lastUnit = sys;
+  if(lastR) calculate();
+}
+
+function showAlert(msg, cls = 'wa') { E('alertBox').innerHTML = msg; E('alertBox').className = 'wbox show ' + cls; }
+function clrAlert() { E('alertBox').className = 'wbox'; }
+
+/* ── Presets ── */
+const PR = {
+  boiler:  {P:100, T1:500, ms:100000, Tw:105, Pw:120, T2:420},
+  turbine: {P:60,  T1:380, ms:60000,  Tw:90,  Pw:75,  T2:320},
+  header:  {P:30,  T1:280, ms:40000,  Tw:80,  Pw:40,  T2:220},
+  lp:      {P:5,   T1:180, ms:20000,  Tw:50,  Pw:8,   T2:150},
+};
+function loadPreset(k, btn) {
+  document.querySelectorAll('.pchip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const p = PR[k];
+  if (SYS === 'SI') {
+    E('P_s').value = p.P; E('T1').value = p.T1;
+    E('Tw').value = p.Tw; E('Pw').value = p.Pw; E('T2').value = p.T2;
+  } else {
+    E('P_s').value  = f1(frPd(p.P*0.1));
+    E('T1').value   = f1(fromC(p.T1));
+    E('Tw').value   = f1(fromC(p.Tw));
+    E('Pw').value   = f1(frPd(p.Pw*0.1));
+    E('T2').value   = f1(fromC(p.T2));
+  }
+  E('ms_v').value = SYS === 'IMP' ? f0(p.ms/0.453592) : p.ms;
+  popFlowU('ms_u'); E('ms_u').value = SYS === 'IMP' ? 'lbh' : 'kgh';
+  calculate();
+}
+
+/* ══════════════════════════════════════════════════
+   MAIN CALCULATE  — calls /api/calculate
+   All inputs are converted to SI before sending.
+   API returns SI results; display layer re-applies unit formatting.
+══════════════════════════════════════════════════ */
+let _calcDebounce = null;
+
+async function calculate() {
+  clrAlert();
+  const Ps_d = gv('P_s'), T1_d = gv('T1'), Tw_d = gv('Tw'), Pw_d = gv('Pw'), T2_d = gv('T2');
+  const msv = gv('ms_v'), msu = E('ms_u').value;
+  const shMin_d = gv('sh_min') || 10, fMin = gv('f_min') || 30, fMax = gv('f_max') || 110;
+  const cvIn = gv('cv_in');
+
+  if (!Ps_d || !T1_d || !Tw_d || !T2_d || !msv) {
+    showAlert('⚠ Fill in all required fields: steam pressure, inlet temperature, water temperature, outlet target temperature, and steam flow rate.', 'wa');
+    return;
+  }
+
+  // Convert display values → SI for API
+  const P_s_SI  = SYS === 'IMP' ? Ps_d / 14.5038 : Ps_d;       // bara
+  const T1_SI   = toC(T1_d);                                     // °C
+  const Tw_SI   = toC(Tw_d);                                     // °C
+  const Pw_SI   = SYS === 'IMP' ? Pw_d / 14.5038 : Pw_d;        // bara
+  const T2_SI   = toC(T2_d);                                     // °C
+  const m_in_SI = toKgh(msv, msu);                               // kg/h
+  const shMin_SI = SYS === 'IMP' ? shMin_d * 5/9 : shMin_d;     // °C
+
+  const body = {
+    P_s: P_s_SI, T1: T1_SI, Tw: Tw_SI, Pw: Pw_SI, T2: T2_SI,
+    m_in: m_in_SI,
+    sh_min: shMin_SI, f_min: fMin, f_max: fMax, cv_in: cvIn,
+  };
+
+  // Show loading
+  E('loadingOverlay').classList.add('show');
+  E('calcBtn').disabled = true;
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      showAlert('🔴 ' + (data.error || 'Calculation error'), 'err');
+      return;
+    }
+
+    // Attach display-only fields
+    data.isI = SYS === 'IMP';
+    data.fMin = fMin;
+    data.fMax = fMax;
+    data.shMin_d = shMin_d;
+    data.ms_uid = msu;
+    data.ms_val_disp = msv;
+    data.ts = new Date().toLocaleString();
+    data.calcId = CALC_ID;
+
+    // Map shStatus → shSt object
+    data.shSt = data.shStatus === 'ADEQUATE'
+      ? { c:'ok', lbl:'ADEQUATE SUPERHEAT',     bb:'bb-ok' }
+      : data.shStatus === 'LOW'
+      ? { c:'wa', lbl:'LOW SUPERHEAT MARGIN',   bb:'bb-wa' }
+      : { c:'bd', lbl:'INSUFFICIENT SUPERHEAT', bb:'bb-bd' };
+
+    lastR = data;
+
+    // Show API warnings
+    if (data.warns && data.warns.length) showAlert(data.warns.join('<br>'), 'wa');
+
+    // Update Tsat display and live props (from API result)
+    E('Tsat_disp').value = f1(fromC(data.Ts));
+    E('props_in').innerHTML =
+      `<strong>h₁</strong> ${f1(data.h1)} kJ/kg &nbsp;·&nbsp; ` +
+      `<strong>Tsat</strong> ${f1(fromC(data.Ts))} ${SYS==='IMP'?'°F':'°C'} &nbsp;·&nbsp; ` +
+      `<strong>SH</strong> ${f1(SYS==='IMP'?(T1_SI-data.Ts)*9/5:(T1_SI-data.Ts))} Δ${SYS==='IMP'?'°F':'°C'} &nbsp;·&nbsp; ` +
+      `<strong>v</strong> ${f4(data.v1)} m³/kg &nbsp;·&nbsp; ` +
+      `<strong>s</strong> ${f3(data.s1)} kJ/kg·K`;
+    E('props_w').innerHTML =
+      `<strong>h_w</strong> ${f1(data.hw)} kJ/kg &nbsp;·&nbsp; ` +
+      `<strong>State</strong> 💧 Compressed liquid &nbsp;·&nbsp; ` +
+      `<strong>Tsat@Pw</strong> — (server-checked)`;
+    E('props_out').innerHTML =
+      `<strong>h₂</strong> ${f1(data.h2)} kJ/kg &nbsp;·&nbsp; ` +
+      `<strong>SH at outlet</strong> ${f1(SYS==='IMP'?data.sh_out*9/5:data.sh_out)} Δ${SYS==='IMP'?'°F':'°C'} &nbsp;·&nbsp; ` +
+      `<strong>${data.sh_out<5?'⚠ Wet steam risk!':data.sh_out<15?'⚠ Low superheat':'✅ Adequate superheat'}</strong>`;
+
+    render();
+
+  } catch (err) {
+    showAlert('🔴 Network error — could not reach calculation server. ' + err.message, 'err');
+  } finally {
+    E('loadingOverlay').classList.remove('show');
+    E('calcBtn').disabled = false;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER  — pure display layer, no maths
+══════════════════════════════════════════════════ */
+function render() {
+  const r = lastR;
+  const T   = SYS === 'IMP' ? '°F' : '°C';
+  const Pu  = SYS === 'IMP' ? 'psia' : 'bara';
+  const isI = SYS === 'IMP';
+
+  const fT  = v => fromC(v).toFixed(1) + ' ' + T;
+  const fPu = v => frPd(v).toFixed(1) + ' ' + Pu;
+  const fFu = v => (isI ? v/0.453592 : v).toFixed(0) + ' ' + (isI ? 'lb/h' : 'kg/h');
+  const fFt = v => (v/1000).toFixed(2) + ' t/h';
+  const fKw = v => v.toFixed(1) + ' kW';
+
+  // Sensitivity data from API
+  const sensT = r.sensT || [];
+  const sensW = r.sensW || [];
+
+  E('RP').innerHTML = `<div style="animation:fi .35s ease">
+
+  <!-- BANNER -->
+  <div class="banner">
+    <div class="ban-grid">
+      <div class="ban-item">
+        <div class="ban-lbl">Quench Water Flow (ṁ_w)</div>
+        <div class="ban-val">${isI ? f0(r.m_w/0.453592) : (r.m_w/1000).toFixed(2)}<span class="bmu">${isI?'lb/h':'t/h'}</span></div>
+        <div class="ban-sub">${fFu(r.m_w)} · ${f2(r.ratio*100)}% of ṁ_in</div>
+        <span class="ban-bdg bb-inf">ṁ_w/ṁ_in = ${f3(r.ratio)}</span>
+      </div>
+      <div class="ban-item">
+        <div class="ban-lbl">Outlet Steam Flow (ṁ_out)</div>
+        <div class="ban-val">${isI ? f0(r.m_out/0.453592) : (r.m_out/1000).toFixed(2)}<span class="bmu">${isI?'lb/h':'t/h'}</span></div>
+        <div class="ban-sub">${fFu(r.m_out)}</div>
+        <span class="ban-bdg bb-nt">+${f1(r.qPct)}% vs inlet</span>
+      </div>
+      <div class="ban-item">
+        <div class="ban-lbl">Heat Removed</div>
+        <div class="ban-val">${(r.Q_rem/1000).toFixed(2)}<span class="bmu">MW</span></div>
+        <div class="ban-sub">${fKw(r.Q_rem)}</div>
+        <span class="ban-bdg bb-ok">Δh = ${f0(r.h1-r.h2)} kJ/kg</span>
+      </div>
+      <div class="ban-item">
+        <div class="ban-lbl">Outlet Superheat</div>
+        <div class="ban-val">${f1(isI?r.sh_out*9/5:r.sh_out)}<span class="bmu">Δ${T}</span></div>
+        <div class="ban-sub">above Tsat = ${fT(r.Ts)}</div>
+        <span class="ban-bdg ${r.shSt.bb}">${r.shSt.lbl}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASS & ENERGY BALANCE -->
+  <div class="card">
+    <div class="ch"><span class="ch-ico">⚖️</span><span class="ch-ttl">Mass &amp; Energy Balance</span></div>
+    <div class="cb">
+      <div class="sec" style="margin-top:0">⚖️ Mass Balance</div>
+      <div class="mg4">
+        <div class="mc bl">
+          <div class="mc-lbl">Inlet Steam (ṁ_in)</div>
+          <div class="mc-val">${isI?f0(r.m_in/0.453592):(r.m_in/1000).toFixed(2)}<span class="mc-u">${isI?'lb/h':'t/h'}</span></div>
+          <div class="mc-sub">${fFu(r.m_in)}</div>
+        </div>
+        <div class="mc tl">
+          <div class="mc-lbl">Quench Water (ṁ_w)</div>
+          <div class="mc-val">${isI?f0(r.m_w/0.453592):(r.m_w/1000).toFixed(2)}<span class="mc-u">${isI?'lb/h':'t/h'}</span></div>
+          <div class="mc-sub">${fFu(r.m_w)} | ${f1(r.qPct)}% of ṁ_out</div>
+        </div>
+        <div class="mc gn">
+          <div class="mc-lbl">Outlet Steam (ṁ_out)</div>
+          <div class="mc-val">${isI?f0(r.m_out/0.453592):(r.m_out/1000).toFixed(2)}<span class="mc-u">${isI?'lb/h':'t/h'}</span></div>
+          <div class="mc-sub">${fFu(r.m_out)} = ṁ_in + ṁ_w</div>
+        </div>
+        <div class="mc am">
+          <div class="mc-lbl">Water/Steam Ratio</div>
+          <div class="mc-val">${f4(r.ratio)}</div>
+          <div class="mc-sub">ṁ_w / ṁ_in = ${f1(r.ratio*100)}%</div>
+        </div>
+      </div>
+      <div class="sec">⚡ Heat Duties</div>
+      <div class="mg2">
+        <div class="mc rd">
+          <div class="mc-lbl">Heat Extracted from Steam</div>
+          <div class="mc-val">${fKw(r.Q_rem)}</div>
+          <div class="mc-sub">${(r.Q_rem/1000).toFixed(3)} MW | ṁ_in × (h₁ − h₂)</div>
+        </div>
+        <div class="mc tl">
+          <div class="mc-lbl">Heat Absorbed by Water</div>
+          <div class="mc-val">${fKw(r.Q_abs)}</div>
+          <div class="mc-sub">${(r.Q_abs/1000).toFixed(3)} MW | ṁ_w × (h₂ − h_w)</div>
+        </div>
+      </div>
+      <div class="fbox">
+        <div class="fbox-t">Derivation — Adiabatic Desuperheater Energy Balance</div>
+        <pre><span class="cy">ṁ_in · h₁  +  ṁ_w · h_w  =  ṁ_out · h₂   (First Law, no heat loss)</span>
+<span class="cy">ṁ_out = ṁ_in + ṁ_w                          (Mass conservation)</span>
+
+  ṁ_in · (h₁ − h₂) = ṁ_w · (h₂ − h_w)
+  <span class="hl">ṁ_w = ṁ_in × (h₁ − h₂) / (h₂ − h_w)</span>
+
+  h₁ = <span class="hl">${f1(r.h1)}</span> kJ/kg  (inlet steam at ${fT(r.T1)}, ${fPu(r.Ps)})
+  h₂ = <span class="hl">${f1(r.h2)}</span> kJ/kg  (outlet steam at ${fT(r.T2)}, ${fPu(r.Ps)})
+  h_w = <span class="hl">${f1(r.hw)}</span> kJ/kg  (quench water at ${fT(r.Tw)}, ${fPu(r.Pw)})
+
+  ṁ_w / ṁ_in = (${f1(r.h1)} − ${f1(r.h2)}) / (${f1(r.h2)} − ${f1(r.hw)})
+             = ${f1(r.h1-r.h2)} / ${f1(r.h2-r.hw)} = <span class="wh">${f4(r.ratio)}</span>
+
+  <span class="gr">ṁ_w  = ${fFu(r.m_in)} × ${f4(r.ratio)} = ${fFu(r.m_w)}</span>
+  <span class="gr">ṁ_out = ${fFu(r.m_in)} + ${fFu(r.m_w)} = ${fFu(r.m_out)}</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEAM PROPERTIES TABLE -->
+  <div class="card">
+    <div class="ch"><span class="ch-ico">📊</span><span class="ch-ttl">Steam Properties (IAPWS-IF97 · Server-Computed)</span></div>
+    <div class="cb">
+      <table class="dtbl">
+        <thead>
+          <tr>
+            <th>Stream</th><th>Temp (${T})</th><th>Pressure (${Pu})</th>
+            <th>h (kJ/kg)</th><th>± Uncertainty</th><th>s (kJ/kg·K)</th><th>v (m³/kg)</th>
+            <th>Superheat (Δ${T})</th><th>State</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Inlet Steam</strong></td>
+            <td class="num">${fT(r.T1)}</td><td class="num">${fPu(r.Ps)}</td>
+            <td class="num hi">${f1(r.h1)}</td>
+            <td class="num" style="font-size:.72rem;color:var(--subtle)">${r.unc_h1||'±0.5 kJ/kg'}</td>
+            <td class="num">${f3(r.s1)}</td><td class="num">${f4(r.v1)}</td>
+            <td class="num">${f1(isI?(r.T1-r.Ts)*9/5:r.T1-r.Ts)}</td>
+            <td><span class="bdg b-b">Superheated</span></td>
+          </tr>
+          <tr>
+            <td><strong>Quench Water</strong></td>
+            <td class="num">${fT(r.Tw)}</td><td class="num">${fPu(r.Pw)}</td>
+            <td class="num hi">${f1(r.hw)}</td>
+            <td class="num" style="font-size:.72rem;color:var(--subtle)">${r.unc_hw||'±0.3 kJ/kg'}</td>
+            <td class="num">—</td><td class="num">~0.0010</td>
+            <td class="num">—</td>
+            <td><span class="bdg b-t">Comp. Liquid</span></td>
+          </tr>
+          <tr style="background:var(--bl-p)">
+            <td><strong>Outlet Steam ★</strong></td>
+            <td class="num">${fT(r.T2)}</td><td class="num">${fPu(r.Ps)}</td>
+            <td class="num hi">${f1(r.h2)}</td>
+            <td class="num" style="font-size:.72rem;color:var(--subtle)">${r.unc_h2||'±0.5 kJ/kg'}</td>
+            <td class="num">${f3(r.s2)}</td><td class="num">${f4(r.v2)}</td>
+            <td class="num">${f1(isI?r.sh_out*9/5:r.sh_out)}</td>
+            <td><span class="bdg ${r.sh_out>=15?'b-g':r.sh_out>=5?'b-a':'b-r'}">${r.sh_out>=15?'✅ OK':r.sh_out>=5?'⚠ Low SH':'🔴 Wet Risk'}</span>${r.outletQuality!=null?` <span class="bdg b-r" style="margin-left:3px">x≈${r.outletQuality.toFixed(3)}</span>`:''}</td>
+          </tr>
+          <tr class="tot">
+            <td>Saturation @ P_steam</td>
+            <td class="num">${fT(r.Ts)}</td><td class="num">${fPu(r.Ps)}</td>
+            <td class="num">${f1(r.hf_steam)} / ${f1(r.hg_steam)}</td>
+            <td class="num">—</td>
+            <td class="num" colspan="2">h_f / h_g</td>
+            <td class="num">—</td><td>Sat. boundary</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:7px;padding:6px 10px;background:var(--tint);border-radius:6px;font-size:.72rem;color:var(--subtle)">
+        <strong style="color:var(--ink3)">Calc-ID:</strong> ${CALC_ID} &nbsp;·&nbsp;
+        <strong style="color:var(--ink3)">Version:</strong> ${CALC_VERSION} &nbsp;·&nbsp;
+        <strong style="color:var(--ink3)">Engine:</strong> IAPWS-IF97 (server-side, protected) + PCHIP interp &nbsp;·&nbsp;
+        For EPC-grade design, verify against certified steam tables.
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEMATIC -->
+  <div class="card">
+    <div class="ch"><span class="ch-ico">🔄</span><span class="ch-ttl">Desuperheater Schematic</span></div>
+    <div class="cb">
+      <div class="flow-dg">
+        <svg width="720" height="310" viewBox="0 0 720 310" font-family="JetBrains Mono,monospace" font-size="10">
+          <rect width="720" height="310" fill="#0d1220" rx="8"/>
+          <line x1="0" y1="155" x2="720" y2="155" stroke="#1a2540" stroke-width="1" stroke-dasharray="4,6"/>
+          <!-- Inlet box -->
+          <rect x="10" y="62" width="145" height="90" rx="7" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
+          <text x="82" y="79" fill="#90b8f8" font-size="10.5" font-weight="700" text-anchor="middle">♨ INLET STEAM</text>
+          <line x1="20" y1="83" x2="145" y2="83" stroke="#1e3a5f" stroke-width="0.8"/>
+          <text x="22" y="96" fill="#6b8fb5" font-size="9">Temp</text>
+          <text x="100" y="96" fill="#90b8f8" font-size="9.5" font-weight="600" text-anchor="end">${fT(r.T1)}</text>
+          <text x="22" y="109" fill="#6b8fb5" font-size="9">Press</text>
+          <text x="100" y="109" fill="#90b8f8" font-size="9.5" font-weight="600" text-anchor="end">${fPu(r.Ps)}</text>
+          <text x="22" y="122" fill="#6b8fb5" font-size="9">Flow</text>
+          <text x="100" y="122" fill="#90b8f8" font-size="9.5" font-weight="600" text-anchor="end">${fFt(r.m_in)}</text>
+          <text x="22" y="135" fill="#6b8fb5" font-size="9">h₁</text>
+          <text x="100" y="135" fill="#c0d4f0" font-size="9.5" font-weight="600" text-anchor="end">${f0(r.h1)} kJ/kg</text>
+          <!-- Inlet arrow -->
+          <line x1="155" y1="155" x2="212" y2="155" stroke="#90b8f8" stroke-width="7" stroke-linecap="round"/>
+          <polygon points="206,149 220,155 206,161" fill="#90b8f8"/>
+          <!-- Body -->
+          <rect x="220" y="110" width="280" height="90" rx="12" fill="#131e33" stroke="#2a4a7a" stroke-width="2"/>
+          <text x="360" y="140" fill="#e2eaf8" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1">DESUPERHEATER</text>
+          <line x1="240" y1="146" x2="480" y2="146" stroke="#2a4a7a" stroke-width="0.8"/>
+          <text x="360" y="160" fill="#9bacc8" font-size="9.5" text-anchor="middle">ṁ_w / ṁ_in = ${f3(r.ratio)} (${f2(r.ratio*100)}%)</text>
+          <text x="360" y="174" fill="#9bacc8" font-size="9.5" text-anchor="middle">ΔT = ${f1(isI?(r.T1-r.T2)*9/5:r.T1-r.T2)} Δ${T}  ·  Q = ${(r.Q_rem/1000).toFixed(2)} MW</text>
+          <text x="360" y="188" fill="${r.shSt.c==='ok'?'#6ee7b7':r.shSt.c==='wa'?'#fbbf24':'#f87171'}" font-size="9" text-anchor="middle" font-weight="700">⬡ ${r.shSt.lbl}</text>
+          <!-- Water injection -->
+          <rect x="262" y="8" width="196" height="56" rx="7" fill="#0d1f1a" stroke="#1a4a35" stroke-width="1.2"/>
+          <text x="360" y="24" fill="#6ee7b7" font-size="10.5" font-weight="700" text-anchor="middle">💧 QUENCH WATER</text>
+          <line x1="272" y1="28" x2="448" y2="28" stroke="#1a4a35" stroke-width="0.8"/>
+          <text x="275" y="40" fill="#4a9a78" font-size="9">Temp</text>
+          <text x="453" y="40" fill="#6ee7b7" font-size="9.5" font-weight="600" text-anchor="end">${fT(r.Tw)}</text>
+          <text x="275" y="53" fill="#4a9a78" font-size="9">Flow</text>
+          <text x="453" y="53" fill="#6ee7b7" font-size="9.5" font-weight="600" text-anchor="end">${fFt(r.m_w)}</text>
+          <line x1="360" y1="64" x2="360" y2="106" stroke="#6ee7b7" stroke-width="5" stroke-linecap="round"/>
+          <polygon points="351,100 360,112 369,100" fill="#6ee7b7"/>
+          <ellipse cx="360" cy="122" rx="22" ry="8" fill="rgba(110,231,183,.15)" stroke="#6ee7b7" stroke-width="1" stroke-dasharray="3,2"/>
+          <circle cx="348" cy="132" r="2" fill="rgba(110,231,183,.4)"/>
+          <circle cx="360" cy="136" r="2" fill="rgba(110,231,183,.4)"/>
+          <circle cx="372" cy="132" r="2" fill="rgba(110,231,183,.4)"/>
+          <!-- Outlet arrow -->
+          <line x1="500" y1="155" x2="558" y2="155" stroke="#a78bfa" stroke-width="7" stroke-linecap="round"/>
+          <polygon points="552,149 566,155 552,161" fill="#a78bfa"/>
+          <!-- Outlet box -->
+          <rect x="566" y="62" width="145" height="90" rx="7" fill="#150f2a" stroke="#3b2d6e" stroke-width="1.2"/>
+          <text x="638" y="79" fill="#a78bfa" font-size="10.5" font-weight="700" text-anchor="middle">✅ OUTLET STEAM</text>
+          <line x1="576" y1="83" x2="701" y2="83" stroke="#3b2d6e" stroke-width="0.8"/>
+          <text x="578" y="96" fill="#7a6a9e" font-size="9">Temp</text>
+          <text x="704" y="96" fill="#a78bfa" font-size="9.5" font-weight="600" text-anchor="end">${fT(r.T2)}</text>
+          <text x="578" y="109" fill="#7a6a9e" font-size="9">Flow</text>
+          <text x="704" y="109" fill="#a78bfa" font-size="9.5" font-weight="600" text-anchor="end">${fFt(r.m_out)}</text>
+          <text x="578" y="122" fill="#7a6a9e" font-size="9">h₂</text>
+          <text x="704" y="122" fill="#c9bcf5" font-size="9.5" font-weight="600" text-anchor="end">${f0(r.h2)} kJ/kg</text>
+          <text x="578" y="135" fill="#7a6a9e" font-size="9">SH</text>
+          <text x="704" y="135" fill="${r.shSt.c==='ok'?'#6ee7b7':r.shSt.c==='wa'?'#fbbf24':'#f87171'}" font-size="9.5" font-weight="700" text-anchor="end">+${f1(isI?r.sh_out*9/5:r.sh_out)} Δ${T}</text>
+          <!-- Bottom summary bar -->
+          <rect x="10" y="222" width="700" height="78" rx="8" fill="#0c1520" stroke="#1e3045" stroke-width="1"/>
+          <line x1="185" y1="232" x2="185" y2="290" stroke="#1e3045" stroke-width="1"/>
+          <line x1="360" y1="232" x2="360" y2="290" stroke="#1e3045" stroke-width="1"/>
+          <line x1="535" y1="232" x2="535" y2="290" stroke="#1e3045" stroke-width="1"/>
+          <text x="97" y="242" fill="#6b8fb5" font-size="8.5" text-anchor="middle" font-weight="700">MASS BALANCE</text>
+          <text x="97" y="256" fill="#e2eaf8" font-size="9" text-anchor="middle">ṁ_in + ṁ_w = ṁ_out</text>
+          <text x="97" y="269" fill="#90b8f8" font-size="9.5" text-anchor="middle" font-weight="700">${fFu(r.m_in)}</text>
+          <text x="97" y="281" fill="#6b8fb5" font-size="8.5" text-anchor="middle">+ ${fFu(r.m_w)} = ${fFu(r.m_out)}</text>
+          <text x="272" y="242" fill="#6b8fb5" font-size="8.5" text-anchor="middle" font-weight="700">ENTHALPY DROP</text>
+          <text x="272" y="256" fill="#e2eaf8" font-size="9" text-anchor="middle">h₁ → h₂</text>
+          <text x="272" y="269" fill="#f9c580" font-size="9.5" text-anchor="middle" font-weight="700">${f0(r.h1)} → ${f0(r.h2)} kJ/kg</text>
+          <text x="272" y="281" fill="#6b8fb5" font-size="8.5" text-anchor="middle">Δh = ${f0(r.h1-r.h2)} kJ/kg</text>
+          <text x="447" y="242" fill="#6b8fb5" font-size="8.5" text-anchor="middle" font-weight="700">HEAT REMOVED</text>
+          <text x="447" y="256" fill="#e2eaf8" font-size="9" text-anchor="middle">Q = ṁ_in × Δh</text>
+          <text x="447" y="269" fill="#f87171" font-size="9.5" text-anchor="middle" font-weight="700">${(r.Q_rem/1000).toFixed(3)} MW</text>
+          <text x="447" y="281" fill="#6b8fb5" font-size="8.5" text-anchor="middle">${r.Q_rem.toFixed(0)} kW absorbed</text>
+          <text x="617" y="242" fill="#6b8fb5" font-size="8.5" text-anchor="middle" font-weight="700">SUPERHEAT</text>
+          <text x="617" y="256" fill="#e2eaf8" font-size="9" text-anchor="middle">T_out − T_sat</text>
+          <text x="617" y="269" fill="${r.shSt.c==='ok'?'#6ee7b7':r.shSt.c==='wa'?'#fbbf24':'#f87171'}" font-size="9.5" text-anchor="middle" font-weight="700">+${f1(isI?r.sh_out*9/5:r.sh_out)} Δ${T}</text>
+          <text x="617" y="281" fill="${r.shSt.c==='ok'?'#4a9a78':r.shSt.c==='wa'?'#a07820':'#9a2020'}" font-size="8.5" text-anchor="middle">${r.shSt.lbl}</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROL RANGE & VALVE -->
+  <div class="mg2" style="margin-bottom:14px">
+    <div class="card" style="margin:0">
+      <div class="ch"><span class="ch-ico">🎛️</span><span class="ch-ttl">Control Range (${f0(r.fMin)}–${f0(r.fMax)}%)</span></div>
+      <div class="cb">
+        <table class="dtbl">
+          <thead><tr><th>Load Point</th><th>ṁ_w Required</th><th>ṁ_out Total</th><th>Quench %</th></tr></thead>
+          <tbody>
+            <tr><td>Min ${f0(r.fMin)}%</td>
+              <td class="num">${fFu(r.mw_min)}</td>
+              <td class="num">${fFu(r.mo_min)}</td>
+              <td class="num">${f1(r.mw_min/(r.m_in+r.mw_min)*100)}%</td>
+            </tr>
+            <tr style="background:var(--bl-p)"><td><strong>Design 100%</strong></td>
+              <td class="num hi">${fFu(r.m_w)}</td>
+              <td class="num hi">${fFu(r.m_out)}</td>
+              <td class="num hi">${f1(r.qPct)}%</td>
+            </tr>
+            <tr><td>Max ${f0(r.fMax)}%</td>
+              <td class="num">${fFu(r.mw_max)}</td>
+              <td class="num">${fFu(r.mo_max)}</td>
+              <td class="num">${f1(r.mw_max/(r.m_in+r.mw_max)*100)}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin:0">
+      <div class="ch"><span class="ch-ico">🔩</span><span class="ch-ttl">Control Valve Sizing (ISA S75 / IEC 60534)</span></div>
+      <div class="cb">
+        ${r.cv_res ? `
+        ${r.cv_res.flashing?`<div class="ibox bd" style="margin-bottom:10px"><div class="ibox-t">⚠ FLASHING DETECTED</div>Water inlet temperature exceeds its vapour pressure. Two-phase flow — standard Cv equation does not apply.</div>`:''}
+        ${r.cv_res.choked?`<div class="ibox bd" style="margin-bottom:10px"><div class="ibox-t">⚠ CHOKED FLOW WARNING</div>ΔP (${f2(r.cv_res.dP_bar)} bar) exceeds allowable FL²·(P₁−Pv) = ${f2(r.cv_res.dP_allow)} bar.</div>`:''}
+        ${r.cv_res.cavitating?`<div class="ibox wa" style="margin-bottom:10px"><div class="ibox-t">⚠ CAVITATION RISK</div>σ = ${r.cv_res.sigma} < 2.0. Anti-cavitation trim recommended.</div>`:''}
+        <div class="mg2">
+          <div class="mc bl">
+            <div class="mc-lbl">Cv Required (ISA S75)</div>
+            <div class="mc-val">${r.cv_res.Cv_req!=null?f2(r.cv_res.Cv_req):'—'}</div>
+            <div class="mc-sub">Kv = ${r.cv_res.Kv_req!=null?f2(r.cv_res.Kv_req):'—'} m³/h·bar½ · SG=${r.cv_res.SG}</div>
+          </div>
+          <div class="mc ${r.cv_res.rat>=1.1?'gn':r.cv_res.rat>=0.85?'am':'rd'}">
+            <div class="mc-lbl">Cv Installed / Required</div>
+            <div class="mc-val">${r.cv_res.rat!=null?f2(r.cv_res.rat):'—'}</div>
+            <div class="mc-sub">${r.cv_res.rat>=1.1?'✅ Adequate':'⚠ Undersized — review!'}</div>
+          </div>
+        </div>
+        <div class="mg3">
+          <div class="mc am">
+            <div class="mc-lbl">ΔP Spray Valve</div>
+            <div class="mc-val">${f1(r.cv_res.dP_psi)}<span class="mc-u">psi</span></div>
+            <div class="mc-sub">${f2(r.cv_res.dP_bar)} bar</div>
+          </div>
+          <div class="mc ${r.cv_res.cavitating?'rd':'tl'}">
+            <div class="mc-lbl">Cavitation Index σ</div>
+            <div class="mc-val">${r.cv_res.sigma!=null?r.cv_res.sigma:'∞'}</div>
+            <div class="mc-sub">${r.cv_res.cavitating?'⚠ Cavitation risk':'✅ OK (σ > 2.0)'}</div>
+          </div>
+          <div class="mc ${r.cv_res.flashing?'rd':'bl'}">
+            <div class="mc-lbl">Vapour Pressure @Tw</div>
+            <div class="mc-val">${f2(r.cv_res.Pv_bar)}<span class="mc-u">bar</span></div>
+            <div class="mc-sub">${r.cv_res.flashing?'⚠ Flashing!':'Below P_supply'}</div>
+          </div>
+        </div>
+        <div class="fbox"><div class="fbox-t">Cv Calculation — ISA S75.01 Liquid Sizing</div>
+        <pre>Q [gpm] = Cv × √(ΔP [psi] / SG)     SG = ${r.cv_res.SG}
+Cv_req  = ${r.cv_res.m_w_gpm} gpm / √(${r.cv_res.dP_psi} psi / ${r.cv_res.SG}) = <span class="wh">${r.cv_res.Cv_req!=null?f2(r.cv_res.Cv_req):'N/A'}</span>
+Kv_req  = Cv / 1.1561 = <span class="wh">${r.cv_res.Kv_req!=null?f2(r.cv_res.Kv_req):'N/A'}</span> m³/h·bar½
+FL = ${r.cv_res.FL}  → Choked ΔP limit = ${f2(r.cv_res.dP_allow)} bar
+σ = ${r.cv_res.sigma!=null?r.cv_res.sigma:'∞'}  [crit. σ ≈ 2.0]
+<span class="${r.cv_res.cavitating?'rd':'gr'}">${r.cv_res.cavitating?'⚠ Cavitation regime — anti-cavitation trim recommended':'✅ No cavitation'}</span>
+<span class="${r.cv_res.choked?'rd':'gr'}">${r.cv_res.choked?'⚠ Choked flow':'✅ Not choked'}</span></pre></div>
+        ` : `<div class="ibox inf"><div class="ibox-t">Valve Sizing</div>Enter a Control Valve Cv in the input panel to compute sizing ratio, cavitation index, and choked-flow check.</div>`}
+      </div>
+    </div>
+  </div>
+
+  <!-- SENSITIVITY -->
+  <div class="card">
+    <div class="ch"><span class="ch-ico">📈</span><span class="ch-ttl">Sensitivity Analysis</span></div>
+    <div class="cb">
+      <div class="mg2">
+        <div>
+          <div class="sec" style="margin-top:0">Effect of Target Outlet Temperature</div>
+          <div style="overflow-x:auto">
+          <table class="stbl">
+            <thead><tr><th>T_outlet (${T})</th><th>Δ from base</th><th>ṁ_w (${isI?'lb/h':'kg/h'})</th><th>Quench %</th></tr></thead>
+            <tbody>${sensT.map(s=>`<tr class="${s.base?'hlr':''}">
+              <td>${f1(fromC(s.T2s))} ${T}</td>
+              <td>${s.d>=0?'+':''}${f1(isI?s.d*9/5:s.d)} Δ${T}</td>
+              <td>${f0(isI?s.mws/0.453592:s.mws)}</td>
+              <td>${f1(s.pct)}%</td></tr>`).join('')}
+            </tbody>
+          </table></div>
+        </div>
+        <div>
+          <div class="sec" style="margin-top:0">Effect of Water Inlet Temperature</div>
+          <div style="overflow-x:auto">
+          <table class="stbl">
+            <thead><tr><th>T_water (${T})</th><th>Δ from base</th><th>ṁ_w (${isI?'lb/h':'kg/h'})</th><th>Quench %</th></tr></thead>
+            <tbody>${sensW.map(s=>`<tr class="${s.base?'hlr':''}">
+              <td>${f1(fromC(s.Tws))} ${T}</td>
+              <td>${s.d>=0?'+':''}${f1(isI?s.d*9/5:s.d)} Δ${T}</td>
+              <td>${f0(isI?s.mws/0.453592:s.mws)}</td>
+              <td>${f1(s.pct)}%</td></tr>`).join('')}
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="ibox inf" style="margin-top:6px">
+        <div class="ibox-t">📌 Key Insight</div>
+        Cooler quench water (lower h_w) absorbs more heat per kg → <strong>less water mass needed</strong>.
+        Higher outlet target → smaller enthalpy drop → <strong>less quench water required</strong>.
+      </div>
+    </div>
+  </div>
+
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════
+   PDF REPORT  — uses lastR from API
+══════════════════════════════════════════════════ */
+function generatePDF() {
+  if (!lastR) { alert('Run a calculation first.'); return; }
+  const r = lastR;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+  const isI = r.isI;
+  const T = isI ? '°F' : '°C', Pu = isI ? 'psia' : 'bara';
+  const fT = v => fromC(v).toFixed(1) + ' ' + T;
+  const fPu = v => frPd(v).toFixed(1) + ' ' + Pu;
+  const fFu = v => (isI ? v/0.453592 : v).toFixed(0) + ' ' + (isI?'lb/h':'kg/h');
+  const f1 = n => n.toFixed(1), f2 = n => n.toFixed(2), f3 = n => n.toFixed(3);
+
+  // Header
+  doc.setFillColor(30,35,52); doc.rect(0,0,210,28,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(255,255,255);
+  doc.text('Steam Quench / Desuperheater Calculator',10,12);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(185,190,210);
+  doc.text('IAPWS-IF97 · Adiabatic Mass & Energy Balance · ISA S75.01 Cv Sizing · multicalci.com',10,19);
+  doc.text(`Calc-ID: ${CALC_ID} · ${r.ts} · ${CALC_VERSION}`,10,25);
+
+  let y = 34;
+  const secHead = t => {
+    doc.setFillColor(240,244,250); doc.rect(8,y-4,194,8,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(30,35,52);
+    doc.text(t,10,y); y += 7;
+  };
+
+  secHead('1 · PROCESS INPUTS & KEY RESULTS');
+  const kpis = [
+    ['Steam Pressure',       `${fPu(r.Ps)}`],
+    ['Inlet Steam Temp (T₁)',`${fT(r.T1)}  (Tsat = ${fT(r.Ts)})`],
+    ['Quench Water Temp',    `${fT(r.Tw)}  @ ${fPu(r.Pw)}`],
+    ['Target Outlet Temp',   `${fT(r.T2)}`],
+    ['Inlet Steam Flow',     `${fFu(r.m_in)}`],
+    ['Quench Water Flow (ṁ_w)', `${fFu(r.m_w)}  =  ${(r.m_w/1000).toFixed(3)} t/h`],
+    ['Outlet Steam Flow',    `${fFu(r.m_out)}`],
+    ['Water/Steam Ratio',    `${r.ratio.toFixed(5)} (${(r.ratio*100).toFixed(2)}% of ṁ_in)`],
+    ['Quench Fraction',      `${r.qPct.toFixed(2)}%`],
+    ['Heat Removed from Steam', `${r.Q_rem.toFixed(1)} kW = ${(r.Q_rem/1000).toFixed(3)} MW`],
+    ['Outlet Superheat',     `${isI?(r.sh_out*9/5).toFixed(1):r.sh_out.toFixed(1)} Δ${T} (${r.shSt.lbl})`],
+  ];
+  kpis.forEach(([k,v]) => {
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(75,80,100);
+    doc.text(k,12,y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(15,20,40);
+    doc.text(v,90,y); y += 5.5;
+  });
+  y += 3;
+
+  doc.autoTable({
+    startY:y, margin:{left:10,right:10},
+    head:[['Stream','Temp','Pressure','h (kJ/kg)','s (kJ/kg·K)','v (m³/kg)','Superheat','State']],
+    body:[
+      ['Inlet Steam',  fT(r.T1), fPu(r.Ps), r.h1.toFixed(1), r.s1.toFixed(3), r.v1.toFixed(5), `${isI?((r.T1-r.Ts)*9/5).toFixed(1):(r.T1-r.Ts).toFixed(1)} Δ${T}`, 'Superheated'],
+      ['Quench Water', fT(r.Tw), fPu(r.Pw), r.hw.toFixed(1), '—', '~0.00103', '—', 'Comp. Liquid'],
+      ['Outlet Steam', fT(r.T2), fPu(r.Ps), r.h2.toFixed(1), r.s2.toFixed(3), r.v2.toFixed(5), `${isI?(r.sh_out*9/5).toFixed(1):r.sh_out.toFixed(1)} Δ${T}`, r.sh_out>=10?'OK':'⚠ Low SH'],
+      ['Saturation',   fT(r.Ts), fPu(r.Ps), `${r.hf_steam} / ${r.hg_steam}`,'—','—','0','h_f / h_g'],
+    ],
+    styles:{fontSize:7.5,cellPadding:2},
+    headStyles:{fillColor:[30,35,52],textColor:255,fontStyle:'bold',fontSize:7},
+    alternateRowStyles:{fillColor:[248,250,253]},
+  });
+  y = doc.lastAutoTable.finalY + 6;
+
+  secHead('2 · MASS & ENERGY BALANCE');
+  const lines = [
+    `Energy balance: ṁ_in · h₁ + ṁ_w · h_w = ṁ_out · h₂  (adiabatic, no heat loss)`,
+    `ṁ_w / ṁ_in = (h₁ − h₂) / (h₂ − h_w) = (${r.h1.toFixed(1)} − ${r.h2.toFixed(1)}) / (${r.h2.toFixed(1)} − ${r.hw.toFixed(1)}) = ${r.ratio.toFixed(5)}`,
+    `ṁ_w = ${fFu(r.m_in)} × ${r.ratio.toFixed(5)} = ${fFu(r.m_w)}`,
+    `ṁ_out = ṁ_in + ṁ_w = ${fFu(r.m_in)} + ${fFu(r.m_w)} = ${fFu(r.m_out)}`,
+  ];
+  lines.forEach(l => {
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(30,35,52);
+    const w = doc.splitTextToSize(l,188); doc.text(w,12,y); y += w.length*5;
+  });
+
+  const pg = doc.getNumberOfPages();
+  for (let i = 1; i <= pg; i++) {
+    doc.setPage(i);
+    doc.setFillColor(240,244,250); doc.rect(0,285,210,12,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(100,115,140);
+    doc.text('Steam Quench Calculator · IAPWS-IF97 · ASME PTC 4 · multicalci.com · For engineering estimation only.',10,291);
+    doc.text(`Page ${i} of ${pg}`,198,291,{align:'right'});
+  }
+  doc.save(`SteamQuench_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+/* ══════════════════════════════════════════════════
+   CLEAR
+══════════════════════════════════════════════════ */
+function clearAll() {
+  ['P_s','T1','Tw','Pw','T2','ms_v','cv_in','sh_min'].forEach(id => { const e = E(id); if(e) e.value = ''; });
+  if(E('sh_min')) E('sh_min').value = '10';
+  if(E('f_min'))  E('f_min').value  = '30';
+  if(E('f_max'))  E('f_max').value  = '110';
+  clrAlert(); lastR = null; lastUnit = SYS;
+  ['props_in','props_w','props_out'].forEach(id => E(id).innerHTML = '—');
+  E('Tsat_disp').value = '—';
+  E('RP').innerHTML = `<div class="ph"><div class="ph-ico">💧</div><div class="ph-txt">Ready</div><div class="ph-sub">Enter conditions and click Calculate</div></div>`;
+}
+
+/* ── Auto-calculate on input ── */
+let _deb = null;
+['P_s','T1','Tw','Pw','T2','ms_v','sh_min','f_min','f_max','cv_in'].forEach(id => {
+  E(id).addEventListener('input', () => {
+    clearTimeout(_deb);
+    const req = ['P_s','T1','Tw','Pw','T2','ms_v'];
+    if (req.every(i => E(i).value.trim() !== '')) {
+      _deb = setTimeout(calculate, 600);  // debounce 600ms to avoid hammering the API
+    }
+  });
+});
+E('ms_u').addEventListener('change', () => {
+  const req = ['P_s','T1','Tw','Pw','T2','ms_v'];
+  if (req.every(i => E(i).value.trim() !== '')) calculate();
+});
+
+// Init
+setUnit('SI');
+popFlowU('ms_u');
+loadPreset('boiler', document.querySelector('.pchip'));
+</script>
+</body>
+</html>
