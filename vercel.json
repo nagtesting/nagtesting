@@ -8,6 +8,10 @@
     "api/psychrometric.js": {
       "maxDuration": 10,
       "memory": 256
+    },
+    "api/steam-turbine-power.js": {
+      "maxDuration": 10,
+      "memory": 256
     }
   },
   "rewrites": [
@@ -66,6 +70,14 @@
     {
       "source": "/psychrometric-calculator/",
       "destination": "/psychrometric-calculator/index.html"
+    },
+    {
+      "source": "/steam-turbine-power-calculator",
+      "destination": "/steam-turbine-power-calculator/index.html"
+    },
+    {
+      "source": "/steam-turbine-power-calculator/",
+      "destination": "/steam-turbine-power-calculator/index.html"
     }
   ],
   "headers": [
