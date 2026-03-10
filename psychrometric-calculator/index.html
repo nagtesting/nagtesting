@@ -459,6 +459,9 @@
                 <span class="cb-label">⚡ Calculate HVAC Process Loads</span>
             </button>
             <div id="processResults" style="margin-top:16px;"></div>
+            <div id="processPdfRow" style="display:none;margin-top:14px;">
+                <button class="pdf-btn" onclick="generateProcessPDF()">📄 Export HVAC Process PDF Report</button>
+            </div>
         </div>
     </div>
 
@@ -499,6 +502,9 @@
             <div class="card">
                 <h2>Duct Results</h2>
                 <div id="ductResults"></div>
+                <div id="ductPdfRow" style="display:none;margin-top:14px;">
+                    <button class="pdf-btn" onclick="generateDuctPDF()">📄 Export Duct &amp; Fan PDF Report</button>
+                </div>
             </div>
         </div>
     </div>
@@ -509,6 +515,9 @@
             <h2>📊 Psychrometric Chart — Current State Point</h2>
             <p style="font-size:0.78rem;color:#64748b;margin-bottom:12px;">State point auto-updates from Tab 1 inputs. Comfort zone shown in green.</p>
             <canvas id="psychChart" height="480"></canvas>
+            <div style="margin-top:14px;">
+                <button class="pdf-btn" onclick="generateChartPDF()">📄 Export Chart PDF Report</button>
+            </div>
         </div>
     </div>
 
@@ -908,6 +917,7 @@ async function runProcess() {
             <div class="res-item"><span class="res-lbl">Sensible Heat Ratio</span><span class="res-val">${SHR.toFixed(3)}</span></div>
             <div class="res-item"><span class="res-lbl">${waterAction}</span><span class="res-val">${m_water.toFixed(2)} kg/h</span></div>
         </div>`;
+        document.getElementById('processPdfRow').style.display = 'block';
     } catch (err) {
         document.getElementById('processResults').innerHTML = `<div style="color:#ef4444;font-size:0.8rem;">⚠ ${err.message}</div>`;
         apiError(err.message);
@@ -966,6 +976,7 @@ async function runDuct() {
         <div class="formula-box" style="margin-top:12px;">
             Darcy-Weisbach: ΔP = f·(L/Dh)·(ρ·v²/2) | Swamee-Jain: f = 0.25/[log(ε/(3.7·Dh)+5.74/Re⁰·⁹)]² | Re = ρ·v·Dh/μ | Sutherland viscosity
         </div>`;
+        document.getElementById('ductPdfRow').style.display = 'block';
     } catch (err) {
         document.getElementById('ductResults').innerHTML = `<div style="color:#ef4444;font-size:0.8rem;">⚠ ${err.message}</div>`;
         apiError(err.message);
@@ -1282,6 +1293,343 @@ function generatePDF() {
         <div>${dt}</div>
         <div>Server-secured ASHRAE 2009 calculations</div>
     </div>
+</div>
+<script>window.onload=()=>{ setTimeout(()=>{ window.print(); }, 600); }<\/script>
+</body></html>`);
+    w.document.close();
+}
+
+// ════════════════════════════════════════════════════════════
+// SHARED PDF STYLES & PROMO BLOCK
+// ════════════════════════════════════════════════════════════
+function pdfStyles(accentColor) {
+    return `
+    @page { size: A4 portrait; margin: 13mm 14mm 11mm 14mm; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; font-size: 11.5px; background: white; line-height: 1.5; }
+    .hdr { background: #0f172a; color: white; padding: 22px 28px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid ${accentColor}; }
+    .hdr-left h1 { font-size: 17px; font-weight: 900; margin-bottom: 4px; }
+    .hdr-left .sub { font-size: 9px; color: rgba(255,255,255,.5); letter-spacing: 1.5px; text-transform: uppercase; }
+    .hdr-badge { background: ${accentColor}; color: white; font-size: 8px; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-top: 8px; display: inline-block; letter-spacing: 1px; }
+    .hdr-right { text-align: right; font-size: 9px; color: rgba(255,255,255,.55); line-height: 1.8; }
+    .hdr-right .brand { color: #c4b5fd; font-weight: 800; font-size: 12px; letter-spacing: 0.5px; }
+    .wm-bar { background: linear-gradient(90deg,#f5f3ff,#ede9fe,#f5f3ff); padding: 7px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ddd6fe; }
+    .wm-bar .wb { font-size: 10px; font-weight: 800; color: #7c3aed; }
+    .wm-bar .wd { font-size: 8.5px; color: #64748b; }
+    .body { padding: 20px 28px; }
+    h2 { color: #0f172a; font-size: 11px; font-weight: 800; border-left: 4px solid ${accentColor}; padding-left: 10px; margin: 16px 0 10px; letter-spacing: 0.5px; text-transform: uppercase; }
+    table { width: 100%; border-collapse: collapse; font-size: 10.5px; margin-bottom: 6px; }
+    th { background: #0f172a; color: white; padding: 6px 10px; text-align: left; font-size: 9px; text-transform: uppercase; }
+    td { padding: 6px 10px; border-bottom: 1px solid #e2e8f0; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    tr.hl td { background: #f5f3ff; color: ${accentColor}; font-weight: 700; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 10px 0 14px; }
+    .kpi { background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3px solid ${accentColor}; border-radius: 6px; padding: 8px 10px; }
+    .kpi-lbl { font-size: 8px; color: #94a3b8; text-transform: uppercase; margin-bottom: 3px; }
+    .kpi-val { font-size: 13px; font-weight: 800; color: #1e293b; }
+    .kpi.g { border-top-color: #10b981; } .kpi.g .kpi-val { color: #059669; }
+    .kpi.o { border-top-color: #f59e0b; } .kpi.o .kpi-val { color: #d97706; }
+    .formula { background: #f8fafc; border-left: 3px solid ${accentColor}; padding: 10px 14px; font-style: italic; font-size: 9.5px; color: #475569; margin-top: 12px; border-radius: 0 6px 6px 0; line-height: 1.8; }
+    .promo { margin-top: 20px; background: linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%); border-radius: 10px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .promo h3 { color: white; font-size: 12px; font-weight: 900; margin-bottom: 5px; }
+    .promo p { color: rgba(255,255,255,.5); font-size: 8.5px; line-height: 1.6; max-width: 360px; }
+    .promo-url { color: #c4b5fd; font-size: 16px; font-weight: 900; display: block; text-align: right; }
+    .promo-tag { color: rgba(255,255,255,.4); font-size: 8px; text-align: right; margin-top: 3px; }
+    .chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+    .chip { background: rgba(139,92,246,.25); border: 1px solid rgba(139,92,246,.4); color: #c4b5fd; font-size: 7.5px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+    .footer { margin-top: 14px; padding-top: 10px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; }
+    .footer .fb { font-weight: 800; color: #7c3aed; font-size: 9px; }
+    @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }`;
+}
+
+function pdfPromo(category) {
+    return `
+    <div class="promo">
+        <div>
+            <h3>🔢 More Free Engineering Calculators at multicalci.com</h3>
+            <p>Steam · Gas EOS · Heat Exchanger · Orifice Flow · Control Valve · Psychrometrics — all free, web-based, ASHRAE / ISO compliant, with PDF export.</p>
+            <div class="chips">
+                <span class="chip">🌡️ Psychrometrics</span>
+                <span class="chip">🔥 Steam (IAPWS)</span>
+                <span class="chip">🌬️ Cooling Tower</span>
+                <span class="chip">⚙️ Control Valve</span>
+                <span class="chip">🔁 Heat Exchanger</span>
+                <span class="chip">⊙ Orifice Flow</span>
+                <span class="chip">⚗️ Gas EOS</span>
+            </div>
+        </div>
+        <div style="flex-shrink:0">
+            <span class="promo-url">multicalci.com</span>
+            <div class="promo-tag">Free · Accurate · Professional</div>
+        </div>
+    </div>`;
+}
+
+function pdfFooter(title, dt) {
+    return `
+    <div class="footer">
+        <div><span class="fb">multicalci.com</span> — ${title}</div>
+        <div>${dt}</div>
+        <div>Server-secured ASHRAE 2009 · Free to use</div>
+    </div>`;
+}
+
+function pdfOpen(title) {
+    const w = window.open('', '_blank', 'width=860,height=750');
+    if (!w) { alert('Pop-up blocked — please allow pop-ups and try again.'); return null; }
+    return w;
+}
+
+// ════════════════════════════════════════════════════════════
+// HVAC PROCESS PDF
+// ════════════════════════════════════════════════════════════
+function generateProcessPDF() {
+    const P = PROC;
+    if (!P || P.Q_total === undefined) { alert('Please calculate HVAC Process first.'); return; }
+    const w = pdfOpen(); if (!w) return;
+    const dt = new Date().toLocaleString();
+    const T1 = inp_T('t1p'), T2 = inp_T('t2p');
+    const rh1 = parseFloat(document.getElementById('rh1p').value);
+    const rh2 = parseFloat(document.getElementById('rh2p').value);
+    const Q_m3h = inp_flow('flowP');
+    const z = inp_alt('zP');
+    const procLabel = P.Q_total < 0 ? 'Cooling' : 'Heating';
+
+    w.document.write(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><title>HVAC Process Report — multicalci.com</title>
+<style>${pdfStyles('#0ea5e9')}</style>
+</head><body>
+<div class="hdr">
+    <div class="hdr-left">
+        <h1>🔄 HVAC Air Process Calculator Report</h1>
+        <div class="sub">ASHRAE 2009 · Enthalpy Method · Server-Side Calculation</div>
+        <div class="hdr-badge">HVAC PROCESS · ASHRAE VERIFIED · multicalci.com</div>
+    </div>
+    <div class="hdr-right">
+        <div class="brand">multicalci.com</div>
+        Generated: ${dt}<br>
+        Unit System: ${unitSys === 'SI' ? 'SI (Metric)' : 'Imperial (US)'}<br>
+        Process Type: ${P.procType}<br>
+        Air Flow: ${disp_flow(Q_m3h)} | Altitude: ${z} m
+    </div>
+</div>
+<div class="wm-bar">
+    <div class="wb">🔢 multicalci.com — Free Engineering Calculators</div>
+    <div class="wd">HVAC · Psychrometrics · Steam · Heat Exchanger · Fluid Mechanics · Gas EOS</div>
+</div>
+<div class="body">
+    <h2>Process Summary — Key Results</h2>
+    <div class="kpi-grid">
+        <div class="kpi ${P.Q_total<0?'o':''}"><div class="kpi-lbl">Total ${procLabel} Load</div><div class="kpi-val">${disp_kW(Math.abs(P.Q_total))}</div></div>
+        <div class="kpi"><div class="kpi-lbl">Sensible Load</div><div class="kpi-val">${disp_kW(Math.abs(P.Q_sensible))}</div></div>
+        <div class="kpi"><div class="kpi-lbl">Latent Load</div><div class="kpi-val">${disp_kW(Math.abs(P.Q_latent))}</div></div>
+        <div class="kpi g"><div class="kpi-lbl">Sensible Heat Ratio</div><div class="kpi-val">${P.SHR.toFixed(3)}</div></div>
+    </div>
+
+    <h2>State Point Comparison</h2>
+    <table>
+        <tr><th>Parameter</th><th>State 1 — Inlet Air</th><th>State 2 — Outlet Air</th><th>Change</th></tr>
+        <tr><td>Dry Bulb Temperature</td><td>${disp_T(T1)}</td><td>${disp_T(T2)}</td><td>${unitSys==='SI'?(T2-T1).toFixed(1)+' Δ°C':((T2-T1)*9/5).toFixed(1)+' Δ°F'}</td></tr>
+        <tr><td>Relative Humidity</td><td>${rh1.toFixed(1)} %</td><td>${rh2.toFixed(1)} %</td><td>${(rh2-rh1).toFixed(1)} %</td></tr>
+        <tr><td>Humidity Ratio W</td><td>${disp_W(P.S1.W)}</td><td>${disp_W(P.S2.W)}</td><td>${((P.S2.W-P.S1.W)*1000).toFixed(2)} g/kg</td></tr>
+        <tr><td>Specific Enthalpy h</td><td>${disp_H(P.S1.h)}</td><td>${disp_H(P.S2.h)}</td><td>${disp_H(P.dh)}</td></tr>
+        <tr><td>Wet Bulb Temperature</td><td>${disp_T(P.S1.wb)}</td><td>${disp_T(P.S2.wb)}</td><td>—</td></tr>
+        <tr><td>Dew Point</td><td>${disp_T(P.S1.dp)}</td><td>${disp_T(P.S2.dp)}</td><td>—</td></tr>
+        <tr><td>Air Density</td><td>${disp_rho(P.S1.rho)}</td><td>${disp_rho(P.S2.rho)}</td><td>—</td></tr>
+        <tr class="hl"><td>Process Type</td><td colspan="3">${P.procType}</td></tr>
+    </table>
+
+    <h2>Load & Flow Calculations</h2>
+    <table>
+        <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
+        <tr><td>Volume Flow Rate</td><td>${disp_flow(Q_m3h)}</td><td>Input</td></tr>
+        <tr><td>Air Mass Flow Rate</td><td>${(P.Q_kgs*3600).toFixed(0)} kg/h &nbsp;|&nbsp; ${P.Q_kgs.toFixed(3)} kg/s</td><td>ṁ = ρ₁ × Q</td></tr>
+        <tr class="hl"><td>Total ${procLabel} Load</td><td>${disp_kW(Math.abs(P.Q_total))}</td><td>Q = ṁ × Δh</td></tr>
+        <tr><td>Sensible ${procLabel} Load</td><td>${disp_kW(Math.abs(P.Q_sensible))}</td><td>Qs = ṁ × Cpa × ΔT</td></tr>
+        <tr><td>Latent Load</td><td>${disp_kW(Math.abs(P.Q_latent))}</td><td>Ql = Q − Qs</td></tr>
+        <tr><td>Sensible Heat Ratio (SHR)</td><td>${P.SHR.toFixed(4)}</td><td>SHR = Qs / Q</td></tr>
+        <tr><td>Water ${P.dW<0?'Removed (Condensate)':'Added (Humidifier)'}</td><td>${P.m_water.toFixed(2)} kg/h</td><td>ṁw = ṁ × ΔW</td></tr>
+        <tr><td>Altitude</td><td>${z} m</td><td>Affects air density</td></tr>
+    </table>
+
+    <div class="formula">
+        Reference (ASHRAE 2009): Q_total = ṁ × Δh kJ/s | Q_sensible = ṁ × 1.006 × ΔT | Q_latent = Q_total − Q_sensible<br>
+        SHR = Q_sensible / Q_total | ṁ_water = ṁ × ΔW kg/s | ṁ = ρ₁ × Q̇ where ρ₁ = (1+W₁)/v₁
+    </div>
+
+    ${pdfPromo('HVAC')}
+    ${pdfFooter('HVAC Air Process Calculator', dt)}
+</div>
+<script>window.onload=()=>{ setTimeout(()=>{ window.print(); }, 600); }<\/script>
+</body></html>`);
+    w.document.close();
+}
+
+// ════════════════════════════════════════════════════════════
+// DUCT & FAN PDF
+// ════════════════════════════════════════════════════════════
+function generateDuctPDF() {
+    const D = DUCT_R;
+    if (!D || D.vel_ms === undefined) { alert('Please calculate Duct & Fan first.'); return; }
+    const w = pdfOpen(); if (!w) return;
+    const dt = new Date().toLocaleString();
+    const shape = document.getElementById('ductShape').value;
+    const Q_m3h = inp_flow('dFlow');
+    const L = parseFloat(document.getElementById('dLen').value);
+    const rough = parseFloat(document.getElementById('dRough').value);
+    const z = inp_alt('zD');
+    const { S, A_m2, Dh_m, vel_ms, Re, f, dP_Pa, dP_mmWg, Pstatic_Pa, fanPower_kW, regimeNote } = D;
+    const vel_fpm = vel_ms * 196.850;
+    const disp_vel = unitSys==='SI' ? `${vel_ms.toFixed(2)} m/s` : `${vel_fpm.toFixed(0)} fpm`;
+    const disp_dP  = unitSys==='SI' ? `${dP_Pa.toFixed(1)} Pa  (${dP_mmWg.toFixed(2)} mmWg)` : `${(dP_Pa*0.004014).toFixed(4)} in WG`;
+    const disp_A   = unitSys==='SI' ? `${(A_m2*1e4).toFixed(0)} cm²` : `${(A_m2*1550.003).toFixed(1)} in²`;
+    const disp_Dh  = unitSys==='SI' ? `${(Dh_m*1000).toFixed(0)} mm` : `${(Dh_m*39.37).toFixed(1)} in`;
+    let velStatus = vel_ms < 3 ? '✅ Low — Suitable for residential supply' : vel_ms < 6 ? '✅ Medium — Suitable for commercial' : vel_ms < 10 ? '⚠️ High — Check for noise' : '🔴 Very High — Exceeds recommendation';
+
+    w.document.write(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><title>Duct & Fan Report — multicalci.com</title>
+<style>${pdfStyles('#0d9488')}</style>
+</head><body>
+<div class="hdr">
+    <div class="hdr-left">
+        <h1>📐 Duct &amp; Fan Sizing Report</h1>
+        <div class="sub">Darcy-Weisbach · Swamee-Jain · Sutherland Viscosity · ASHRAE</div>
+        <div class="hdr-badge">DUCT SIZING · DARCY-WEISBACH · multicalci.com</div>
+    </div>
+    <div class="hdr-right">
+        <div class="brand">multicalci.com</div>
+        Generated: ${dt}<br>
+        Unit System: ${unitSys === 'SI' ? 'SI (Metric)' : 'Imperial (US)'}<br>
+        Shape: ${shape === 'rect' ? 'Rectangular' : 'Circular'} | Length: ${L} m<br>
+        Flow: ${disp_flow(Q_m3h)} | Altitude: ${z} m
+    </div>
+</div>
+<div class="wm-bar">
+    <div class="wb">🔢 multicalci.com — Free Engineering Calculators</div>
+    <div class="wd">HVAC · Duct Sizing · Psychrometrics · Steam · Heat Exchanger · Fluid Mechanics</div>
+</div>
+<div class="body">
+    <h2>Key Results</h2>
+    <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-lbl">Air Velocity</div><div class="kpi-val">${disp_vel}</div></div>
+        <div class="kpi o"><div class="kpi-lbl">Pressure Drop ΔP</div><div class="kpi-val">${dP_Pa.toFixed(1)} Pa</div></div>
+        <div class="kpi g"><div class="kpi-lbl">Fan Power (η=70%)</div><div class="kpi-val">${fanPower_kW.toFixed(3)} kW</div></div>
+        <div class="kpi"><div class="kpi-lbl">Reynolds Number</div><div class="kpi-val">${Re.toFixed(0)}</div></div>
+    </div>
+
+    <h2>Duct Geometry &amp; Air Properties</h2>
+    <table>
+        <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
+        <tr><td>Duct Shape</td><td>${shape === 'rect' ? `Rectangular ${unitSys==='SI'?inp_dim('dW')+'×'+inp_dim('dH')+' mm':inp_dim('dW').toFixed(0)+'×'+inp_dim('dH').toFixed(0)+' in'}` : `Circular Ø${disp_Dh}`}</td><td>Input geometry</td></tr>
+        <tr><td>Cross-Section Area</td><td>${disp_A}</td><td>A = W × H or π/4 × D²</td></tr>
+        <tr><td>Hydraulic Diameter Dh</td><td>${disp_Dh}</td><td>${shape==='rect'?'Dh = 4A/P':'= Diameter'}</td></tr>
+        <tr><td>Volume Flow Rate</td><td>${disp_flow(Q_m3h)}</td><td>Input</td></tr>
+        <tr class="hl"><td>Air Velocity</td><td>${disp_vel}</td><td>${velStatus}</td></tr>
+        <tr><td>Air Density</td><td>${disp_rho(S.rho)}</td><td>ASHRAE moist air</td></tr>
+        <tr><td>Air Mass Flow</td><td>${(S.rho*(Q_m3h/3600)*3600).toFixed(0)} kg/h</td><td>ṁ = ρ × Q̇</td></tr>
+        <tr><td>Roughness ε</td><td>${rough} mm</td><td>Input (galv. steel = 0.15)</td></tr>
+        <tr><td>Duct Length</td><td>${L} m</td><td>Input</td></tr>
+    </table>
+
+    <h2>Fluid Mechanics Results</h2>
+    <table>
+        <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
+        <tr><td>Reynolds Number Re</td><td>${Re.toFixed(0)}</td><td>${Re>4000?'Turbulent flow':Re>2300?'⚠️ Transitional':'Laminar flow'} ${regimeNote?'— '+regimeNote:''}</td></tr>
+        <tr><td>Darcy Friction Factor f</td><td>${f.toFixed(5)}</td><td>Swamee-Jain explicit</td></tr>
+        <tr class="hl"><td>Pressure Drop ΔP</td><td>${disp_dP}</td><td>Darcy-Weisbach equation</td></tr>
+        <tr><td>Dynamic (Velocity) Pressure</td><td>${unitSys==='SI'?Pstatic_Pa.toFixed(2)+' Pa':(Pstatic_Pa*0.004014).toFixed(4)+' in WG'}</td><td>Pd = ρv²/2</td></tr>
+        <tr><td>Est. Fan Power (η = 70%)</td><td>${fanPower_kW.toFixed(3)} kW = ${(fanPower_kW*1000/746).toFixed(2)} HP</td><td>P = Q̇ × ΔP / η</td></tr>
+    </table>
+
+    <div class="formula">
+        Darcy-Weisbach: ΔP = f × (L/Dh) × (ρ × v² / 2) Pa<br>
+        Swamee-Jain (explicit): f = 0.25 / [log(ε/(3.7·Dh) + 5.74/Re⁰·⁹)]²<br>
+        Hydraulic Diameter (rect): Dh = 4 × A / P = 4WH / 2(W+H)<br>
+        Reynolds Number: Re = ρ × v × Dh / μ | Sutherland viscosity: μ = μ₀(T/T₀)^1.5 × (T₀+S)/(T+S)<br>
+        Fan Power: P_fan = Q̇ × ΔP / η where η = 0.70 (assumed fan efficiency)
+    </div>
+
+    ${pdfPromo('Duct')}
+    ${pdfFooter('Duct & Fan Sizing Calculator', dt)}
+</div>
+<script>window.onload=()=>{ setTimeout(()=>{ window.print(); }, 600); }<\/script>
+</body></html>`);
+    w.document.close();
+}
+
+// ════════════════════════════════════════════════════════════
+// PSYCHROMETRIC CHART PDF (with canvas image)
+// ════════════════════════════════════════════════════════════
+function generateChartPDF() {
+    const S = STATE;
+    if (S.T === undefined) { alert('Please calculate a State Point first, then open the Chart tab and click Export.'); return; }
+    const canvas = document.getElementById('psychChart');
+    if (!canvas) { alert('Chart not rendered. Please open the Chart tab first.'); return; }
+    const imgData = canvas.toDataURL('image/png');
+    const w = pdfOpen(); if (!w) return;
+    const dt = new Date().toLocaleString();
+
+    w.document.write(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><title>Psychrometric Chart Report — multicalci.com</title>
+<style>${pdfStyles('#3b82f6')}
+    .chart-wrap { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin: 12px 0; }
+    .chart-wrap img { width: 100%; display: block; }
+    .state-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 12px 0; }
+    .state-item { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #3b82f6; border-radius: 0 6px 6px 0; padding: 8px 10px; }
+    .state-item.hl { border-left-color: #8b5cf6; background: #f5f3ff; }
+    .sl { font-size: 8px; color: #94a3b8; text-transform: uppercase; }
+    .sv { font-size: 12px; font-weight: 800; color: #1e293b; }
+    .state-item.hl .sv { color: #7c3aed; }
+</style>
+</head><body>
+<div class="hdr">
+    <div class="hdr-left">
+        <h1>📊 Psychrometric Chart Report</h1>
+        <div class="sub">ASHRAE Fundamentals 2009 · Mollier / Carrier Chart · Server-Side Calculations</div>
+        <div class="hdr-badge">ASHRAE 2009 · PSYCHROMETRIC CHART · multicalci.com</div>
+    </div>
+    <div class="hdr-right">
+        <div class="brand">multicalci.com</div>
+        Generated: ${dt}<br>
+        Unit System: ${unitSys === 'SI' ? 'SI (Metric)' : 'Imperial (US)'}<br>
+        Pressure: ${disp_P(S.p)}<br>
+        State Point: T=${disp_T(S.T)} | RH=${(S.rh*100).toFixed(0)}%
+    </div>
+</div>
+<div class="wm-bar">
+    <div class="wb">🔢 multicalci.com — Free Engineering Calculators</div>
+    <div class="wd">Psychrometrics · HVAC · Steam · Heat Exchanger · Fluid Mechanics · Gas EOS</div>
+</div>
+<div class="body">
+    <h2>Current State Point — Plotted on Chart</h2>
+    <div class="state-grid">
+        <div class="state-item"><div class="sl">Dry Bulb Temp</div><div class="sv">${disp_T(S.T)}</div></div>
+        <div class="state-item"><div class="sl">Wet Bulb Temp</div><div class="sv">${disp_T(S.wb)}</div></div>
+        <div class="state-item"><div class="sl">Dew Point</div><div class="sv">${disp_T(S.dp)}</div></div>
+        <div class="state-item"><div class="sl">Relative Humidity</div><div class="sv">${(S.rh*100).toFixed(1)} %</div></div>
+        <div class="state-item"><div class="sl">Humidity Ratio W</div><div class="sv">${disp_W(S.W)}</div></div>
+        <div class="state-item hl"><div class="sl">Specific Enthalpy</div><div class="sv">${disp_H(S.h)}</div></div>
+        <div class="state-item"><div class="sl">Specific Volume</div><div class="sv">${disp_V(S.v)}</div></div>
+        <div class="state-item"><div class="sl">Air Density</div><div class="sv">${disp_rho(S.rho)}</div></div>
+        <div class="state-item"><div class="sl">Atm. Pressure</div><div class="sv">${disp_P(S.p)}</div></div>
+    </div>
+
+    <h2>Psychrometric Chart</h2>
+    <div class="chart-wrap">
+        <img src="${imgData}" alt="Psychrometric Chart">
+    </div>
+    <div style="font-size:8px;color:#94a3b8;margin-top:6px;text-align:center;">
+        🔴 Red dot = current state point &nbsp;|&nbsp; Blue curve = saturation line (100% RH) &nbsp;|&nbsp; Green zone = comfort/application zone &nbsp;|&nbsp; Yellow lines = enthalpy (kJ/kg)
+    </div>
+
+    <div class="formula">
+        Chart axes: Dry Bulb Temperature (horizontal) vs Humidity Ratio W (vertical) · Pressure: ${disp_P(S.p)}<br>
+        Saturation curve: Wexler-Hyland pₛ(T) → W_sat = 0.621945 × pₛ/(p−pₛ) | RH curves: W = φ × W_sat<br>
+        Enthalpy lines: h = 1.006T + W×(2501+1.86T) kJ/kg (ASHRAE 2009 Ch.1)
+    </div>
+
+    ${pdfPromo('Chart')}
+    ${pdfFooter('Psychrometric Chart Calculator', dt)}
 </div>
 <script>window.onload=()=>{ setTimeout(()=>{ window.print(); }, 600); }<\/script>
 </body></html>`);
