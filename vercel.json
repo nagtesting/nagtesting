@@ -1,6 +1,26 @@
 {
   "trailingSlash": true,
   "functions": {
+    "api/steam.js": {
+      "maxDuration": 10,
+      "memory": 256
+    },
+    "api/cooling-tower.js": {
+      "maxDuration": 10,
+      "memory": 256
+    },
+    "api/eos.js": {
+      "maxDuration": 10,
+      "memory": 256
+    },
+    "api/control-valve.js": {
+      "maxDuration": 10,
+      "memory": 256
+    },
+    "api/heatxpert.js": {
+      "maxDuration": 10,
+      "memory": 256
+    },
     "api/orifice-flow.js": {
       "maxDuration": 10,
       "memory": 256
@@ -21,7 +41,7 @@
       "maxDuration": 10,
       "memory": 256
     },
-    "api/calculate.js": {
+    "api/pressure-drop.js": {
       "maxDuration": 10,
       "memory": 256
     }
