@@ -20,6 +20,10 @@
     "api/steam-quench.js": {
       "maxDuration": 10,
       "memory": 256
+    },
+    "api/calculate.js": {
+      "maxDuration": 10,
+      "memory": 256
     }
   },
   "rewrites": [
@@ -102,6 +106,14 @@
     {
       "source": "/steam-quench-calculator/",
       "destination": "/steam-quench-calculator/index.html"
+    },
+    {
+      "source": "/pressure-drop-calculator",
+      "destination": "/pressure-drop-calculator/index.html"
+    },
+    {
+      "source": "/pressure-drop-calculator/",
+      "destination": "/pressure-drop-calculator/index.html"
     }
   ],
   "headers": [
