@@ -4,6 +4,10 @@
     "api/orifice-flow.js": {
       "maxDuration": 10,
       "memory": 256
+    },
+    "api/psychrometric.js": {
+      "maxDuration": 10,
+      "memory": 256
     }
   },
   "rewrites": [
@@ -54,6 +58,14 @@
     {
       "source": "/orifice-flow-calculator/",
       "destination": "/orifice-flow-calculator/index.html"
+    },
+    {
+      "source": "/psychrometric-calculator",
+      "destination": "/psychrometric-calculator/index.html"
+    },
+    {
+      "source": "/psychrometric-calculator/",
+      "destination": "/psychrometric-calculator/index.html"
     }
   ],
   "headers": [
