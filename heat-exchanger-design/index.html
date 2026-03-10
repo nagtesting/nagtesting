@@ -3494,11 +3494,14 @@ ${lm?`
 
 </body></html>`;
 
-  const blob=new Blob([html],{type:'text/html'});
-  const url=URL.createObjectURL(blob);
-  const win=window.open(url,'_blank');
-  if(win) win.onload=()=>setTimeout(()=>win.print(),800);
-  else alert('Pop-up blocked — please allow pop-ups for this page to generate PDF.');
+  // Write HTML directly into new window — blob URL onload is unreliable in Chrome
+  const win=window.open('','_blank');
+  if (!win) { alert('Pop-up blocked — please allow pop-ups for this site to generate PDF.'); return; }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  // Wait for fonts/images to load, then trigger print dialog
+  setTimeout(() => { try { win.focus(); win.print(); } catch(e) {} }, 900);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -4015,10 +4018,11 @@ document.getElementById('lmForm').addEventListener('submit', async function(e){
       Ch: v('lm_Ch')||null, Cc: v('lm_Cc')||null,
       UA: v('lm_UA')||null, arr: g('lm_arr').value
     };
-    g('lm_spin').classList.add('show');
+    startCalc('lm');
     const r = await callAPI(payload);
+    _apiPending = false;
     g('lm_spin').classList.remove('show');
-    if (r.error) return showErr('lm', r.error);
+    if (r.error) { _apiPending = false; return showErr('lm', r.error); }
     lastResults.lm = r;
     const T=tU(), FLMTD=r.lmtd*r.F;
     const sumText=`LMTD=${r.lmtd.toFixed(2)}${T}, F=${r.F.toFixed(3)}, FLMTD=${FLMTD.toFixed(2)}${T}${r.eff!=null?', ε='+(r.eff*100).toFixed(1)+'%':''}`;
@@ -4052,7 +4056,7 @@ document.getElementById('lmForm').addEventListener('submit', async function(e){
     </div></div>`;
     lmRes.classList.add('show');
     g('lm_ph').style.display='none';
-  } catch(err) { g('lm_spin').classList.remove('show'); showErr('lm',err.message); }
+  } catch(err) { _apiPending = false; g('lm_spin').classList.remove('show'); showErr('lm',err.message); }
 });
 
 // ── SELECTOR ──────────────────────────────────────────────────────────────────
