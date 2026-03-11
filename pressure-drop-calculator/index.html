@@ -2414,18 +2414,26 @@ function generatePDF() {
   const report = document.createElement('div');
   report.style.cssText = 'width:794px;position:fixed;top:-9999px;left:-9999px;background:#fff;font-family:Arial,sans-serif;font-size:11px;color:#111827;padding:28px 32px;box-sizing:border-box;line-height:1.45;';
   report.innerHTML = `
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #4f46e5;padding-bottom:10px;margin-bottom:12px;">
-    <div>
-      <div style="font-size:20px;font-weight:800;color:#4f46e5;">ΔP multicalci.com</div>
-      <div style="font-size:9px;color:#6b7280;letter-spacing:1px;margin-top:2px;">PRESSURE DROP CALCULATION REPORT</div>
-      <div style="display:inline-block;background:#eef2ff;border:1px solid #4f46e5;color:#4f46e5;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:5px;">Darcy-Weisbach · Colebrook-White · K-Factor</div>
+  <!-- ══ BRANDED HEADER ══ -->
+  <div style="background:linear-gradient(135deg,#4f46e5 0%,#0891b2 100%);padding:14px 20px 12px;border-radius:8px 8px 0 0;margin:-28px -32px 14px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Courier New',monospace;font-size:14px;font-weight:900;color:#fff;letter-spacing:-1px;border:1.5px solid rgba(255,255,255,.3);">ΔP</div>
+      <div>
+        <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;line-height:1;">multicalci.com</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.75);letter-spacing:1.5px;margin-top:2px;font-weight:600;">FREE ENGINEERING CALCULATORS</div>
+      </div>
     </div>
-    <div style="text-align:right;font-size:9.5px;color:#6b7280;line-height:1.8;">
-      <strong style="color:#111827;">Pressure Drop Calculation Report</strong><br>
-      Date: <strong>${dateStr}</strong>   Time: <strong>${timeStr}</strong><br>
-      Fluid: <strong>${fluidName}</strong><br>
-      Unit System: <strong>${r.unitMode === 'metric' ? 'SI (bar, m³/h)' : 'Imperial (psi, GPM)'}</strong>
+    <div style="text-align:right;">
+      <div style="font-size:11px;font-weight:800;color:#fff;letter-spacing:.3px;">PRESSURE DROP REPORT</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.75);margin-top:3px;">${dateStr} · ${timeStr}</div>
+      <div style="display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:4px;letter-spacing:.5px;">Darcy-Weisbach · Colebrook-White · K-Factor</div>
     </div>
+  </div>
+  <!-- ══ JOB INFO STRIP ══ -->
+  <div style="display:flex;gap:10px;margin-bottom:10px;background:#f8faff;border:1px solid #e0e7ff;border-radius:6px;padding:8px 12px;">
+    <div style="flex:1;font-size:9.5px;"><span style="color:#6b7280;font-weight:600;">FLUID:</span> <strong style="color:#111827;">${fluidName}</strong></div>
+    <div style="font-size:9.5px;"><span style="color:#6b7280;font-weight:600;">UNITS:</span> <strong style="color:#111827;">${r.unitMode === 'metric' ? 'SI  (bar, m³/h, mm)' : 'Imperial  (psi, GPM, in)'}</strong></div>
+    <div style="font-size:9.5px;"><span style="color:#6b7280;font-weight:600;">GENERATED:</span> <strong style="color:#111827;">${dateStr} at ${timeStr}</strong></div>
   </div>
   <div style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border-radius:8px;padding:12px 18px;text-align:center;margin-bottom:11px;">
     <div style="font-size:9px;font-weight:700;letter-spacing:1px;opacity:.85;margin-bottom:2px;">TOTAL PRESSURE DROP</div>
@@ -2493,8 +2501,8 @@ function generatePDF() {
     </div>
   </div>
   <div style="display:flex;justify-content:space-between;font-size:8px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:6px;">
-    <span>multicalci.com — Pressure Drop Calculator — Darcy-Weisbach · Colebrook-White · K-Factor</span>
-    <span style="color:#dc2626;font-weight:700;">NOT FOR FINAL DESIGN — verify with qualified engineer</span>
+    <span style="font-weight:700;color:#4f46e5;">multicalci.com</span><span> — Free Engineering Calculators — Pressure Drop · Control Valve · Heat Exchanger · Orifice · Steam · more</span>
+    <span style="color:#dc2626;font-weight:700;">⚠ NOT FOR FINAL DESIGN — verify with qualified engineer</span>
     <span>Generated ${dateStr} at ${timeStr}</span>
   </div>`;
 
@@ -2525,5 +2533,6 @@ function shrFb(txt){const t=document.createElement('textarea');t.value=txt;t.sty
 
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
-</html></body>
+</html>
