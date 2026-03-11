@@ -43,10 +43,7 @@
     { "source": "/api/steam-turbine-power",       "destination": "/api/index" },
     { "source": "/api/steam/",                    "destination": "/api/index" },
     { "source": "/api/steam",                     "destination": "/api/index" },
-    { "source": "/api/vessel-separator-sizing/",  "destination": "/api/vessel-separator-sizing" },
-    { "source": "/api/vessel-separator-sizing",   "destination": "/api/vessel-separator-sizing" },
-    { "source": "/api/civil-engineering-calculators/", "destination": "/api/civil-engineering-calculators" },
-    { "source": "/api/civil-engineering-calculators",  "destination": "/api/civil-engineering-calculators" },
+
     { "source": "/steam-properties-calculator",         "destination": "/steam-properties-calculator/index.html" },
     { "source": "/steam-properties-calculator/",        "destination": "/steam-properties-calculator/index.html" },
     { "source": "/cooling-tower-performance",           "destination": "/cooling-tower-performance/index.html" },
