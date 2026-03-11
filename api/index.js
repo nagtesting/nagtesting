@@ -6453,7 +6453,7 @@ async function handle_instrumentation(body, res) {
  */
 
 // ─── tiny helpers (same logic as the original HTML) ─────────────────────────
-const elec_fN = (v, d) => (isFinite(v) ? +v.toFixed(d) : null);
+const elec_fN = (v, d) => (v !== null && v !== undefined && isFinite(v) ? +v.toFixed(d) : null);
 const consistent = (a, b, ratio) => Math.abs(ratio - 1) < 0.02;
 
 // Lookup: cable reactance by voltage level
