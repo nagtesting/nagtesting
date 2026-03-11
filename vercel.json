@@ -7,20 +7,34 @@
     }
   },
   "rewrites": [
-    { "source": "/api/compressor",               "destination": "/api/index" },
-    { "source": "/api/control-valve",            "destination": "/api/index" },
-    { "source": "/api/cooling-tower",            "destination": "/api/index" },
-    { "source": "/api/eos",                      "destination": "/api/index" },
-    { "source": "/api/fan",                      "destination": "/api/index" },
-    { "source": "/api/heatxpert",                "destination": "/api/index" },
-    { "source": "/api/orifice-flow",             "destination": "/api/index" },
-    { "source": "/api/pressure-drop-calculator", "destination": "/api/index" },
-    { "source": "/api/psychrometric",            "destination": "/api/index" },
-    { "source": "/api/pump",                     "destination": "/api/index" },
-    { "source": "/api/rankine",                  "destination": "/api/index" },
-    { "source": "/api/steam-quench",             "destination": "/api/index" },
-    { "source": "/api/steam-turbine-power",      "destination": "/api/index" },
-    { "source": "/api/steam",                    "destination": "/api/index" },
+    { "source": "/api/compressor/",               "destination": "/api/index" },
+    { "source": "/api/compressor",                "destination": "/api/index" },
+    { "source": "/api/control-valve/",            "destination": "/api/index" },
+    { "source": "/api/control-valve",             "destination": "/api/index" },
+    { "source": "/api/cooling-tower/",            "destination": "/api/index" },
+    { "source": "/api/cooling-tower",             "destination": "/api/index" },
+    { "source": "/api/eos/",                      "destination": "/api/index" },
+    { "source": "/api/eos",                       "destination": "/api/index" },
+    { "source": "/api/fan/",                      "destination": "/api/index" },
+    { "source": "/api/fan",                       "destination": "/api/index" },
+    { "source": "/api/heatxpert/",                "destination": "/api/index" },
+    { "source": "/api/heatxpert",                 "destination": "/api/index" },
+    { "source": "/api/orifice-flow/",             "destination": "/api/index" },
+    { "source": "/api/orifice-flow",              "destination": "/api/index" },
+    { "source": "/api/pressure-drop-calculator/", "destination": "/api/index" },
+    { "source": "/api/pressure-drop-calculator",  "destination": "/api/index" },
+    { "source": "/api/psychrometric/",            "destination": "/api/index" },
+    { "source": "/api/psychrometric",             "destination": "/api/index" },
+    { "source": "/api/pump/",                     "destination": "/api/index" },
+    { "source": "/api/pump",                      "destination": "/api/index" },
+    { "source": "/api/rankine/",                  "destination": "/api/index" },
+    { "source": "/api/rankine",                   "destination": "/api/index" },
+    { "source": "/api/steam-quench/",             "destination": "/api/index" },
+    { "source": "/api/steam-quench",              "destination": "/api/index" },
+    { "source": "/api/steam-turbine-power/",      "destination": "/api/index" },
+    { "source": "/api/steam-turbine-power",       "destination": "/api/index" },
+    { "source": "/api/steam/",                    "destination": "/api/index" },
+    { "source": "/api/steam",                     "destination": "/api/index" },
     { "source": "/steam-properties-calculator",         "destination": "/steam-properties-calculator/index.html" },
     { "source": "/steam-properties-calculator/",        "destination": "/steam-properties-calculator/index.html" },
     { "source": "/cooling-tower-performance",           "destination": "/cooling-tower-performance/index.html" },
@@ -53,21 +67,7 @@
         { "key": "Access-Control-Allow-Origin",  "value": "*" },
         { "key": "Access-Control-Allow-Methods", "value": "POST, OPTIONS" },
         { "key": "Access-Control-Allow-Headers", "value": "Content-Type, x-api-key" },
-        { "key": "Access-Control-Max-Age",       "value": "86400" },
-        { "key": "X-Content-Type-Options",       "value": "nosniff" },
-        { "key": "X-Frame-Options",              "value": "DENY" }
-      ]
-    },
-    {
-      "source": "/(.*)\\.html",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store" }
+        { "key": "Access-Control-Max-Age",       "value": "86400" }
       ]
     }
   ]
