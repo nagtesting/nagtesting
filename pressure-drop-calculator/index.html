@@ -1830,6 +1830,13 @@ document.getElementById('btnChangeFluid').addEventListener('click', function() {
   }, 80);
 });
 
+document.getElementById('btnClearFluid').addEventListener('click', function() {
+  clearFluidSelection();
+});
+
+document.getElementById('opTemp').addEventListener('input', autoCalcProps);
+document.getElementById('opPres').addEventListener('input', autoCalcProps);
+
 function selectFluid(id) {
   const f = _fluidDB.find(x => x.id === id);
   if (!f) return;
@@ -1839,12 +1846,15 @@ function selectFluid(id) {
   const sel = document.getElementById('fluidSelect');
   if (sel) Array.from(sel.options).forEach(o => { if (o.value === id) o.selected = true; });
 
+  // Use CSS classes (matching the stylesheet)
   const wrap = document.querySelector('.fluid-select-wrap');
-  if (wrap) wrap.style.display = 'none';
+  if (wrap) wrap.classList.add('selected');
   const badge = document.getElementById('fluidSelectedBadge');
-  if (badge) badge.style.display = 'flex';
+  if (badge) badge.classList.add('show');
   const nameEl = document.getElementById('fluidBadgeName');
   if (nameEl) nameEl.textContent = f.name;
+  const opCond = document.getElementById('opCondRow');
+  if (opCond) opCond.classList.add('show');
 
   if (f.isGas === true || f.isGas === 'auto') {
     showAlert('gas', '⚠ ' + f.name + ' — compressible fluid. Darcy-Weisbach valid only if ΔP/P₁ < 10%.');
@@ -1860,11 +1870,13 @@ function clearFluidSelection() {
   const sel = document.getElementById('fluidSelect');
   if (sel) sel.value = '';
   const fi = document.getElementById('fluidFilter');
-  if (fi) fi.value = '';
+  if (fi) { fi.value = ''; filterFluidSelect(''); }
   const wrap = document.querySelector('.fluid-select-wrap');
-  if (wrap) wrap.style.display = '';
+  if (wrap) wrap.classList.remove('selected');
   const badge = document.getElementById('fluidSelectedBadge');
-  if (badge) badge.style.display = 'none';
+  if (badge) badge.classList.remove('show');
+  const opCond = document.getElementById('opCondRow');
+  if (opCond) opCond.classList.remove('show');
   const pw = document.getElementById('propWarn');
   if (pw) pw.textContent = '';
   const pp = document.getElementById('propPhase');
@@ -1895,9 +1907,8 @@ async function autoCalcProps() {
       phaseEl.style.color = p.isGas ? '#0891b2' : '#2563eb';
     }
     const phaseTag = p.phaseLabel ? '  [' + p.phaseLabel + ']' : '';
-    document.getElementById('fluidBadgeText').textContent =
-      p.name + phaseTag + '  @  ' + T_C + '°C, ' + P_bar + ' bar  →  ρ = ' + p.rho +
-      ' kg/m³  |  μ = ' + p.mu + ' cP' + (p.warn ? '  ⚠' : '');
+    const nameEl2 = document.getElementById('fluidBadgeName');
+    if (nameEl2) nameEl2.textContent = p.name + phaseTag + '  @  ' + T_C + '°C' + (p.warn ? '  ⚠' : '');
     if (_selectedFluid.isGas === 'auto') {
       if (p.isGas) {
         showAlert('gas', '⚠ ' + p.name + ' is in GAS phase at these conditions' + phaseTag + '.');
@@ -2015,21 +2026,17 @@ function getTotalK() { return fittingsList.reduce((s, f) => s + f.qty * f.k, 0);
    INIT — page load
 ══════════════════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', async () => {
-  await Promise.all([loadFluidList(), loadFittingsList()]);
-  // add default fittings once catalogue is loaded
-  ['elbow90','elbow90','elbow90','elbow90','elbow45','elbow45','teerun','gate_open','check_swing','entrance'].forEach((id,i) => {
-    // addFittingById with qty logic
-    const cat = _fittingCatalogue[id];
-    if (!cat) return;
-    const existing = fittingsList.find(f => f.id === id);
-    if (existing) { existing.qty++; renderFittingsTable(); }
-    else addFittingById(id, 1);
-  });
+  await loadFluidList();
+  await loadFittingsList();
+  // Add default fittings after catalogue is loaded
+  addFittingById('elbow90', 4);
+  addFittingById('elbow45', 2);
+  addFittingById('teerun', 1);
+  addFittingById('gate_open', 1);
+  addFittingById('check_swing', 1);
+  addFittingById('entrance', 1);
 });
 </script>
-<script>
-/* ══════════════════════════════════════════════════════════
-
 <script>
 /* ══════════════════════════════════════════════════════════
    TAB SWITCHING — clean event delegation, no inline onclick
