@@ -8137,21 +8137,20 @@ export default async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET')
     return res.status(405).json({ error: 'Method not allowed' });
 
-  // Determine route from URL.
-  // ── ROUTING FIX ──────────────────────────────────────────────────────────
-  // Vercel rewrites /api/moc → /api/index, which changes req.url to /api/index,
-  // losing the original route name. The fix uses three fallback layers:
-  //   1. x-matched-path / x-invoke-path header (Vercel sets this to original path)
-  //   2. ?route=xxx query param  (add to fetch calls as explicit override)
-  //   3. req.url itself  (works when no rewrite is in play)
-  const url = req.url || '';
-  const qRoute = url.includes('?') ? new URLSearchParams(url.split('?')[1]).get('route') : null;
+  // Determine route from URL: /api/compressor → 'compressor'
+  const url   = req.url || '';
+
+  // ── TRIPLE-LAYER ROUTE RECOVERY ──────────────────────────────────────────
+  // Vercel rewrites /api/moc → /api/index, which changes req.url to /api/index.
+  // Layer 1: x-matched-path header carries the ORIGINAL path before rewrite.
+  // Layer 2: ?route=xxx query param (belt-and-suspenders from HTML fetch calls).
+  // Layer 3: path segment fallback (works for all other direct routes).
   const matchedPath = req.headers['x-matched-path'] || req.headers['x-invoke-path'] || '';
-  const rawPath = matchedPath || url.split('?')[0];
-  const pathRoute = rawPath.replace(/\/+$/, '').split('/').pop();
-  // 'index' means Vercel's rewrite destination was used — fall back to query param
-  const route = (pathRoute && pathRoute !== 'index') ? pathRoute : (qRoute || pathRoute);
-  // ─────────────────────────────────────────────────────────────────────────
+  const rawPath     = matchedPath || url.split('?')[0];
+  const pathRoute   = rawPath.replace(/\/+$/, '').split('/').pop();
+  const qRoute      = url.includes('?') ? new URLSearchParams(url.split('?')[1]).get('route') : null;
+  // If path resolves to 'index' (rewrite destination), fall back to query param
+  const route       = (pathRoute && pathRoute !== 'index') ? pathRoute : (qRoute || pathRoute);
 
   // Parse body safely (GET requests may have no body)
   let body = req.body || {};
