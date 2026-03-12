@@ -329,11 +329,11 @@
     },
     {
       "source": "/moc-selector",
-      "destination": "/moc-selector/index.html"
+      "destination": "/material-of-construction/index.html"
     },
     {
       "source": "/moc-selector/",
-      "destination": "/moc-selector/index.html"
+      "destination": "/material-of-construction/index.html"
     }
   ],
   "headers": [
