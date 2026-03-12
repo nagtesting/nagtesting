@@ -645,7 +645,7 @@ function renderResults(data){
   const inputWarnHTML=(_inputWarnings||[]).map(w=>`<div class="warn-strip" style="background:var(--blue-pale);border-color:#93c5fd;"><div class="warn-strip-icon">&#8505;&#65039;</div><div><strong>Input Note:</strong> ${esc(w)}</div></div>`).join('');
   const compRows=Object.entries(best.composition||{}).map(([k,v])=>`<tr><td><strong>${esc(k)}</strong></td><td>${esc(v)}</td></tr>`).join('');
   const cs=data.corrSuff;
-  const corrSuffRow=cs?`<tr style="${cs.adequate?'':'background:#fef3e2;'}"><td><strong>Est. Corrosion Rate</strong></td><td style="font-family:var(--mono);font-size:0.76rem;">${cs.rate===0?'N/A \u2014 non-metallic':esc(String(cs.rate))+' mm/yr (screening estimate)'}</td></tr><tr style="${cs.adequate?'':'background:#fef3e2;'}"><td><strong>Life &times; Loss (${lastResults?.life||\u2014} yr)</strong></td><td style="color:${cs.adequate?'var(--green)':'var(--amber)'};">${esc(cs.note)}</td></tr>`:'';
+  const corrSuffRow=cs?`<tr style="${cs.adequate?'':'background:#fef3e2;'}"><td><strong>Est. Corrosion Rate</strong></td><td style="font-family:var(--mono);font-size:0.76rem;">${cs.rate===0?'N/A \u2014 non-metallic':esc(String(cs.rate))+' mm/yr (screening estimate)'}</td></tr><tr style="${cs.adequate?'':'background:#fef3e2;'}"><td><strong>Life &times; Loss (${lastResults?.life||'—'} yr)</strong></td><td style="color:${cs.adequate?'var(--green)':'var(--amber)'};">${esc(cs.note)}</td></tr>`:'';
   const constraintRows=(data.constraintRows||[]).map(r=>{
     const color=r.status==='PASS'?'var(--green)':r.status==='CAUTION'?'var(--amber)':'var(--red)';
     const bg=r.status==='PASS'?'':r.status==='CAUTION'?'background:#fef3e2;':'background:#fde8ea;';
