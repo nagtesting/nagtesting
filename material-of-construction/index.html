@@ -7,20 +7,16 @@
 <meta property="og:title" content="Material of Construction Selector — ASME, NACE MR0175 | multicalci.com">
 <meta property="og:description" content="Free engineering tool: select equipment & process fluid, get ranked MOC recommendations with metallurgical justification.">
 <meta property="og:type" content="website">
-    <meta property="og:image" content="https://multicalci.com/assets/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Material of Construction Selector — ASME, NACE MR0175 | multicalci.com">
-    <meta name="twitter:image" content="https://multicalci.com/assets/og-image.png">
-
-
+<meta property="og:image" content="https://multicalci.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Material of Construction Selector — ASME, NACE MR0175 | multicalci.com">
+<meta name="twitter:image" content="https://multicalci.com/assets/og-image.png">
 <title>Material of Construction Selector — ASME, NACE MR0175 | multicalci.com</title>
-<link rel="canonical" href="https://multicalci.com/material-of-construction/">
-<meta property="og:url" content="https://multicalci.com/material-of-construction/">
-
-
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Material of Construction Selector","description":"Engineering MOC selector per ASME and NACE MR0175 for process equipment material selection.","applicationCategory":"EngineeringApplication","operatingSystem":"Web","url":"https://multicalci.com/material-of-construction/","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<link rel="canonical" href="https://multicalci.com/moc-selector/">
+<meta property="og:url" content="https://multicalci.com/moc-selector/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Material of Construction Selector","description":"Engineering MOC selector per ASME and NACE MR0175 for process equipment material selection.","applicationCategory":"EngineeringApplication","operatingSystem":"Web","url":"https://multicalci.com/moc-selector/","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}<\/script>
 <meta name="robots" content="index, follow">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -77,7 +73,6 @@ body{font-family:var(--body);background:var(--paper2);color:var(--ink);min-heigh
 }
 .pdf-btn:hover{background:var(--copper2);box-shadow:0 4px 14px rgba(181,96,10,0.4);}
 .pdf-btn:active{transform:scale(0.97);}
-/* mobile topbar */
 .mobile-menu-btn{display:none;padding:6px;border:none;background:transparent;color:#fff;font-size:1.2rem;cursor:pointer;flex-shrink:0;}
 
 /* ── PAGE ── */
@@ -100,7 +95,6 @@ body{font-family:var(--body);background:var(--paper2);color:var(--ink);min-heigh
 .pg-hero p{font-size:0.86rem;color:rgba(255,255,255,0.6);max-width:640px;line-height:1.55;}
 .pg-hero-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;}
 .pg-pill{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.8px;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);padding:3px 10px;border-radius:2px;}
-/* share row in hero */
 .hero-actions{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;}
 .share-btn{
   display:inline-flex;align-items:center;gap:5px;
@@ -118,9 +112,7 @@ body{font-family:var(--body);background:var(--paper2);color:var(--ink);min-heigh
 .step-item:last-child{border-right:none;}
 .step-item.done{background:var(--green-pale);color:var(--green);}
 .step-item.active{background:var(--copper-pale);color:var(--copper);}
-.step-item.done-active{background:var(--green-pale);color:var(--green);}
 .step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:0.68rem;font-weight:700;background:var(--paper3);color:inherit;flex-shrink:0;border:1.5px solid currentColor;}
-.step-item.done .step-num::after{content:'✓';}
 .step-item.done .step-num{background:var(--green);color:#fff;border-color:var(--green);}
 .step-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
@@ -145,25 +137,17 @@ body{font-family:var(--body);background:var(--paper2);color:var(--ink);min-heigh
 }
 .equip-card:hover{border-color:var(--copper);background:var(--copper-pale);transform:translateY(-2px);box-shadow:0 4px 12px rgba(181,96,10,0.12);}
 .equip-card.selected{border-color:var(--copper);background:var(--copper-pale);box-shadow:0 0 0 3px rgba(181,96,10,0.15);}
-.equip-card:active{transform:scale(0.97);}
 .equip-icon{font-size:1.6rem;margin-bottom:5px;display:block;}
 .equip-name{font-size:0.68rem;font-weight:700;color:var(--ink3);line-height:1.25;}
 
 /* ── FLUID SEARCH ── */
 .fluid-search-wrap{margin-bottom:10px;}
-.fluid-search{
-  width:100%;padding:8px 12px;background:var(--paper);border:1.5px solid var(--rule2);
-  border-radius:4px;font-family:var(--mono);font-size:0.8rem;outline:none;transition:border-color 0.2s;
-}
+.fluid-search{width:100%;padding:8px 12px;background:var(--paper);border:1.5px solid var(--rule2);border-radius:4px;font-family:var(--mono);font-size:0.8rem;outline:none;transition:border-color 0.2s;}
 .fluid-search:focus{border-color:var(--copper);box-shadow:0 0 0 3px rgba(181,96,10,0.1);}
 
 /* ── INDUSTRY PILLS ── */
 .industry-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
-.ind-pill{
-  padding:4px 11px;border-radius:20px;border:1.5px solid var(--rule2);
-  font-size:0.7rem;font-weight:700;color:var(--mid);cursor:pointer;transition:all 0.15s;
-  background:var(--paper);-webkit-tap-highlight-color:transparent;
-}
+.ind-pill{padding:4px 11px;border-radius:20px;border:1.5px solid var(--rule2);font-size:0.7rem;font-weight:700;color:var(--mid);cursor:pointer;transition:all 0.15s;background:var(--paper);-webkit-tap-highlight-color:transparent;}
 .ind-pill:hover{border-color:var(--copper);color:var(--copper);}
 .ind-pill.active{background:var(--copper);border-color:var(--copper);color:#fff;}
 
@@ -171,12 +155,7 @@ body{font-family:var(--body);background:var(--paper2);color:var(--ink);min-heigh
 .fluid-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;max-height:280px;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--copper) var(--paper3);}
 .fluid-grid::-webkit-scrollbar{width:5px;}
 .fluid-grid::-webkit-scrollbar-thumb{background:var(--copper);border-radius:3px;}
-.fluid-grid::-webkit-scrollbar-track{background:var(--paper3);border-radius:3px;}
-.fluid-item{
-  display:flex;align-items:center;gap:8px;padding:8px 10px;
-  border:1.5px solid var(--rule);border-radius:6px;cursor:pointer;
-  transition:all 0.15s;background:var(--paper);-webkit-tap-highlight-color:transparent;
-}
+.fluid-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--rule);border-radius:6px;cursor:pointer;transition:all 0.15s;background:var(--paper);-webkit-tap-highlight-color:transparent;}
 .fluid-item:hover{border-color:var(--copper);background:var(--copper-pale);}
 .fluid-item.selected{border-color:var(--copper);background:var(--copper-pale);box-shadow:0 0 0 2px rgba(181,96,10,0.2);}
 .fluid-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
@@ -191,23 +170,10 @@ body{font-family:var(--body);background:var(--paper2);color:var(--ink);min-heigh
 .fl-hint{font-size:0.6rem;color:var(--light);font-weight:400;margin-left:4px;}
 .input-row{display:flex;}
 .input-row input{flex:1;border-radius:4px 0 0 4px!important;border-right:none!important;}
-.iu{
-  padding:0 8px;background:var(--paper3);border:1.5px solid var(--rule2);
-  border-left:none;border-radius:0 4px 4px 0;font-family:var(--mono);font-size:0.66rem;
-  font-weight:600;color:var(--copper);display:flex;align-items:center;white-space:nowrap;min-width:40px;justify-content:center;
-}
-input[type=number],input[type=text],select,textarea{
-  width:100%;padding:8px 10px;background:var(--paper);border:1.5px solid var(--rule2);
-  border-radius:4px;color:var(--ink);font-family:var(--mono);font-size:0.82rem;
-  outline:none;transition:border-color 0.2s,box-shadow 0.2s;
-  -webkit-appearance:none;appearance:none;
-}
+.iu{padding:0 8px;background:var(--paper3);border:1.5px solid var(--rule2);border-left:none;border-radius:0 4px 4px 0;font-family:var(--mono);font-size:0.66rem;font-weight:600;color:var(--copper);display:flex;align-items:center;white-space:nowrap;min-width:40px;justify-content:center;}
+input[type=number],input[type=text],select,textarea{width:100%;padding:8px 10px;background:var(--paper);border:1.5px solid var(--rule2);border-radius:4px;color:var(--ink);font-family:var(--mono);font-size:0.82rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;appearance:none;}
 input:focus,select:focus,textarea:focus{border-color:var(--copper);box-shadow:0 0 0 3px rgba(181,96,10,0.10);}
-select{
-  cursor:pointer;padding-right:28px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a6b7a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 10px center;
-}
+select{cursor:pointer;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a6b7a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
 textarea{resize:vertical;}
 
 /* ── ANALYZE BTN ── */
@@ -218,17 +184,11 @@ textarea{resize:vertical;}
   text-transform:uppercase;cursor:pointer;transition:all 0.2s;
   display:flex;align-items:center;justify-content:center;gap:10px;
   border-top:3px solid var(--copper);margin-top:10px;
-  box-shadow:0 3px 12px rgba(30,40,50,0.18);
-  -webkit-tap-highlight-color:transparent;
+  box-shadow:0 3px 12px rgba(30,40,50,0.18);-webkit-tap-highlight-color:transparent;
 }
 .analyze-btn:hover{background:linear-gradient(135deg,var(--slate2),var(--slate3));transform:translateY(-1px);box-shadow:0 6px 20px rgba(30,40,50,0.28);}
 .analyze-btn:active{transform:translateY(0);}
-.reset-btn{
-  width:100%;padding:9px;border:1.5px solid var(--rule2);border-radius:6px;
-  background:var(--paper);color:var(--mid);
-  font-family:var(--body);font-size:0.78rem;font-weight:700;
-  cursor:pointer;transition:all 0.2s;text-align:center;margin-top:8px;
-}
+.reset-btn{width:100%;padding:9px;border:1.5px solid var(--rule2);border-radius:6px;background:var(--paper);color:var(--mid);font-family:var(--body);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center;margin-top:8px;}
 .reset-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-pale);}
 
 /* ── PLACEHOLDER ── */
@@ -243,11 +203,7 @@ textarea{resize:vertical;}
 /* ── MOC RESULTS ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .result-appear{animation:fadeUp 0.35s ease;}
-
-.moc-headline{
-  display:flex;align-items:stretch;border-radius:var(--radius);overflow:hidden;
-  margin-bottom:16px;border:1px solid var(--rule);box-shadow:0 2px 12px rgba(0,0,0,0.07);
-}
+.moc-headline{display:flex;align-items:stretch;border-radius:var(--radius);overflow:hidden;margin-bottom:16px;border:1px solid var(--rule);box-shadow:0 2px 12px rgba(0,0,0,0.07);}
 .moc-rank-bar{width:56px;background:var(--slate);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;padding:14px 0;}
 .moc-rank-num{font-family:var(--head);font-size:1.7rem;font-weight:700;color:var(--copper2);}
 .moc-rank-lbl{font-family:var(--mono);font-size:0.5rem;letter-spacing:1.5px;color:rgba(255,255,255,0.5);}
@@ -256,10 +212,7 @@ textarea{resize:vertical;}
 .moc-name{font-family:var(--head);font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:3px;word-break:break-word;}
 .moc-grade{font-family:var(--mono);font-size:0.73rem;color:var(--blue);font-weight:600;margin-bottom:8px;word-break:break-all;}
 .moc-why{font-size:0.83rem;color:var(--ink3);line-height:1.65;}
-.moc-aside{
-  background:var(--paper2);border-left:1px solid var(--rule);
-  padding:16px 14px;min-width:150px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;
-}
+.moc-aside{background:var(--paper2);border-left:1px solid var(--rule);padding:16px 14px;min-width:150px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;}
 .moc-stat{text-align:center;}
 .moc-stat-val{font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--ink);}
 .moc-stat-lbl{font-size:0.6rem;color:var(--mid);letter-spacing:0.5px;text-transform:uppercase;}
@@ -291,7 +244,6 @@ textarea{resize:vertical;}
 .comp-table td{padding:7px 12px;border-bottom:1px solid var(--rule);color:var(--ink2);font-family:var(--mono);font-size:0.76rem;}
 .comp-table tbody tr:nth-child(even) td{background:var(--paper2);}
 .comp-table tbody tr:hover td{background:var(--copper-pale);}
-.comp-table td:last-child{color:var(--mid);font-size:0.72rem;font-family:var(--body);}
 
 /* ── WARN STRIPS ── */
 .warn-strip{display:flex;align-items:flex-start;gap:10px;background:var(--amber-pale);border:1.5px solid #fcd34d;border-radius:6px;padding:11px 14px;margin-bottom:12px;font-size:0.8rem;line-height:1.5;}
@@ -307,20 +259,11 @@ textarea{resize:vertical;}
 .sum-val{font-family:var(--mono);font-size:0.78rem;font-weight:600;color:var(--ink);}
 
 /* ── P2 BANNER ── */
-.p2-banner{
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-  background:var(--slate);border-radius:var(--radius);padding:14px 20px;margin-top:18px;
-  border-left:5px solid var(--copper);
-}
+.p2-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--slate);border-radius:var(--radius);padding:14px 20px;margin-top:18px;border-left:5px solid var(--copper);}
 .p2-banner-text{color:#fff;min-width:0;}
 .p2-banner-title{font-family:var(--head);font-size:0.95rem;font-weight:700;margin-bottom:2px;}
-.p2-banner-sub{font-size:0.74rem;color:rgba(255,255,255,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.p2-link-btn{
-  display:inline-flex;align-items:center;gap:6px;flex-shrink:0;
-  padding:9px 18px;background:var(--copper);color:#fff;border-radius:5px;
-  font-family:var(--body);font-size:0.78rem;font-weight:800;text-decoration:none;
-  letter-spacing:0.5px;transition:all 0.2s;white-space:nowrap;
-}
+.p2-banner-sub{font-size:0.74rem;color:rgba(255,255,255,0.5);}
+.p2-link-btn{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;padding:9px 18px;background:var(--copper);color:#fff;border-radius:5px;font-family:var(--body);font-size:0.78rem;font-weight:800;text-decoration:none;letter-spacing:0.5px;transition:all 0.2s;white-space:nowrap;}
 .p2-link-btn:hover{background:var(--copper2);box-shadow:0 4px 14px rgba(181,96,10,0.4);}
 
 /* ── SHARE MODAL ── */
@@ -330,11 +273,7 @@ textarea{resize:vertical;}
 .share-modal h3{font-family:var(--head);font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:6px;}
 .share-modal p{font-size:0.82rem;color:var(--mid);margin-bottom:20px;line-height:1.5;}
 .share-links{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.share-link-btn{
-  display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:6px;
-  border:1.5px solid var(--rule);font-size:0.8rem;font-weight:700;
-  cursor:pointer;transition:all 0.18s;text-decoration:none;color:var(--ink);background:var(--paper);
-}
+.share-link-btn{display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:6px;border:1.5px solid var(--rule);font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.18s;text-decoration:none;color:var(--ink);background:var(--paper);}
 .share-link-btn:hover{border-color:var(--copper);background:var(--copper-pale);color:var(--copper);}
 .share-link-btn svg{width:18px;height:18px;flex-shrink:0;}
 .share-url-row{margin-top:14px;display:flex;gap:8px;}
@@ -345,20 +284,11 @@ textarea{resize:vertical;}
 .share-modal-close:hover{background:var(--paper3);}
 
 /* ── TOAST ── */
-.toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
-  background:var(--slate);color:#fff;padding:10px 22px;border-radius:6px;
-  font-size:0.82rem;font-weight:700;z-index:900;opacity:0;
-  transition:all 0.3s;white-space:nowrap;pointer-events:none;
-  border-left:3px solid var(--copper);
-}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--slate);color:#fff;padding:10px 22px;border-radius:6px;font-size:0.82rem;font-weight:700;z-index:900;opacity:0;transition:all 0.3s;white-space:nowrap;pointer-events:none;border-left:3px solid var(--copper);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* ── LOADING ── */
-.loading-overlay{
-  position:fixed;inset:0;background:rgba(255,255,255,0.7);z-index:800;
-  display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;
-}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.7);z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
 .loading-overlay.show{display:flex;}
 .spinner{width:40px;height:40px;border:4px solid var(--rule);border-top-color:var(--copper);border-radius:50%;animation:spin 0.8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -367,69 +297,28 @@ textarea{resize:vertical;}
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-thumb{background:var(--rule2);border-radius:3px;}
-::-webkit-scrollbar-track{background:transparent;}
 
-/* ── MOBILE RESPONSIVENESS ── */
-@media(max-width:900px){
-  .main-grid{grid-template-columns:1fr;}
-  .pg-hero::after{display:none;}
-  #results-card{position:static!important;}
-}
-@media(max-width:720px){
-  .cond-grid{grid-template-columns:1fr 1fr;}
-  .fluid-grid{grid-template-columns:1fr;}
-  .moc-headline{flex-direction:column;}
-  .moc-aside{border-left:none;border-top:1px solid var(--rule);flex-direction:row;flex-wrap:wrap;justify-content:space-around;min-width:unset;padding:12px;}
-  .moc-alts{grid-template-columns:1fr;}
-  .brand-name{display:none;}
-  .mobile-menu-btn{display:block;}
-  .nav{display:none;}
-  .topbar-r .pdf-btn span{display:none;}
-  .p2-banner{flex-direction:column;gap:10px;}
-  .p2-banner-sub{white-space:normal;}
-  .share-links{grid-template-columns:1fr;}
-}
-@media(max-width:500px){
-  .cond-grid{grid-template-columns:1fr;}
-  .equip-grid{grid-template-columns:repeat(3,1fr);}
-  .pg-hero{padding:18px 18px;}
-  .pg-hero h1{font-size:1.3rem;}
-  .page{padding:12px 10px 80px;}
-  .step-label{display:none;}
-}
-@media(max-width:360px){
-  .equip-grid{grid-template-columns:repeat(2,1fr);}
-}
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.main-grid{grid-template-columns:1fr;}.pg-hero::after{display:none;}#results-card{position:static!important;}}
+@media(max-width:720px){.cond-grid{grid-template-columns:1fr 1fr;}.fluid-grid{grid-template-columns:1fr;}.moc-headline{flex-direction:column;}.moc-aside{border-left:none;border-top:1px solid var(--rule);flex-direction:row;flex-wrap:wrap;justify-content:space-around;min-width:unset;padding:12px;}.moc-alts{grid-template-columns:1fr;}.brand-name{display:none;}.mobile-menu-btn{display:block;}.nav{display:none;}.topbar-r .pdf-btn span{display:none;}.p2-banner{flex-direction:column;gap:10px;}.share-links{grid-template-columns:1fr;}}
+@media(max-width:500px){.cond-grid{grid-template-columns:1fr;}.equip-grid{grid-template-columns:repeat(3,1fr);}.pg-hero{padding:18px;}.pg-hero h1{font-size:1.3rem;}.page{padding:12px 10px 80px;}.step-label{display:none;}}
+@media(max-width:360px){.equip-grid{grid-template-columns:repeat(2,1fr);}}
 
-/* ── Mobile nav drawer ── */
-.mobile-nav{
-  position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--slate);
-  z-index:400;transform:translateX(-100%);transition:transform 0.3s ease;
-  padding:70px 16px 20px;display:flex;flex-direction:column;gap:6px;
-  box-shadow:4px 0 20px rgba(0,0,0,0.3);
-}
+/* ── MOBILE NAV ── */
+.mobile-nav{position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--slate);z-index:400;transform:translateX(-100%);transition:transform 0.3s ease;padding:70px 16px 20px;display:flex;flex-direction:column;gap:6px;box-shadow:4px 0 20px rgba(0,0,0,0.3);}
 .mobile-nav.open{transform:translateX(0);}
 .mobile-nav-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:390;display:none;}
 .mobile-nav-overlay.open{display:block;}
-.mobile-nav a,.mobile-nav button{
-  display:flex;align-items:center;gap:10px;padding:12px 14px;
-  border:none;background:rgba(255,255,255,0.05);border-radius:6px;
-  color:rgba(255,255,255,0.8);font-family:var(--body);font-size:0.88rem;font-weight:700;
-  text-decoration:none;cursor:pointer;transition:background 0.15s;
-}
+.mobile-nav a,.mobile-nav button{display:flex;align-items:center;gap:10px;padding:12px 14px;border:none;background:rgba(255,255,255,0.05);border-radius:6px;color:rgba(255,255,255,0.8);font-family:var(--body);font-size:0.88rem;font-weight:700;text-decoration:none;cursor:pointer;transition:background 0.15s;}
 .mobile-nav a:hover,.mobile-nav button:hover{background:rgba(255,255,255,0.1);color:#fff;}
 .mobile-nav a.active{background:var(--copper);color:#fff;}
 
-/* ── CONDITIONS HELP TOOLTIP ── */
+/* ── HELP TOOLTIP ── */
 .fl-wrap{display:flex;align-items:center;gap:4px;}
 .help-ic{width:14px;height:14px;border-radius:50%;background:var(--paper3);border:1px solid var(--rule2);display:inline-flex;align-items:center;justify-content:center;font-size:0.55rem;font-weight:700;color:var(--mid);cursor:help;flex-shrink:0;}
 
-/* ── SELECTED FLUID DISPLAY ── */
-.selected-fluid-pill{
-  display:flex;align-items:center;gap:8px;padding:8px 12px;
-  background:var(--copper-pale);border:1.5px solid var(--copper);border-radius:6px;
-  margin-top:10px;
-}
+/* ── SELECTED FLUID PILL ── */
+.selected-fluid-pill{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--copper-pale);border:1.5px solid var(--copper);border-radius:6px;margin-top:10px;}
 .sfp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .sfp-text{font-size:0.8rem;font-weight:700;color:var(--copper);}
 .sfp-sub{font-family:var(--mono);font-size:0.62rem;color:var(--mid);}
@@ -442,23 +331,22 @@ textarea{resize:vertical;}
 <!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loading-overlay">
   <div class="spinner"></div>
-  <p>ANALYZING MOC…</p>
-  <p>ANALYZING MOC…</p>
+  <p>ANALYZING MOC&hellip;</p>
 </div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- MOBILE NAV DRAWER -->
+<!-- MOBILE NAV -->
 <div class="mobile-nav-overlay" id="mobile-nav-overlay" onclick="closeMobileNav()"></div>
 <div class="mobile-nav" id="mobile-nav">
-  <a href="https://multicalci.com/">🏠 Home</a>
-  <a href="#" class="active">🔬 MOC Selector (Page 1)</a>
-  <a href="https://multicalci.com/material-grades-library/">📚 Material Library →</a>
-  <button onclick="makePDF();closeMobileNav()">🖨 PDF Report</button>
-  <button onclick="openShareModal();closeMobileNav()">🔗 Share Tool</button>
+  <a href="https://multicalci.com/">&#127968; Home</a>
+  <a href="#" class="active">&#128300; MOC Selector</a>
+  <a href="https://multicalci.com/material-grades-library/">&#128218; Material Library &rarr;</a>
+  <button onclick="makePDF();closeMobileNav()">&#128424; PDF Report</button>
+  <button onclick="openShareModal();closeMobileNav()">&#128279; Share Tool</button>
   <hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:6px 0;">
-  <button onclick="resetAll();closeMobileNav()" style="color:var(--red)!important;">🔄 Reset All</button>
+  <button onclick="resetAll();closeMobileNav()" style="color:#f87171!important;">&#128260; Reset All</button>
 </div>
 
 <!-- SHARE MODAL -->
@@ -468,19 +356,19 @@ textarea{resize:vertical;}
     <p>Share the MOC Selector with colleagues or on social media.</p>
     <div class="share-links">
       <a class="share-link-btn" id="share-linkedin" href="#" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        <svg viewBox="0 0 24 24" style="fill:currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
         LinkedIn
       </a>
       <a class="share-link-btn" id="share-twitter" href="#" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.75l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <svg viewBox="0 0 24 24" style="fill:currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.75l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         X (Twitter)
       </a>
       <a class="share-link-btn" id="share-whatsapp" href="#" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <svg viewBox="0 0 24 24" style="fill:currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp
       </a>
       <a class="share-link-btn" id="share-email" href="#">
-        <svg viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:2;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <svg viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Email
       </a>
     </div>
@@ -492,9 +380,9 @@ textarea{resize:vertical;}
   </div>
 </div>
 
-<!-- ── TOPBAR ── -->
+<!-- TOPBAR -->
 <header class="topbar">
-<button class="mobile-menu-btn" onclick="openMobileNav()" aria-label="Menu">☰</button>
+  <button class="mobile-menu-btn" onclick="openMobileNav()" aria-label="Menu">&#9776;</button>
   <div class="brand">
     <div class="brand-mark">M</div>
     <div>
@@ -502,40 +390,30 @@ textarea{resize:vertical;}
       <div class="brand-sub">Material of Construction</div>
     </div>
   </div>
-  <nav class="nav" aria-label="Page navigation">
-    <button class="nav-btn active" aria-current="page">
-      <span class="nav-step">P1</span>MOC Selector
-    </button>
-    <a class="nav-btn" href="https://multicalci.com/material-grades-library/">
-      <span class="nav-step">P2</span>Material Library →
-    </a>
+  <nav class="nav">
+    <button class="nav-btn active"><span class="nav-step">P1</span>MOC Selector</button>
+    <a class="nav-btn" href="https://multicalci.com/material-grades-library/"><span class="nav-step">P2</span>Material Library &rarr;</a>
   </nav>
   <div class="topbar-r">
-    <button class="pdf-btn" onclick="window.location.href='https://multicalci.com/'" title="Back to multicalci.com Home" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
-      🏠 <span>Home</span>
-    </button>
-    <button class="pdf-btn" onclick="openShareModal()" title="Share Tool" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">
-      🔗 <span>Share</span>
-    </button>
-    <button class="pdf-btn" onclick="makePDF()" title="Generate PDF Report">
-      🖨 <span>PDF Report</span>
-    </button>
+    <button class="pdf-btn" onclick="window.location.href='https://multicalci.com/'" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">&#127968; <span>Home</span></button>
+    <button class="pdf-btn" onclick="openShareModal()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);">&#128279; <span>Share</span></button>
+    <button class="pdf-btn" onclick="makePDF()">&#128424; <span>PDF Report</span></button>
   </div>
 </header>
 
-<!-- ── PAGE ── -->
 <main class="page">
 
   <!-- HERO -->
   <div class="pg-hero">
-    <div class="pg-hero-tag">Page 1 of 2 — Materials Engineering</div>
+    <div class="pg-hero-tag">Material Engineering &mdash; multicalci.com</div>
     <h1>Material of Construction Selector</h1>
-    <p>Select equipment and process fluid, enter operating conditions — get ranked MOC recommendations with full metallurgical justification and composition data.</p>
+    <p>Select equipment and process fluid, enter operating conditions &mdash; get ranked MOC recommendations with full metallurgical justification, composition data and NACE/API compliance checks.</p>
     <div class="pg-hero-pills">
       <span class="pg-pill">16 EQUIPMENT TYPES</span>
       <span class="pg-pill">30+ PROCESS FLUIDS</span>
-      <span class="pg-pill">ASME · ASTM · IS GRADES</span>
+      <span class="pg-pill">ASME &middot; ASTM &middot; IS GRADES</span>
       <span class="pg-pill">NACE MR0175 CHECK</span>
+      <span class="pg-pill">API 941 HTHA</span>
       <span class="pg-pill">A4 PDF REPORT</span>
     </div>
     <div class="hero-actions">
@@ -543,669 +421,378 @@ textarea{resize:vertical;}
         <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
         Share Tool
       </button>
-      <a class="share-btn" href="https://multicalci.com/material-grades-library/">
-        📚 Material Library
-      </a>
+      <a class="share-btn" href="https://multicalci.com/">&#127968; Back to multicalci</a>
     </div>
   </div>
 
-  <!-- STEP INDICATOR -->
-  <div class="step-flow" role="progressbar" aria-label="Selection steps">
-    <div class="step-item active" id="step1">
-      <div class="step-num">1</div>
-      <span class="step-label">Equipment</span>
-    </div>
-    <div class="step-item" id="step2">
-      <div class="step-num">2</div>
-      <span class="step-label">Fluid</span>
-    </div>
-    <div class="step-item" id="step3">
-      <div class="step-num">3</div>
-      <span class="step-label">Conditions</span>
-    </div>
-    <div class="step-item" id="step4">
-      <div class="step-num">4</div>
-      <span class="step-label">Results</span>
-    </div>
+  <!-- STEP FLOW -->
+  <div class="step-flow" role="progressbar">
+    <div class="step-item active" id="step1"><div class="step-num">1</div><span class="step-label">Equipment</span></div>
+    <div class="step-item" id="step2"><div class="step-num">2</div><span class="step-label">Fluid</span></div>
+    <div class="step-item" id="step3"><div class="step-num">3</div><span class="step-label">Conditions</span></div>
+    <div class="step-item" id="step4"><div class="step-num">4</div><span class="step-label">Results</span></div>
   </div>
 
   <div class="main-grid">
 
-    <!-- ═══ LEFT: INPUTS ═══ -->
+    <!-- LEFT: INPUTS -->
     <div>
 
-      <!-- STEP 1: Equipment -->
+      <!-- STEP 1 -->
       <div class="card">
         <div class="card-hd">
-          <span class="card-hd-ic">🏭</span>
-          <span class="card-hd-title">Step 1 — Equipment Type</span>
+          <span class="card-hd-ic">&#127981;</span>
+          <span class="card-hd-title">Step 1 &mdash; Equipment Type</span>
           <span class="card-hd-sub" id="equip_sub">Select one</span>
         </div>
         <div class="card-bd">
-          <div class="equip-grid" id="equip-grid" role="group" aria-label="Equipment type selection"></div>
+          <div class="equip-grid" id="equip-grid" role="group" aria-label="Equipment type"></div>
         </div>
       </div>
 
-      <!-- STEP 2: Fluid -->
+      <!-- STEP 2 -->
       <div class="card">
         <div class="card-hd">
-          <span class="card-hd-ic">🧪</span>
-          <span class="card-hd-title">Step 2 — Process Fluid</span>
+          <span class="card-hd-ic">&#129514;</span>
+          <span class="card-hd-title">Step 2 &mdash; Process Fluid</span>
           <span class="card-hd-sub" id="fluid_sub">Select one</span>
         </div>
         <div class="card-bd">
           <div class="fluid-search-wrap">
-            <input type="search" class="fluid-search" id="fluid-search" placeholder="🔍 Search fluids…" oninput="debouncedBuildFluidGrid()" autocomplete="off" aria-label="Search process fluids">
+            <input type="search" class="fluid-search" id="fluid-search" placeholder="&#128269; Search fluids&hellip;" oninput="debouncedBuildFluidGrid()" autocomplete="off">
           </div>
-          <div class="industry-pills" id="industry-pills" role="group" aria-label="Filter by industry"></div>
-          <div class="fluid-grid" id="fluid-grid" role="listbox" aria-label="Process fluids"></div>
-          <!-- Selected Fluid Display -->
+          <div class="industry-pills" id="industry-pills" role="group"></div>
+          <div class="fluid-grid" id="fluid-grid" role="listbox"></div>
           <div id="selected-fluid-wrap" style="display:none;">
-            <div class="selected-fluid-pill" id="selected-fluid-pill">
+            <div class="selected-fluid-pill">
               <div class="sfp-dot" id="sfp-dot"></div>
               <div>
                 <div class="sfp-text" id="sfp-name"></div>
                 <div class="sfp-sub" id="sfp-sub"></div>
               </div>
-              <button class="sfp-clear" onclick="clearFluid()" title="Clear selection" aria-label="Clear fluid selection">×</button>
+              <button class="sfp-clear" onclick="clearFluid()" title="Clear">&times;</button>
             </div>
           </div>
           <div class="fg" style="margin-top:10px;">
             <label class="fl" for="fluid_notes">Notes / Additional Contaminants</label>
-            <textarea id="fluid_notes" rows="2" placeholder="e.g. H₂S traces, oxygen present, solids in suspension, chloride-contaminated…" style="font-size:0.78rem;padding:8px;"></textarea>
+            <textarea id="fluid_notes" rows="2" placeholder="e.g. H&#8322;S traces, oxygen present, solids, chloride contamination&hellip;" style="font-size:0.78rem;padding:8px;"></textarea>
           </div>
         </div>
       </div>
 
-      <!-- STEP 3: Process Conditions -->
+      <!-- STEP 3 -->
       <div class="card">
         <div class="card-hd">
-          <span class="card-hd-ic">⚡</span>
-          <span class="card-hd-title">Step 3 — Process Conditions</span>
+          <span class="card-hd-ic">&#9889;</span>
+          <span class="card-hd-title">Step 3 &mdash; Process Conditions</span>
         </div>
         <div class="card-bd">
-          <!-- Row 1 -->
           <div class="cond-grid" style="margin-bottom:10px;">
             <div class="fg">
-              <div class="fl-wrap">
-                <label class="fl" for="pc_T">Design Temperature</label>
-                <span class="help-ic" title="Maximum design temperature the equipment will see during operation">?</span>
-              </div>
-              <div class="input-row">
-                <input type="number" id="pc_T" value="100" step="5" min="-200" max="1200" aria-label="Design temperature">
-                <div class="iu">°C</div>
-              </div>
+              <div class="fl-wrap"><label class="fl" for="pc_T">Design Temperature</label><span class="help-ic" title="Maximum design temperature at operation">?</span></div>
+              <div class="input-row"><input type="number" id="pc_T" value="100" step="5" min="-200" max="1200"><div class="iu">&deg;C</div></div>
             </div>
             <div class="fg">
-              <div class="fl-wrap">
-                <label class="fl" for="pc_P">Design Pressure</label>
-                <span class="help-ic" title="Maximum design pressure (gauge) for the equipment">?</span>
-              </div>
-              <div class="input-row">
-                <input type="number" id="pc_P" value="10" step="0.5" min="0" max="5000" aria-label="Design pressure">
-                <div class="iu">bar g</div>
-              </div>
+              <div class="fl-wrap"><label class="fl" for="pc_P">Design Pressure</label><span class="help-ic" title="Maximum design pressure gauge">?</span></div>
+              <div class="input-row"><input type="number" id="pc_P" value="10" step="0.5" min="0" max="5000"><div class="iu">bar g</div></div>
             </div>
             <div class="fg">
-              <div class="fl-wrap">
-                <label class="fl" for="pc_pH">pH of Fluid</label>
-                <span class="help-ic" title="pH of the process fluid at operating conditions (0=strongly acidic, 14=strongly alkaline)">?</span>
-              </div>
-              <div class="input-row">
-                <input type="number" id="pc_pH" value="7" step="0.1" min="0" max="14" aria-label="pH of fluid">
-                <div class="iu">—</div>
-              </div>
+              <div class="fl-wrap"><label class="fl" for="pc_pH">pH of Fluid</label><span class="help-ic" title="pH at operating conditions. 0=strongly acidic, 14=strongly alkaline">?</span></div>
+              <div class="input-row"><input type="number" id="pc_pH" value="7" step="0.1" min="0" max="14"><div class="iu">&mdash;</div></div>
             </div>
           </div>
-          <!-- Row 2 -->
           <div class="cond-grid" style="margin-bottom:10px;">
             <div class="fg">
-              <div class="fl-wrap">
-                <label class="fl" for="pc_Cl">Cl⁻ Concentration</label>
-                <span class="help-ic" title="Chloride ion content. Seawater ≈18,000 ppm. Values >200 ppm may cause SCC in austenitic SS above 60°C">?</span>
-              </div>
-              <div class="input-row">
-                <input type="number" id="pc_Cl" value="0" step="10" min="0" aria-label="Chloride concentration in ppm">
-                <div class="iu">ppm</div>
-              </div>
+              <div class="fl-wrap"><label class="fl" for="pc_Cl">Cl&#8315; Concentration</label><span class="help-ic" title="Chloride ions. &gt;200 ppm may cause SCC in austenitic SS above 60&deg;C">?</span></div>
+              <div class="input-row"><input type="number" id="pc_Cl" value="0" step="10" min="0"><div class="iu">ppm</div></div>
             </div>
             <div class="fg">
-              <div class="fl-wrap">
-                <label class="fl" for="pc_H2S">H₂S Partial Pressure</label>
-                <span class="help-ic" title="H₂S partial pressure. >0.0003 bar triggers NACE MR0175 sour service requirements">?</span>
-              </div>
-              <div class="input-row">
-                <input type="number" id="pc_H2S" value="0" step="0.001" min="0" aria-label="H₂S partial pressure in bar">
-                <div class="iu">bar</div>
-              </div>
+              <div class="fl-wrap"><label class="fl" for="pc_H2S">H&#8322;S Partial Pressure</label><span class="help-ic" title="&gt;0.0003 bar triggers NACE MR0175 sour service">?</span></div>
+              <div class="input-row"><input type="number" id="pc_H2S" value="0" step="0.001" min="0"><div class="iu">bar</div></div>
             </div>
             <div class="fg">
-              <div class="fl-wrap">
-                <label class="fl" for="pc_V">Flow Velocity</label>
-                <span class="help-ic" title="Fluid flow velocity. High velocity increases erosion-corrosion risk for some materials">?</span>
-              </div>
-              <div class="input-row">
-                <input type="number" id="pc_V" value="2" step="0.1" min="0" aria-label="Flow velocity in m/s">
-                <div class="iu">m/s</div>
-              </div>
+              <div class="fl-wrap"><label class="fl" for="pc_V">Flow Velocity</label><span class="help-ic" title="High velocity increases erosion-corrosion risk">?</span></div>
+              <div class="input-row"><input type="number" id="pc_V" value="2" step="0.1" min="0"><div class="iu">m/s</div></div>
             </div>
           </div>
-          <!-- Row 3 -->
           <div class="cond-grid" style="margin-bottom:4px;">
             <div class="fg">
               <label class="fl" for="pc_life">Design Life</label>
-              <div class="input-row">
-                <input type="number" id="pc_life" value="25" step="5" min="1" max="100" aria-label="Design life in years">
-                <div class="iu">yrs</div>
-              </div>
+              <div class="input-row"><input type="number" id="pc_life" value="25" step="5" min="1" max="100"><div class="iu">yrs</div></div>
             </div>
             <div class="fg">
               <label class="fl" for="pc_industry">Industry Sector</label>
-              <select id="pc_industry" aria-label="Industry sector">
-                <option>Oil &amp; Gas</option>
-                <option>Chemical</option>
-                <option>Petrochemical</option>
-                <option>Water Treatment</option>
-                <option>Pharmaceutical</option>
-                <option>Food &amp; Beverage</option>
-                <option>Power Generation</option>
-                <option>Pulp &amp; Paper</option>
-                <option>Marine</option>
-                <option>Mining</option>
+              <select id="pc_industry">
+                <option>Oil &amp; Gas</option><option>Chemical</option><option>Petrochemical</option>
+                <option>Water Treatment</option><option>Pharmaceutical</option><option>Food &amp; Beverage</option>
+                <option>Power Generation</option><option>Pulp &amp; Paper</option><option>Marine</option><option>Mining</option>
               </select>
             </div>
             <div class="fg">
               <label class="fl" for="pc_cost">Cost Priority</label>
-              <select id="pc_cost" aria-label="Cost priority">
+              <select id="pc_cost">
                 <option value="balanced">Balanced (Performance/Cost)</option>
                 <option value="economy">Economy (Lowest Cost First)</option>
                 <option value="performance">Performance (Best Material)</option>
               </select>
             </div>
           </div>
-
-          <button class="analyze-btn" onclick="analyzeMOC()" aria-label="Analyze and select Material of Construction">
-            🔬 ANALYZE &amp; SELECT MOC
-          </button>
-          <button class="reset-btn" onclick="resetAll()">🔄 Reset All Inputs</button>
+          <button class="analyze-btn" onclick="analyzeMOC()">&#128300; ANALYZE &amp; SELECT MOC</button>
+          <button class="reset-btn" onclick="resetAll()">&#128260; Reset All Inputs</button>
         </div>
       </div>
 
     </div><!-- /left -->
 
-    <!-- ═══ RIGHT: RESULTS ═══ -->
+    <!-- RIGHT: RESULTS -->
     <div>
       <div class="card" id="results-card" style="position:sticky;top:70px;">
         <div class="card-hd">
-          <span class="card-hd-ic">🏆</span>
+          <span class="card-hd-ic">&#127942;</span>
           <span class="card-hd-title">MOC Recommendation</span>
-          <span class="card-hd-sub" id="result_sub">—</span>
+          <span class="card-hd-sub" id="result_sub">&mdash;</span>
         </div>
         <div class="card-bd" id="moc_results" aria-live="polite" style="max-height:calc(100vh - 130px);overflow-y:auto;">
           <div class="placeholder">
-            <div class="ph-icon">🔬</div>
+            <div class="ph-icon">&#128300;</div>
             <h3>Awaiting Analysis</h3>
-            <p>Complete all three steps, then click Analyze to receive ranked MOC recommendations.</p>
+            <p>Complete all three steps, then click Analyze &amp; Select MOC to receive ranked recommendations.</p>
             <div class="ph-steps">
-              <div class="ph-step"><div class="ph-step-num">1</div>Select equipment type above</div>
+              <div class="ph-step"><div class="ph-step-num">1</div>Select equipment type</div>
               <div class="ph-step"><div class="ph-step-num">2</div>Choose process fluid</div>
               <div class="ph-step"><div class="ph-step-num">3</div>Enter operating conditions</div>
-              <div class="ph-step"><div class="ph-step-num">▶</div>Click ANALYZE &amp; SELECT MOC</div>
+              <div class="ph-step"><div class="ph-step-num">&#9654;</div>Click ANALYZE &amp; SELECT MOC</div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Link to Page 2 -->
       <div class="p2-banner">
         <div class="p2-banner-text">
-          <div class="p2-banner-title">Material Library &amp; Comparison →</div>
-          <div class="p2-banner-sub">Browse all grades · CS, SS, HDPE, PP, FRP, Nickel alloys · Compatibility matrix</div>
+          <div class="p2-banner-title">Material Library &amp; Comparison &rarr;</div>
+          <div class="p2-banner-sub">Browse all grades &middot; CS, SS, HDPE, PP, FRP, Nickel alloys &middot; Compatibility matrix</div>
         </div>
-        <a class="p2-link-btn" href="https://multicalci.com/material-grades-library/">Open Library →</a>
+        <a class="p2-link-btn" href="https://multicalci.com/material-grades-library/">Open Library &rarr;</a>
       </div>
-    </div><!-- /right -->
+    </div>
 
   </div><!-- /main-grid -->
 </main>
 
-<!-- ════════════════════ DATA + ENGINE ════════════════════ -->
 <script>
 'use strict';
+let CATALOG=null,selectedEquip=null,selectedFluid=null,currentIndustry='All',lastResults=null,_busy=false,_inputWarnings=[],_toastTimer=null;
 
-/* ── DATA ── */
-const EQUIPMENT = [
-
-<!-- ════════════════════ CLIENT JS — API-DRIVEN ════════════════════ -->
-<script>
-'use strict';
-
-/* ══════════════════════════════════════════════════════════════
-   STATE  (no data constants here — all comes from /api/catalog)
-══════════════════════════════════════════════════════════════ */
-let CATALOG    = null;   // { equipment, industries, fluids } — loaded once
-let selectedEquip  = null;
-let selectedFluid  = null;
-let currentIndustry= 'All';
-let lastResults    = null;
-let _busy          = false;
-let _inputWarnings = [];
-let _toastTimer    = null;
-
-/* ══════════════════════════════════════════════════════════════
-   BOOTSTRAP — load catalog from API on page load
-══════════════════════════════════════════════════════════════ */
-async function loadCatalog() {
-  try {
-    const res  = await fetch('/api/moc');
-    if (!res.ok) throw new Error('Catalog fetch failed');
-    CATALOG = await res.json();
-    buildEquipGrid();
-    buildIndustryPills();
-    buildFluidGrid();
-    document.getElementById('share-url-input').value = window.location.href;
-  } catch(e) {
-    document.getElementById('moc_results').innerHTML =
-      `<div class="warn-strip not-rec"><div class="warn-strip-icon">⛔</div>
-       <div><strong>Failed to load tool catalog.</strong><br>Check your network connection and refresh the page.<br><small>${e.message}</small></div></div>`;
+async function loadCatalog(){
+  try{
+    const res=await fetch('/api/moc');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    CATALOG=await res.json();
+    buildEquipGrid();buildIndustryPills();buildFluidGrid();
+    document.getElementById('share-url-input').value=window.location.href;
+  }catch(e){
+    document.getElementById('moc_results').innerHTML=
+      `<div class="warn-strip not-rec"><div class="warn-strip-icon">&#9940;</div><div><strong>Failed to load catalog.</strong><br>Check network connection and refresh.<br><small>${esc(e.message)}</small></div></div>`;
   }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   ANALYZE — POST to /api/analyze
-══════════════════════════════════════════════════════════════ */
-async function analyzeMOC() {
-  if (_busy) return;
-  if (!selectedEquip) { showToast('⚠ Please select an equipment type first.'); return; }
-  if (!selectedFluid) { showToast('⚠ Please select a process fluid first.'); return; }
-
-  const T    = parseFloat(document.getElementById('pc_T').value);
-  const P    = parseFloat(document.getElementById('pc_P').value);
-  const pH   = parseFloat(document.getElementById('pc_pH').value);
-  const Cl   = parseFloat(document.getElementById('pc_Cl').value);
-  const H2S  = parseFloat(document.getElementById('pc_H2S').value);
-  const V    = parseFloat(document.getElementById('pc_V').value);
-  const life = parseFloat(document.getElementById('pc_life').value);
-  const cost = document.getElementById('pc_cost').value;
-  const industry = document.getElementById('pc_industry').value;
-  const notes    = document.getElementById('fluid_notes').value;
-
-  _busy = true;
+async function analyzeMOC(){
+  if(_busy)return;
+  if(!selectedEquip){showToast('&#9888; Please select an equipment type first.');return;}
+  if(!selectedFluid){showToast('&#9888; Please select a process fluid first.');return;}
+  const T=parseFloat(document.getElementById('pc_T').value);
+  const P=parseFloat(document.getElementById('pc_P').value);
+  const pH=parseFloat(document.getElementById('pc_pH').value);
+  const Cl=parseFloat(document.getElementById('pc_Cl').value);
+  const H2S=parseFloat(document.getElementById('pc_H2S').value);
+  const V=parseFloat(document.getElementById('pc_V').value);
+  const life=parseFloat(document.getElementById('pc_life').value);
+  const cost=document.getElementById('pc_cost').value;
+  const industry=document.getElementById('pc_industry').value;
+  const notes=document.getElementById('fluid_notes').value;
+  _busy=true;
   document.getElementById('loading-overlay').classList.add('show');
-
-  try {
-    const res = await fetch('/api/moc', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fluidId:selectedFluid, equipId:selectedEquip, T, P, pH, Cl, H2S, V, life, costPrio:cost, industry, notes }),
-    });
-
-    const data = await res.json();
+  try{
+    const res=await fetch('/api/moc',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({fluidId:selectedFluid,equipId:selectedEquip,T,P,pH,Cl,H2S,V,life,costPrio:cost,industry,notes})});
+    const data=await res.json();
     document.getElementById('loading-overlay').classList.remove('show');
-    _busy = false;
-
-    if (!data.ok) {
-      document.getElementById('moc_results').innerHTML = `
-        <div class="warn-strip not-rec" style="flex-direction:column;gap:6px;">
-          <div style="display:flex;align-items:center;gap:8px;"><div class="warn-strip-icon">⛔</div><strong>Input Errors — Analysis Blocked</strong></div>
-          ${(data.errors||[]).map(e=>`<div style="padding-left:30px;font-size:0.8rem;">• ${esc(e)}</div>`).join('')}
-        </div>`;
-      showToast('⚠ Fix input errors before analysis.');
-      return;
+    _busy=false;
+    if(!data.ok){
+      document.getElementById('moc_results').innerHTML=`<div class="warn-strip not-rec" style="flex-direction:column;gap:6px;"><div style="display:flex;align-items:center;gap:8px;"><div class="warn-strip-icon">&#9940;</div><strong>Input Errors</strong></div>${(data.errors||[]).map(e=>`<div style="padding-left:30px;font-size:0.8rem;">&bull; ${esc(e)}</div>`).join('')}</div>`;
+      showToast('&#9888; Fix input errors first.');return;
     }
-
-    lastResults = { ...data, T, P, pH, Cl, H2S, V, life, industry, notes,
-      fluidId: selectedFluid, equipId: selectedEquip };
-    _inputWarnings = data.inputWarnings || [];
-
+    lastResults={...data,T,P,pH,Cl,H2S,V,life,industry,notes,fluidId:selectedFluid,equipId:selectedEquip};
+    _inputWarnings=data.inputWarnings||[];
     renderResults(data);
-    markStepDone('step3');
-    document.getElementById('step4').classList.add('active');
-
-    const fluidObj = (CATALOG?.fluids||[]).find(f=>f.id===selectedFluid);
-    const equipObj = (CATALOG?.equipment||[]).find(e=>e.id===selectedEquip);
-    document.getElementById('result_sub').textContent =
-      `${equipObj?.name||''} · ${fluidObj?.name||''} · ${T}°C / ${P} bar`;
-
-    if (window.innerWidth < 900)
-      document.getElementById('moc_results').scrollIntoView({ behavior:'smooth', block:'start' });
-
-    showToast('✅ Analysis complete — ' + data.totalEvaluated + ' materials evaluated');
-
-  } catch(err) {
-    document.getElementById('loading-overlay').classList.remove('show');
-    _busy = false;
-    document.getElementById('moc_results').innerHTML =
-      `<div class="warn-strip not-rec"><div class="warn-strip-icon">⛔</div>
-       <div><strong>API error:</strong> ${esc(err.message||'Network error')}. Please try again.</div></div>`;
-    showToast('⚠ Analysis failed — please try again.');
+    markStepDone('step3');document.getElementById('step4').classList.add('active');
+    const fluidObj=(CATALOG?.fluids||[]).find(f=>f.id===selectedFluid);
+    const equipObj=(CATALOG?.equipment||[]).find(e=>e.id===selectedEquip);
+    document.getElementById('result_sub').textContent=`${equipObj?.name||''} \u00b7 ${fluidObj?.name||''} \u00b7 ${T}\u00b0C / ${P} bar`;
+    if(window.innerWidth<900)document.getElementById('moc_results').scrollIntoView({behavior:'smooth',block:'start'});
+    showToast('\u2705 Analysis complete \u2014 '+data.totalEvaluated+' materials evaluated');
+  }catch(err){
+    document.getElementById('loading-overlay').classList.remove('show');_busy=false;
+    document.getElementById('moc_results').innerHTML=`<div class="warn-strip not-rec"><div class="warn-strip-icon">&#9940;</div><div><strong>API error:</strong> ${esc(err.message||'Network error')}. Please try again.</div></div>`;
+    showToast('&#9888; Analysis failed \u2014 please try again.');
   }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   RENDER RESULTS  (pure display — no scoring here)
-══════════════════════════════════════════════════════════════ */
-function renderResults(data) {
-  const best     = data.best;
-  const alts     = data.alts || [];
-  const warnings = data.warnings || [];
-
-  // Warning strips
-  const warnIcons = { scc_cl:'⚡', sigma:'🔥', sensitization:'⚠️', nace:'⚠️', hic:'⛔', htha:'🔥', acid:'⚠️', lowtemp:'❄️', galvanic:'⚡', erosion:'⚠️', notes:'📝' };
-  const warnClass = { hic:'not-rec' };
-  const warningsHTML = warnings.map(w =>
-    `<div class="warn-strip ${warnClass[w.type]||''}">
-       <div class="warn-strip-icon">${warnIcons[w.type]||'⚠️'}</div>
-       <div><strong>${esc(w.label)}:</strong> ${esc(w.body)}</div>
-     </div>`
-  ).join('');
-
-  // Input warnings (blue)
-  const inputWarnHTML = (_inputWarnings||[]).map(w =>
-    `<div class="warn-strip" style="background:var(--blue-pale);border-color:#93c5fd;">
-       <div class="warn-strip-icon">ℹ️</div>
-       <div><strong>Input Note:</strong> ${esc(w)}</div>
-     </div>`
-  ).join('');
-
-  // Composition table rows
-  const compRows = Object.entries(best.composition||{}).map(([k,v]) =>
-    `<tr><td><strong>${esc(k)}</strong></td><td>${esc(v)}</td></tr>`).join('');
-
-  // Corrosion sufficiency row
-  const cs = data.corrSuff;
-  const corrSuffRow = cs ? `
-    <tr style="${cs.adequate?'':'background:#fef3e2;'}">
-      <td><strong>Est. Corrosion Rate</strong></td>
-      <td style="font-family:var(--mono);font-size:0.76rem;">${cs.rate===0?'N/A — non-metallic':esc(String(cs.rate))+' mm/yr (screening estimate)'}</td>
-    </tr>
-    <tr style="${cs.adequate?'':'background:#fef3e2;'}">
-      <td><strong>Life × Loss (${lastResults?.life||'—'} yr)</strong></td>
-      <td style="color:${cs.adequate?'var(--green)':'var(--amber)'};">${esc(cs.note)}</td>
-    </tr>` : '';
-
-  // Constraint table
-  const constraintRows = (data.constraintRows||[]).map(r => {
-    const color = r.status==='PASS'?'var(--green)':r.status==='CAUTION'?'var(--amber)':'var(--red)';
-    const bg    = r.status==='PASS'?'':r.status==='CAUTION'?'background:#fef3e2;':'background:#fde8ea;';
-    return `<tr style="${bg}">
-      <td>${esc(r.label)}</td>
-      <td style="font-family:var(--mono);font-size:0.74rem;">${esc(r.input)} ${r.note?`<span style="font-size:0.65rem;color:var(--mid)">(${esc(r.note)})</span>`:''}` +
-      `</td><td><span style="font-family:var(--mono);font-size:0.68rem;font-weight:700;color:${color};">${r.status}</span>` +
-      `${r.limit?`<span style="font-size:0.65rem;color:var(--mid)"> / limit ${esc(r.limit)}</span>`:''}` +
-      `</td></tr>`;
+function renderResults(data){
+  const best=data.best,alts=data.alts||[],warnings=data.warnings||[];
+  const warnIcons={scc_cl:'&#9889;',sigma:'&#128293;',sensitization:'&#9888;&#65039;',nace:'&#9888;&#65039;',hic:'&#9940;',htha:'&#128293;',acid:'&#9888;&#65039;',lowtemp:'&#10052;&#65039;',galvanic:'&#9889;',erosion:'&#9888;&#65039;',notes:'&#128221;'};
+  const warnClass={hic:'not-rec'};
+  const warningsHTML=warnings.map(w=>`<div class="warn-strip ${warnClass[w.type]||''}"><div class="warn-strip-icon">${warnIcons[w.type]||'&#9888;&#65039;'}</div><div><strong>${esc(w.label)}:</strong> ${esc(w.body)}</div></div>`).join('');
+  const inputWarnHTML=(_inputWarnings||[]).map(w=>`<div class="warn-strip" style="background:var(--blue-pale);border-color:#93c5fd;"><div class="warn-strip-icon">&#8505;&#65039;</div><div><strong>Input Note:</strong> ${esc(w)}</div></div>`).join('');
+  const compRows=Object.entries(best.composition||{}).map(([k,v])=>`<tr><td><strong>${esc(k)}</strong></td><td>${esc(v)}</td></tr>`).join('');
+  const cs=data.corrSuff;
+  const corrSuffRow=cs?`<tr style="${cs.adequate?'':'background:#fef3e2;'}"><td><strong>Est. Corrosion Rate</strong></td><td style="font-family:var(--mono);font-size:0.76rem;">${cs.rate===0?'N/A \u2014 non-metallic':esc(String(cs.rate))+' mm/yr (screening estimate)'}</td></tr><tr style="${cs.adequate?'':'background:#fef3e2;'}"><td><strong>Life &times; Loss (${lastResults?.life||\u2014} yr)</strong></td><td style="color:${cs.adequate?'var(--green)':'var(--amber)'};">${esc(cs.note)}</td></tr>`:'';
+  const constraintRows=(data.constraintRows||[]).map(r=>{
+    const color=r.status==='PASS'?'var(--green)':r.status==='CAUTION'?'var(--amber)':'var(--red)';
+    const bg=r.status==='PASS'?'':r.status==='CAUTION'?'background:#fef3e2;':'background:#fde8ea;';
+    return `<tr style="${bg}"><td>${esc(r.label)}</td><td style="font-family:var(--mono);font-size:0.74rem;">${esc(r.input)}${r.note?` <span style="font-size:0.65rem;color:var(--mid)">(${esc(r.note)})</span>`:''}</td><td><span style="font-family:var(--mono);font-size:0.68rem;font-weight:700;color:${color};">${r.status}</span>${r.limit?` <span style="font-size:0.65rem;color:var(--mid)">/ limit ${esc(r.limit)}</span>`:''}</td></tr>`;
   }).join('');
-
-  // Explanation — convert newlines to <br>
-  const explanationHTML = esc(data.explanation||'').replace(/\n/g,'<br>');
-
-  // Alt cards
-  const altCards = alts.slice(0,4).map((a,i) => {
-    const chips = [
-      ...a.pros.slice(0,2).map(p=>`<span class="chip chip-g">✓ ${esc(p.substring(0,30))}</span>`),
-      ...a.cons.slice(0,1).map(c=>`<span class="chip chip-r">✗ ${esc(c.substring(0,30))}</span>`),
-    ].join('');
-    return `<div class="moc-alt-card">
-      <div class="alt-rank">Alt #${i+2} &nbsp;·&nbsp; ${a.score}% fit</div>
-      <div class="alt-name">${esc(a.name)}</div>
-      <div class="alt-grade">${esc(a.grade)}</div>
-      <div class="alt-why">${esc((a.desc||'').substring(0,110))}…</div>
-      <div class="alt-chips">${chips}</div>
-    </div>`;
+  const explanationHTML=esc(data.explanation||'').replace(/\n/g,'<br>');
+  const altCards=alts.slice(0,4).map((a,i)=>{
+    const chips=[...a.pros.slice(0,2).map(p=>`<span class="chip chip-g">\u2713 ${esc(p.substring(0,30))}</span>`),...a.cons.slice(0,1).map(c=>`<span class="chip chip-r">\u2717 ${esc(c.substring(0,30))}</span>`)].join('');
+    return `<div class="moc-alt-card"><div class="alt-rank">Alt #${i+2} &nbsp;&middot;&nbsp; ${a.score}% fit</div><div class="alt-name">${esc(a.name)}</div><div class="alt-grade">${esc(a.grade)}</div><div class="alt-why">${esc((a.desc||'').substring(0,110))}&hellip;</div><div class="alt-chips">${chips}</div></div>`;
   }).join('');
-
-  const confPct   = best.score;
-  const confClass = confPct>75?'conf-high':confPct>50?'conf-med':'conf-low';
-  const failLabel = data.dominantFailureMode
-    ? `<div class="moc-stat"><div class="moc-stat-val" style="font-size:0.65rem;color:var(--red)">⚡ ${esc(data.dominantFailureMode)}</div><div class="moc-stat-lbl">Dominant Risk</div></div>` : '';
-
-  const notRec = (data.eliminated||[]).join(', ');
-  const summary = data.summary || {};
-
-  document.getElementById('moc_results').innerHTML = `
-    <div class="result-appear">
-      <div style="background:#1e2832;border-radius:6px;padding:8px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-        <span style="font-size:1rem;">🔬</span>
-        <div>
-          <div style="font-family:var(--mono);font-size:0.6rem;letter-spacing:1.5px;color:var(--copper2);text-transform:uppercase;font-weight:700;">Preliminary Screening Result — Not a Design Calculation</div>
-          <div style="font-size:0.72rem;color:rgba(255,255,255,0.55);margin-top:2px;">Heuristic-based selection only. Does not replace ASME/API/ISO code calculations. Verify with a qualified materials engineer before design, procurement or fabrication.</div>
-        </div>
-      </div>
-      ${inputWarnHTML}${warningsHTML}
-      <div class="moc-headline">
-        <div class="moc-rank-bar">
-          <div class="moc-rank-num">1</div>
-          <div class="moc-rank-lbl">PREFERRED</div>
-        </div>
-        <div class="moc-main">
-          <div class="moc-tag">Recommended MOC</div>
-          <div class="moc-name">${esc(best.name)}</div>
-          <div class="moc-grade">${esc(best.grade)} | ${esc(best.std)}</div>
-          <div class="moc-why">${explanationHTML}</div>
-          <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap;">
-            ${(best.tags||[]).map(t=>`<span class="chip chip-b">${esc(t)}</span>`).join('')}
-          </div>
-        </div>
-        <div class="moc-aside">
-          <div class="moc-stat">
-            <div class="moc-stat-val">${best.score}%</div>
-            <div class="moc-stat-lbl">Screening Score</div>
-          </div>
-          <div class="confidence">
-            <div class="conf-label">Heuristic Fit ▸ not statistical</div>
-            <div class="conf-bar-bg"><div class="conf-bar-fill ${confClass}" style="width:${confPct}%"></div></div>
-          </div>
-          <div class="moc-stat">
-            <div class="moc-stat-val">${best.cost_idx.toFixed(1)}×</div>
-            <div class="moc-stat-lbl">Cost Index</div>
-          </div>
-          <div class="moc-stat">
-            <div class="moc-stat-val">${best.t_max}°C</div>
-            <div class="moc-stat-lbl">Max Temp</div>
-          </div>
-          ${failLabel}
-        </div>
-      </div>
-
-      <!-- Constraint Table -->
-      <div class="card" style="margin-bottom:14px;">
-        <div class="card-hd">
-          <span class="card-hd-ic">✅</span>
-          <span class="card-hd-title">Constraint Evaluation — ${esc(best.name)}</span>
-          <span class="card-hd-sub">Hard constraints checked first</span>
-        </div>
-        <div class="card-bd" style="padding:0;">
-          <table class="comp-table">
-            <thead><tr><th>Criterion</th><th>Input vs Limit</th><th>Status</th></tr></thead>
-            <tbody>${constraintRows}</tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Composition -->
-      <div class="card" style="margin-bottom:14px;">
-        <div class="card-hd">
-          <span class="card-hd-ic">⚗️</span>
-          <span class="card-hd-title">Composition — ${esc(best.name)}</span>
-        </div>
-        <div class="card-bd" style="padding:0;">
-          <table class="comp-table">
-            <thead><tr><th>Element / Property</th><th>Composition / Value</th></tr></thead>
-            <tbody>
-              ${compRows}${corrSuffRow}
-              <tr><td>Standards</td><td>${esc(best.std)}</td></tr>
-              <tr><td>Temp. Range</td><td>${best.t_min}°C to ${best.t_max}°C</td></tr>
-              <tr><td>Max Pressure (indicative)</td><td>${best.p_max} bar</td></tr>
-              <tr><td>Cost Index (CS=1.0)</td><td>${best.cost_idx}×</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Alternatives -->
-      <div style="margin-bottom:12px;">
-        <div style="font-family:var(--mono);font-size:0.62rem;letter-spacing:1.5px;color:var(--mid);text-transform:uppercase;margin-bottom:8px;">ALTERNATIVE MATERIALS (Ranked)</div>
-        <div class="moc-alts">${altCards}</div>
-      </div>
-
-      <!-- Not Recommended -->
-      <div class="warn-strip not-rec">
-        <div class="warn-strip-icon">🚫</div>
-        <div>
-          <strong>Not Recommended:</strong><br>
-          ${notRec||'All evaluated materials have some applicability at these conditions.'}
-        </div>
-      </div>
-
-      <!-- Summary -->
-      <div class="sum-strip" style="margin-top:12px;">
-        <div class="sum-head">SELECTION BASIS SUMMARY</div>
-        <div class="sum-row"><span class="sum-key">Equipment</span><span class="sum-val">${esc(summary.equip||'—')}</span></div>
-        <div class="sum-row"><span class="sum-key">Fluid</span><span class="sum-val">${esc(summary.fluid||'—')}</span></div>
-        <div class="sum-row"><span class="sum-key">Temperature / Pressure</span><span class="sum-val">${summary.T}°C / ${summary.P} bar g</span></div>
-        <div class="sum-row"><span class="sum-key">pH / Cl⁻ / H₂S</span><span class="sum-val">${summary.pH} / ${summary.Cl} ppm / ${summary.H2S} bar</span></div>
-        <div class="sum-row"><span class="sum-key">Velocity / Design Life</span><span class="sum-val">${summary.V} m/s / ${summary.life} yr</span></div>
-        <div class="sum-row" style="background:var(--amber-pale);">
-          <span class="sum-key" style="color:var(--amber);font-weight:700;">Basis</span>
-          <span class="sum-val" style="color:var(--amber);font-size:0.7rem;">Heuristic screening — no code calc</span>
-        </div>
-        <div class="sum-row">
-          <span class="sum-key" style="font-size:0.68rem;">Limitations</span>
-          <span class="sum-val" style="font-size:0.68rem;color:var(--mid);text-align:right;max-width:200px;">No thickness calc · No allowable stress · Single fluid assumed · Verify per ASME/API</span>
-        </div>
-      </div>
-    </div>`;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   UI BUILDERS  (driven by CATALOG data from API)
-══════════════════════════════════════════════════════════════ */
-function buildEquipGrid() {
-  const eq = CATALOG?.equipment || [];
-  document.getElementById('equip-grid').innerHTML = eq.map(e =>
-    `<div class="equip-card" onclick="selectEquipCard('${e.id}',this)" role="option" aria-label="${e.name}" tabindex="0"
-      onkeydown="if(event.key==='Enter'||event.key===' ')selectEquipCard('${e.id}',this)">
-      <span class="equip-icon" aria-hidden="true">${e.icon}</span>
-      <div class="equip-name">${e.name}</div>
-    </div>`
-  ).join('');
-}
-
-function selectEquipCard(id, el) {
-  document.querySelectorAll('.equip-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedEquip = id;
-  const equip = (CATALOG?.equipment||[]).find(e=>e.id===id);
-  document.getElementById('equip_sub').textContent = equip?equip.name:'';
-  markStepDone('step1');
-  markStepActive('step2');
-}
-
-function buildIndustryPills() {
-  const inds = CATALOG?.industries || [];
-  document.getElementById('industry-pills').innerHTML = inds.map(ind =>
-    `<span class="ind-pill ${ind==='All'?'active':''}"
-      onclick="filterFluids('${ind.replace(/'/g,"\\'")}',this)"
-      role="button" tabindex="0"
-      onkeydown="if(event.key==='Enter'||event.key===' ')filterFluids('${ind.replace(/'/g,"\\'")}',this)">${ind}</span>`
-  ).join('');
-}
-
-function filterFluids(ind, el) {
-  currentIndustry = ind;
-  document.querySelectorAll('.ind-pill').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  buildFluidGrid();
-}
-
-function buildFluidGrid() {
-  const fluids = CATALOG?.fluids || [];
-  const search = (document.getElementById('fluid-search')?.value||'').toLowerCase().trim();
-  const filtered = fluids.filter(f => {
-    const matchInd = currentIndustry==='All' || f.ind===currentIndustry;
-    const matchSearch = !search || f.name.toLowerCase().includes(search) || (f.sub||'').toLowerCase().includes(search) || f.ind.toLowerCase().includes(search);
-    return matchInd && matchSearch;
-  });
-
-  if (filtered.length===0) {
-    document.getElementById('fluid-grid').innerHTML =
-      `<div class="fluid-none">No fluids match "<strong>${document.getElementById('fluid-search').value}</strong>".</div>`;
-    return;
-  }
-
-  document.getElementById('fluid-grid').innerHTML = filtered.map(f =>
-    `<div class="fluid-item ${selectedFluid===f.id?'selected':''}"
-      onclick="selectFluid('${f.id}',this)" role="option"
-      aria-label="${f.name}" aria-selected="${selectedFluid===f.id}" tabindex="0"
-      onkeydown="if(event.key==='Enter'||event.key===' ')selectFluid('${f.id}',this)">
-      <div class="fluid-dot" style="background:${f.color}" aria-hidden="true"></div>
+  const confPct=best.score;
+  const confClass=confPct>75?'conf-high':confPct>50?'conf-med':'conf-low';
+  const failLabel=data.dominantFailureMode?`<div class="moc-stat"><div class="moc-stat-val" style="font-size:0.65rem;color:var(--red);">&#9889; ${esc(data.dominantFailureMode)}</div><div class="moc-stat-lbl">Dominant Risk</div></div>`:'';
+  const notRec=(data.eliminated||[]).join(', ');
+  const summary=data.summary||{};
+  document.getElementById('moc_results').innerHTML=`
+  <div class="result-appear">
+    <div style="background:#1e2832;border-radius:6px;padding:8px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+      <span>&#128300;</span>
       <div>
-        <div class="fluid-name">${f.name}</div>
-        <div class="fluid-sub">${f.sub||''}</div>
+        <div style="font-family:var(--mono);font-size:0.6rem;letter-spacing:1.5px;color:var(--copper2);text-transform:uppercase;font-weight:700;">Preliminary Screening Result &mdash; Not a Design Calculation</div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.55);margin-top:2px;">Heuristic-based selection only. Does not replace ASME/API/ISO code calculations. Verify with a qualified materials engineer.</div>
       </div>
-    </div>`
-  ).join('');
+    </div>
+    ${inputWarnHTML}${warningsHTML}
+    <div class="moc-headline">
+      <div class="moc-rank-bar"><div class="moc-rank-num">1</div><div class="moc-rank-lbl">PREFERRED</div></div>
+      <div class="moc-main">
+        <div class="moc-tag">Recommended MOC</div>
+        <div class="moc-name">${esc(best.name)}</div>
+        <div class="moc-grade">${esc(best.grade)} | ${esc(best.std)}</div>
+        <div class="moc-why">${explanationHTML}</div>
+        <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap;">${(best.tags||[]).map(t=>`<span class="chip chip-b">${esc(t)}</span>`).join('')}</div>
+      </div>
+      <div class="moc-aside">
+        <div class="moc-stat"><div class="moc-stat-val">${best.score}%</div><div class="moc-stat-lbl">Screening Score</div></div>
+        <div class="confidence"><div class="conf-label">Heuristic Fit</div><div class="conf-bar-bg"><div class="conf-bar-fill ${confClass}" style="width:${confPct}%"></div></div></div>
+        <div class="moc-stat"><div class="moc-stat-val">${best.cost_idx.toFixed(1)}&times;</div><div class="moc-stat-lbl">Cost Index</div></div>
+        <div class="moc-stat"><div class="moc-stat-val">${best.t_max}&deg;C</div><div class="moc-stat-lbl">Max Temp</div></div>
+        ${failLabel}
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-hd"><span class="card-hd-ic">&#9989;</span><span class="card-hd-title">Constraint Evaluation &mdash; ${esc(best.name)}</span><span class="card-hd-sub">Hard constraints first</span></div>
+      <div class="card-bd" style="padding:0;"><table class="comp-table"><thead><tr><th>Criterion</th><th>Input vs Limit</th><th>Status</th></tr></thead><tbody>${constraintRows}</tbody></table></div>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-hd"><span class="card-hd-ic">&#9879;&#65039;</span><span class="card-hd-title">Composition &mdash; ${esc(best.name)}</span></div>
+      <div class="card-bd" style="padding:0;"><table class="comp-table"><thead><tr><th>Element / Property</th><th>Composition / Value</th></tr></thead><tbody>
+        ${compRows}${corrSuffRow}
+        <tr><td>Standards</td><td>${esc(best.std)}</td></tr>
+        <tr><td>Temp. Range</td><td>${best.t_min}&deg;C to ${best.t_max}&deg;C</td></tr>
+        <tr><td>Max Pressure (indicative)</td><td>${best.p_max} bar</td></tr>
+        <tr><td>Cost Index (CS=1.0)</td><td>${best.cost_idx}&times;</td></tr>
+      </tbody></table></div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <div style="font-family:var(--mono);font-size:0.62rem;letter-spacing:1.5px;color:var(--mid);text-transform:uppercase;margin-bottom:8px;">ALTERNATIVE MATERIALS (Ranked)</div>
+      <div class="moc-alts">${altCards}</div>
+    </div>
+    <div class="warn-strip not-rec"><div class="warn-strip-icon">&#128683;</div><div><strong>Not Recommended:</strong><br>${notRec||'All evaluated materials have some applicability at these conditions.'}</div></div>
+    <div class="sum-strip" style="margin-top:12px;">
+      <div class="sum-head">SELECTION BASIS SUMMARY</div>
+      <div class="sum-row"><span class="sum-key">Equipment</span><span class="sum-val">${esc(summary.equip||'\u2014')}</span></div>
+      <div class="sum-row"><span class="sum-key">Fluid</span><span class="sum-val">${esc(summary.fluid||'\u2014')}</span></div>
+      <div class="sum-row"><span class="sum-key">Temperature / Pressure</span><span class="sum-val">${summary.T}&deg;C / ${summary.P} bar g</span></div>
+      <div class="sum-row"><span class="sum-key">pH / Cl&sup2; / H&#8322;S</span><span class="sum-val">${summary.pH} / ${summary.Cl} ppm / ${summary.H2S} bar</span></div>
+      <div class="sum-row"><span class="sum-key">Velocity / Design Life</span><span class="sum-val">${summary.V} m/s / ${summary.life} yr</span></div>
+      <div class="sum-row" style="background:var(--amber-pale);"><span class="sum-key" style="color:var(--amber);font-weight:700;">Basis</span><span class="sum-val" style="color:var(--amber);font-size:0.7rem;">Heuristic screening &mdash; no code calc</span></div>
+    </div>
+  </div>`;
 }
 
-function selectFluid(id, el) {
-  selectedFluid = id;
-  buildFluidGrid();
-  const f = (CATALOG?.fluids||[]).find(x=>x.id===id);
-  if (!f) return;
-
-  document.getElementById('sfp-name').textContent = f.name;
-  document.getElementById('sfp-sub').textContent  = f.sub||'';
-  document.getElementById('sfp-dot').style.background = f.color;
+function buildEquipGrid(){
+  const eq=CATALOG?.equipment||[];
+  document.getElementById('equip-grid').innerHTML=eq.map(e=>
+    `<div class="equip-card" onclick="selectEquipCard('${e.id}',this)" role="option" tabindex="0" aria-label="${e.name}" onkeydown="if(event.key==='Enter'||event.key===' ')selectEquipCard('${e.id}',this)">
+      <span class="equip-icon">${e.icon}</span><div class="equip-name">${e.name}</div>
+    </div>`).join('');
+}
+function selectEquipCard(id,el){
+  document.querySelectorAll('.equip-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');selectedEquip=id;
+  const equip=(CATALOG?.equipment||[]).find(e=>e.id===id);
+  document.getElementById('equip_sub').textContent=equip?equip.name:'';
+  markStepDone('step1');markStepActive('step2');
+}
+function buildIndustryPills(){
+  const inds=CATALOG?.industries||[];
+  document.getElementById('industry-pills').innerHTML=inds.map(ind=>
+    `<span class="ind-pill ${ind==='All'?'active':''}" onclick="filterFluids(this)" role="button" tabindex="0" data-ind="${ind}">${ind}</span>`).join('');
+  document.querySelectorAll('.ind-pill').forEach(p=>p.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')filterFluids(p);}));
+}
+function filterFluids(el){
+  currentIndustry=el.dataset.ind;
+  document.querySelectorAll('.ind-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');buildFluidGrid();
+}
+function buildFluidGrid(){
+  const fluids=CATALOG?.fluids||[];
+  const search=(document.getElementById('fluid-search')?.value||'').toLowerCase().trim();
+  const filtered=fluids.filter(f=>{
+    const matchInd=currentIndustry==='All'||f.ind===currentIndustry;
+    const matchSearch=!search||f.name.toLowerCase().includes(search)||(f.sub||'').toLowerCase().includes(search)||f.ind.toLowerCase().includes(search);
+    return matchInd&&matchSearch;
+  });
+  if(filtered.length===0){document.getElementById('fluid-grid').innerHTML=`<div class="fluid-none">No fluids match "<strong>${esc(document.getElementById('fluid-search').value)}</strong>".</div>`;return;}
+  document.getElementById('fluid-grid').innerHTML=filtered.map(f=>
+    `<div class="fluid-item ${selectedFluid===f.id?'selected':''}" onclick="selectFluid('${f.id}',this)" role="option" aria-selected="${selectedFluid===f.id}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')selectFluid('${f.id}',this)">
+      <div class="fluid-dot" style="background:${f.color}"></div>
+      <div><div class="fluid-name">${f.name}</div><div class="fluid-sub">${f.sub||''}</div></div>
+    </div>`).join('');
+}
+function selectFluid(id,el){
+  selectedFluid=id;buildFluidGrid();
+  const f=(CATALOG?.fluids||[]).find(x=>x.id===id);if(!f)return;
+  document.getElementById('sfp-name').textContent=f.name;
+  document.getElementById('sfp-sub').textContent=f.sub||'';
+  document.getElementById('sfp-dot').style.background=f.color;
   document.getElementById('selected-fluid-wrap').style.display='block';
-  document.getElementById('fluid_sub').textContent = f.name;
-
-  // Auto-fill from API-provided hints
-  if (f.autofill) {
-    if (f.autofill.pH  !== undefined) document.getElementById('pc_pH').value  = f.autofill.pH;
-    if (f.autofill.H2S !== undefined) document.getElementById('pc_H2S').value = f.autofill.H2S;
-    if (f.autofill.Cl  !== undefined) document.getElementById('pc_Cl').value  = f.autofill.Cl;
+  document.getElementById('fluid_sub').textContent=f.name;
+  if(f.autofill){
+    if(f.autofill.pH!==undefined)document.getElementById('pc_pH').value=f.autofill.pH;
+    if(f.autofill.H2S!==undefined)document.getElementById('pc_H2S').value=f.autofill.H2S;
+    if(f.autofill.Cl!==undefined)document.getElementById('pc_Cl').value=f.autofill.Cl;
   }
-
-  markStepDone('step2');
-  markStepActive('step3');
+  markStepDone('step2');markStepActive('step3');
 }
-
-function clearFluid() {
-  selectedFluid = null;
+function clearFluid(){
+  selectedFluid=null;
   document.getElementById('selected-fluid-wrap').style.display='none';
   document.getElementById('fluid_sub').textContent='Select one';
   buildFluidGrid();
-  ['step2','step3','step4'].forEach(id => {
-    const el = document.getElementById(id);
-    el.classList.remove('done','active');
-  });
+  ['step2','step3','step4'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('done','active');});
 }
 
-/* ══════════════════════════════════════════════════════════════
-   PDF GENERATOR  (client-side, uses lastResults from API)
-══════════════════════════════════════════════════════════════ */
-function makePDF() {
-  if (!lastResults) { showToast('⚠ Run an analysis first, then click PDF Report.'); return; }
-  const r    = lastResults;
-  const best = r.best;
-  const now  = new Date();
-  const ds   = now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-  const ts   = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-
-  const fluidObj = (CATALOG?.fluids||[]).find(f=>f.id===r.fluidId);
-  const equipObj = (CATALOG?.equipment||[]).find(e=>e.id===r.equipId);
-
-  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-  const compRows = Object.entries(best.composition||{}).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td><td>—</td></tr>`).join('');
-  const altRows  = (r.alts||[]).slice(0,4).map((m,i)=>
-    `<tr><td>#${i+2}</td><td><strong>${esc(m.name)}</strong></td><td style="font-family:monospace;font-size:9px">${esc(m.grade)}</td><td>${m.cost_idx}×</td><td>${m.t_max}°C</td><td>${esc((m.desc||'').substring(0,80))}…</td></tr>`
-  ).join('');
-
-  const warnItems = (r.warnings||[]).map(w=>`<div class="warn">⚠️ <strong>${esc(w.label)}:</strong> ${esc(w.body)}</div>`).join('');
-
-  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<style>
+function makePDF(){
+  if(!lastResults){showToast('&#9888; Run an analysis first, then click PDF Report.');return;}
+  const r=lastResults,best=r.best;
+  const now=new Date(),ds=now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),ts=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const fluidObj=(CATALOG?.fluids||[]).find(f=>f.id===r.fluidId);
+  const equipObj=(CATALOG?.equipment||[]).find(e=>e.id===r.equipId);
+  function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  const compRows=Object.entries(best.composition||{}).map(([k,v])=>`<tr><td>${e(k)}</td><td>${e(v)}</td><td>\u2014</td></tr>`).join('');
+  const altRows=(r.alts||[]).slice(0,4).map((m,i)=>`<tr><td>#${i+2}</td><td><strong>${e(m.name)}</strong></td><td style="font-family:monospace;font-size:9px">${e(m.grade)}</td><td>${m.cost_idx}\u00d7</td><td>${m.t_max}\u00b0C</td><td>${e((m.desc||'').substring(0,80))}\u2026</td></tr>`).join('');
+  const warnItems=(r.warnings||[]).map(w=>`<div class="warn">\u26a0\ufe0f <strong>${e(w.label)}:</strong> ${e(w.body)}</div>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
 @page{size:A4 portrait;margin:13mm 15mm 12mm 15mm;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',Arial,sans-serif;color:#121820;font-size:11px;background:#fff;line-height:1.6;}
@@ -1237,201 +824,99 @@ table.dt th{background:#1e2832;color:#fff;padding:5px 8px;font-size:8px;letter-s
 table.dt td{padding:5px 8px;border-bottom:1px solid #dde3e9;}
 table.dt tr:nth-child(even) td{background:#f7f9fb;}
 .warn{background:#fef3e2;border:1px solid #fcd34d;border-radius:4px;padding:7px 10px;font-size:9.5px;margin-bottom:7px;}
-.chip{display:inline-block;padding:1px 5px;border-radius:2px;font-size:7px;font-weight:700;margin:2px 2px 0 0;letter-spacing:0.5px;}
+.chip{display:inline-block;padding:1px 5px;border-radius:2px;font-size:7px;font-weight:700;margin:2px 2px 0 0;}
 .cb{background:#e6f0fb;color:#0952a0;border:1px solid #93c5fd;}
 .footer{position:fixed;bottom:6mm;left:15mm;right:15mm;display:flex;justify-content:space-between;font-size:7.5px;color:#94a3b8;border-top:1px solid #dde3e9;padding-top:5px;}
 .disclaimer{font-size:8px;color:#94a3b8;background:#f7f9fb;padding:7px 10px;border-radius:4px;border-left:2px solid #dde3e9;margin-top:8px;line-height:1.5;}
 </style></head><body>
-<div class="hdr">
-  <div>
-    <div class="logo">MOC Selector</div>
-    <div class="logo-sub">Material of Construction — multicalci.com</div>
-    <div class="badge">PRELIMINARY MOC SCREENING — NOT A DESIGN DOCUMENT</div>
-  </div>
-  <div class="meta">
-    Date: <b>${esc(ds)}</b> &nbsp; Time: <b>${esc(ts)}</b><br>
-    Equipment: <b>${esc(equipObj?.name||'—')}</b> &nbsp; Industry: <b>${esc(r.industry||'—')}</b><br>
-    Revision: <b>A — Preliminary</b>
-  </div>
-</div>
+<div class="hdr"><div><div class="logo">MOC Selector</div><div class="logo-sub">Material of Construction \u2014 multicalci.com</div><div class="badge">PRELIMINARY MOC SCREENING \u2014 NOT A DESIGN DOCUMENT</div></div>
+<div class="meta">Date: <b>${e(ds)}</b> &nbsp; Time: <b>${e(ts)}</b><br>Equipment: <b>${e(equipObj?.name||'\u2014')}</b> &nbsp; Industry: <b>${e(r.industry||'\u2014')}</b><br>Revision: <b>A \u2014 Preliminary</b></div></div>
 <div class="sec">Selection Basis</div>
 <div class="two">
-  <div class="box">
-    <div class="row"><span class="rk">Equipment</span><span class="rv">${esc(equipObj?.name||'—')}</span></div>
-    <div class="row"><span class="rk">Process Fluid</span><span class="rv">${esc(fluidObj?.name||r.fluidId||'—')}</span></div>
-    <div class="row"><span class="rk">Industry</span><span class="rv">${esc(r.industry||'—')}</span></div>
-    <div class="row"><span class="rk">Design Life</span><span class="rv">${esc(String(r.life||'—'))} years</span></div>
-    <div class="row"><span class="rk">Notes</span><span class="rv">${esc(r.notes)||'None'}</span></div>
-  </div>
-  <div class="box">
-    <div class="row"><span class="rk">Design Temperature</span><span class="rv">${r.T} °C</span></div>
-    <div class="row"><span class="rk">Design Pressure</span><span class="rv">${r.P} bar g</span></div>
-    <div class="row"><span class="rk">pH of Fluid</span><span class="rv">${r.pH}</span></div>
-    <div class="row"><span class="rk">Cl⁻ Concentration</span><span class="rv">${r.Cl} ppm</span></div>
-    <div class="row"><span class="rk">H₂S Partial Pressure</span><span class="rv">${r.H2S} bar</span></div>
-    <div class="row"><span class="rk">Flow Velocity</span><span class="rv">${r.V} m/s</span></div>
-  </div>
+<div class="box"><div class="row"><span class="rk">Equipment</span><span class="rv">${e(equipObj?.name||'\u2014')}</span></div><div class="row"><span class="rk">Process Fluid</span><span class="rv">${e(fluidObj?.name||r.fluidId||'\u2014')}</span></div><div class="row"><span class="rk">Industry</span><span class="rv">${e(r.industry||'\u2014')}</span></div><div class="row"><span class="rk">Design Life</span><span class="rv">${e(String(r.life||'\u2014'))} years</span></div><div class="row"><span class="rk">Notes</span><span class="rv">${e(r.notes)||'None'}</span></div></div>
+<div class="box"><div class="row"><span class="rk">Design Temperature</span><span class="rv">${r.T} \u00b0C</span></div><div class="row"><span class="rk">Design Pressure</span><span class="rv">${r.P} bar g</span></div><div class="row"><span class="rk">pH of Fluid</span><span class="rv">${r.pH}</span></div><div class="row"><span class="rk">Cl\u207b Concentration</span><span class="rv">${r.Cl} ppm</span></div><div class="row"><span class="rk">H\u2082S Partial Pressure</span><span class="rv">${r.H2S} bar</span></div><div class="row"><span class="rk">Flow Velocity</span><span class="rv">${r.V} m/s</span></div></div>
 </div>
 <div class="sec">Preferred Material of Construction</div>
-<div class="hl">
-  <div class="hl-bar"><div class="hl-num">1</div><div class="hl-lbl">PREF.</div></div>
-  <div class="hl-main">
-    <div class="hl-tag">Recommended Material</div>
-    <div class="hl-name">${esc(best.name)}</div>
-    <div class="hl-grade">${esc(best.grade)} | ${esc(best.std)}</div>
-    <div class="hl-txt">${esc(best.desc||'')}</div>
-    <div style="margin-top:4px;">${(best.tags||[]).map(t=>`<span class="chip cb">${esc(t)}</span>`).join('')}</div>
-  </div>
-  <div class="hl-side">
-    <div class="stat"><div class="sv">${best.cost_idx}×</div><div class="sl">Cost Index</div></div>
-    <div class="stat"><div class="sv">${best.t_max}°C</div><div class="sl">Max Temp</div></div>
-    <div class="stat"><div class="sv">${best.t_min}°C</div><div class="sl">Min Temp</div></div>
-    <div class="stat"><div class="sv">${best.p_max} bar</div><div class="sl">Max Press.</div></div>
-  </div>
-</div>
+<div class="hl"><div class="hl-bar"><div class="hl-num">1</div><div class="hl-lbl">PREF.</div></div>
+<div class="hl-main"><div class="hl-tag">Recommended Material</div><div class="hl-name">${e(best.name)}</div><div class="hl-grade">${e(best.grade)} | ${e(best.std)}</div><div class="hl-txt">${e(best.desc||'')}</div><div style="margin-top:4px;">${(best.tags||[]).map(t=>`<span class="chip cb">${e(t)}</span>`).join('')}</div></div>
+<div class="hl-side"><div class="stat"><div class="sv">${best.cost_idx}\u00d7</div><div class="sl">Cost Index</div></div><div class="stat"><div class="sv">${best.t_max}\u00b0C</div><div class="sl">Max Temp</div></div><div class="stat"><div class="sv">${best.t_min}\u00b0C</div><div class="sl">Min Temp</div></div><div class="stat"><div class="sv">${best.p_max} bar</div><div class="sl">Max Press.</div></div></div></div>
 <div class="sec">Selection Justification</div>
-<div style="font-size:10px;line-height:1.65;color:#384553;background:#f7f9fb;padding:9px 11px;border-radius:4px;border-left:3px solid #b5600a;margin-bottom:10px;white-space:pre-line;">${esc(r.explanation||'')}</div>
+<div style="font-size:10px;line-height:1.65;color:#384553;background:#f7f9fb;padding:9px 11px;border-radius:4px;border-left:3px solid #b5600a;margin-bottom:10px;white-space:pre-line;">${e(r.explanation||'')}</div>
 ${warnItems}
-<div class="sec">Material Composition — ${esc(best.name)}</div>
-<table class="dt">
-  <thead><tr><th>Element / Property</th><th>Composition / Value</th><th>Note</th></tr></thead>
-  <tbody>${compRows}
-    <tr><td>Temperature Range</td><td>${best.t_min}°C to ${best.t_max}°C</td><td>Design limits</td></tr>
-    <tr><td>Max Pressure</td><td>${best.p_max} bar</td><td>Indicative — verify by calc</td></tr>
-    <tr><td>Standards</td><td colspan="2">${esc(best.std)}</td></tr>
-  </tbody>
-</table>
+<div class="sec">Material Composition \u2014 ${e(best.name)}</div>
+<table class="dt"><thead><tr><th>Element / Property</th><th>Composition / Value</th><th>Note</th></tr></thead><tbody>${compRows}<tr><td>Temperature Range</td><td>${best.t_min}\u00b0C to ${best.t_max}\u00b0C</td><td>Design limits</td></tr><tr><td>Max Pressure</td><td>${best.p_max} bar</td><td>Indicative \u2014 verify by calc</td></tr><tr><td>Standards</td><td colspan="2">${e(best.std)}</td></tr></tbody></table>
 <div class="sec">Alternative Materials</div>
-<table class="dt">
-  <thead><tr><th>Rank</th><th>Material</th><th>Grade</th><th>Cost</th><th>Max T</th><th>Notes</th></tr></thead>
-  <tbody>${altRows}</tbody>
-</table>
+<table class="dt"><thead><tr><th>Rank</th><th>Material</th><th>Grade</th><th>Cost</th><th>Max T</th><th>Notes</th></tr></thead><tbody>${altRows}</tbody></table>
 <div class="sec">General Design Recommendations</div>
 <ul style="padding-left:15px;font-size:9.5px;color:#5a6b7a;line-height:2.0;">
-  <li>Verify material traceability per applicable standard (ASTM, EN, IS)</li>
-  <li>Conduct PMI (Positive Material Identification) on all critical materials</li>
-  <li>Welds: PWHT per code; WPS/PQR per ASME IX or equivalent</li>
-  <li>Corrosion allowance: 1.5 mm min (low corrosivity); 3–6 mm (moderate/severe)</li>
-  <li>In-service inspection per API 510 / API 570 or equivalent</li>
-  <li>This recommendation is a preliminary guide only — verify with a qualified materials engineer</li>
+<li>Verify material traceability per applicable standard (ASTM, EN, IS)</li>
+<li>Conduct PMI (Positive Material Identification) on all critical materials</li>
+<li>Welds: PWHT per code; WPS/PQR per ASME IX or equivalent</li>
+<li>Corrosion allowance: 1.5 mm min (low corrosivity); 3\u20136 mm (moderate/severe)</li>
+<li>In-service inspection per API 510 / API 570 or equivalent</li>
+<li>This recommendation is a preliminary guide only \u2014 verify with a qualified materials engineer</li>
 </ul>
 <div class="disclaimer"><strong>MANDATORY DISCLAIMER:</strong> This document is the output of an automated heuristic screening tool and constitutes a preliminary engineering guide only. It is not a design calculation, a code-compliant assessment, or a procurement specification. All material selections must be verified by a qualified materials or corrosion engineer. multicalci.com accepts no liability for decisions made solely on this output.</div>
-<div class="footer">
-  <span>MULTICALCI.COM — MOC Selector</span>
-  <span>${esc(equipObj?.name||'—')} | ${esc(fluidObj?.name||r.fluidId||'—')} | ${r.T}°C / ${r.P} bar</span>
-  <span>Rev A — ${esc(ds)} ${esc(ts)} | Preliminary</span>
-</div>
+<div class="footer"><span>MULTICALCI.COM \u2014 MOC Selector</span><span>${e(equipObj?.name||'\u2014')} | ${e(fluidObj?.name||r.fluidId||'\u2014')} | ${r.T}\u00b0C / ${r.P} bar</span><span>Rev A \u2014 ${e(ds)} ${e(ts)}</span></div>
 </body></html>`;
-
-  const blob = new Blob([html],{type:'text/html;charset=utf-8'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.target='_blank'; a.rel='noopener';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),10000);
-  showToast('📄 PDF report opened — use browser Print (Ctrl+P) to save as PDF.');
+  showToast('\ud83d\udcc4 PDF report opened \u2014 use browser Print (Ctrl+P) to save as PDF.');
 }
 
-/* ══════════════════════════════════════════════════════════════
-   STEP HELPERS
-══════════════════════════════════════════════════════════════ */
-function markStepDone(id){ const el=document.getElementById(id); el.classList.remove('active'); el.classList.add('done'); }
-function markStepActive(id){ const el=document.getElementById(id); if(!el.classList.contains('done')) el.classList.add('active'); }
+function markStepDone(id){const el=document.getElementById(id);el.classList.remove('active');el.classList.add('done');}
+function markStepActive(id){const el=document.getElementById(id);if(!el.classList.contains('done'))el.classList.add('active');}
 
-function resetAll() {
-  selectedEquip=null; selectedFluid=null; currentIndustry='All';
-  lastResults=null; _inputWarnings=[];
+function resetAll(){
+  selectedEquip=null;selectedFluid=null;currentIndustry='All';lastResults=null;_inputWarnings=[];
   document.querySelectorAll('.equip-card').forEach(c=>c.classList.remove('selected'));
   document.getElementById('equip_sub').textContent='Select one';
   document.getElementById('fluid_sub').textContent='Select one';
   document.getElementById('selected-fluid-wrap').style.display='none';
   document.getElementById('fluid_notes').value='';
-  document.getElementById('pc_T').value=100;
-  document.getElementById('pc_P').value=10;
-  document.getElementById('pc_pH').value=7;
-  document.getElementById('pc_Cl').value=0;
-  document.getElementById('pc_H2S').value=0;
-  document.getElementById('pc_V').value=2;
-  document.getElementById('pc_life').value=25;
-  document.getElementById('result_sub').textContent='—';
-  ['step1','step2','step3','step4'].forEach((id,i)=>{
-    const el=document.getElementById(id); el.classList.remove('done','active');
-    if(i===0) el.classList.add('active');
-  });
-  document.getElementById('moc_results').innerHTML=`
-    <div class="placeholder"><div class="ph-icon">🔬</div><h3>Awaiting Analysis</h3>
-    <p>Complete all three steps, then click Analyze.</p>
-    <div class="ph-steps">
-      <div class="ph-step"><div class="ph-step-num">1</div>Select equipment type</div>
-      <div class="ph-step"><div class="ph-step-num">2</div>Choose process fluid</div>
-      <div class="ph-step"><div class="ph-step-num">3</div>Enter operating conditions</div>
-      <div class="ph-step"><div class="ph-step-num">▶</div>Click ANALYZE & SELECT MOC</div>
-    </div></div>`;
-  document.querySelectorAll('.ind-pill').forEach(p=>{
-    p.classList.remove('active'); if(p.textContent==='All') p.classList.add('active');
-  });
-  buildFluidGrid();
-  showToast('🔄 All inputs reset');
+  document.getElementById('pc_T').value=100;document.getElementById('pc_P').value=10;
+  document.getElementById('pc_pH').value=7;document.getElementById('pc_Cl').value=0;
+  document.getElementById('pc_H2S').value=0;document.getElementById('pc_V').value=2;document.getElementById('pc_life').value=25;
+  document.getElementById('result_sub').textContent='\u2014';
+  ['step1','step2','step3','step4'].forEach((id,i)=>{const el=document.getElementById(id);el.classList.remove('done','active');if(i===0)el.classList.add('active');});
+  document.getElementById('moc_results').innerHTML=`<div class="placeholder"><div class="ph-icon">&#128300;</div><h3>Awaiting Analysis</h3><p>Complete all three steps, then click Analyze.</p><div class="ph-steps"><div class="ph-step"><div class="ph-step-num">1</div>Select equipment type</div><div class="ph-step"><div class="ph-step-num">2</div>Choose process fluid</div><div class="ph-step"><div class="ph-step-num">3</div>Enter operating conditions</div><div class="ph-step"><div class="ph-step-num">&#9654;</div>Click ANALYZE &amp; SELECT MOC</div></div></div>`;
+  document.querySelectorAll('.ind-pill').forEach(p=>{p.classList.remove('active');if(p.dataset.ind==='All')p.classList.add('active');});
+  buildFluidGrid();showToast('\ud83d\udd04 All inputs reset');
 }
 
-/* ══════════════════════════════════════════════════════════════
-   SHARE MODAL
-══════════════════════════════════════════════════════════════ */
-function openShareModal() {
-  const url=window.location.href, text='Check out this free MOC Selector tool for engineers! Covers CS, SS, Nickel alloys, Titanium, Polymers with full NACE/ASTM justification.';
-  const enc=encodeURIComponent, encT=enc(text);
+function openShareModal(){
+  const url=window.location.href,text='Check out this free MOC Selector tool for engineers! NACE/ASTM/ASME material recommendations.';
+  const enc=encodeURIComponent;
   document.getElementById('share-url-input').value=url;
   document.getElementById('share-linkedin').href=`https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`;
-  document.getElementById('share-twitter').href=`https://twitter.com/intent/tweet?text=${encT}&url=${enc(url)}`;
+  document.getElementById('share-twitter').href=`https://twitter.com/intent/tweet?text=${enc(text)}&url=${enc(url)}`;
   document.getElementById('share-whatsapp').href=`https://wa.me/?text=${enc(text+' '+url)}`;
-  document.getElementById('share-email').href=`mailto:?subject=${enc('MOC Selector Tool — Free for Engineers')}&body=${enc(text+'\n\n'+url)}`;
-  document.getElementById('share-overlay').classList.add('open');
-  document.body.style.overflow='hidden';
+  document.getElementById('share-email').href=`mailto:?subject=${enc('MOC Selector Tool \u2014 Free for Engineers')}&body=${enc(text+'\n\n'+url)}`;
+  document.getElementById('share-overlay').classList.add('open');document.body.style.overflow='hidden';
 }
-function closeShareModal(){ document.getElementById('share-overlay').classList.remove('open'); document.body.style.overflow=''; }
-function closeShareOnBG(e){ if(e.target===document.getElementById('share-overlay')) closeShareModal(); }
+function closeShareModal(){document.getElementById('share-overlay').classList.remove('open');document.body.style.overflow='';}
+function closeShareOnBG(e){if(e.target===document.getElementById('share-overlay'))closeShareModal();}
 function copyShareURL(){
-  const input=document.getElementById('share-url-input'); input.select();
-  try {
-    if(navigator.clipboard){
-      navigator.clipboard.writeText(input.value)
-        .then(()=>showToast('🔗 Link copied to clipboard!'))
-        .catch(()=>{try{document.execCommand('copy');showToast('🔗 Link copied!');}catch(e){showToast('Copy the URL manually.');}});
-    } else { document.execCommand('copy'); showToast('🔗 Link copied to clipboard!'); }
-  } catch(e){ showToast('Could not copy — please copy the URL manually.'); }
+  const input=document.getElementById('share-url-input');input.select();
+  if(navigator.clipboard){navigator.clipboard.writeText(input.value).then(()=>showToast('\ud83d\udd17 Link copied!'));}
+  else{try{document.execCommand('copy');showToast('\ud83d\udd17 Link copied!');}catch(e){showToast('Copy the URL manually.');}}
 }
-
-/* ══════════════════════════════════════════════════════════════
-   MOBILE NAV
-══════════════════════════════════════════════════════════════ */
-function openMobileNav(){ document.getElementById('mobile-nav').classList.add('open'); document.getElementById('mobile-nav-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-function closeMobileNav(){ document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('mobile-nav-overlay').classList.remove('open'); document.body.style.overflow=''; }
-
-/* ══════════════════════════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════════════════════════ */
+function openMobileNav(){document.getElementById('mobile-nav').classList.add('open');document.getElementById('mobile-nav-overlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobileNav(){document.getElementById('mobile-nav').classList.remove('open');document.getElementById('mobile-nav-overlay').classList.remove('open');document.body.style.overflow='';}
 function showToast(msg){
-  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  if(_toastTimer) clearTimeout(_toastTimer);
+  const t=document.getElementById('toast');t.innerHTML=msg;t.classList.add('show');
+  if(_toastTimer)clearTimeout(_toastTimer);
   _toastTimer=setTimeout(()=>{t.classList.remove('show');_toastTimer=null;},3200);
 }
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function debounce(fn,ms){let t;return(...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),ms);};}
+const debouncedBuildFluidGrid=debounce(buildFluidGrid,120);
 
-/* ══════════════════════════════════════════════════════════════
-   UTILS
-══════════════════════════════════════════════════════════════ */
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
-function debounce(fn,ms){ let t; return(...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),ms);}; }
-const debouncedBuildFluidGrid = debounce(buildFluidGrid, 120);
-
-/* ══════════════════════════════════════════════════════════════
-   INIT
-══════════════════════════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded',()=>{
   loadCatalog();
-  document.addEventListener('keydown', e => {
-    if (e.key==='Escape'){ closeShareModal(); closeMobileNav(); }
-  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeShareModal();closeMobileNav();}});
 });
 </script>
 </body>
