@@ -7668,6 +7668,455 @@ async function handle_mechanical_engineering(body, res) {
 
 
 
+
+// ================================================================
+// MOC (Material of Construction) ENGINE
+// Routes: GET  /api/moc  → catalog (equipment, industries, fluids)
+//         POST /api/moc  → analyze (scoring engine, returns results)
+// ================================================================
+
+/* ── EQUIPMENT ── */
+const EQUIPMENT = [
+  {id:'pipe',       icon:'🔧', name:'Pipe / Tubing'},
+  {id:'vessel',     icon:'🏺', name:'Storage Vessel'},
+  {id:'pv',         icon:'🫙', name:'Pressure Vessel'},
+  {id:'hx',         icon:'♨️',  name:'Heat Exchanger'},
+  {id:'sep',        icon:'⚗️',  name:'Separator'},
+  {id:'column',     icon:'🏛️', name:'Distill. Column'},
+  {id:'reactor',    icon:'⚡', name:'Reactor'},
+  {id:'pump',       icon:'💧', name:'Pump Casing'},
+  {id:'compressor', icon:'⚙️', name:'Compressor'},
+  {id:'tank',       icon:'🛢️', name:'Storage Tank'},
+  {id:'coil',       icon:'🔩', name:'Coil / Jacket'},
+  {id:'valve',      icon:'🔑', name:'Valve Body'},
+  {id:'nozzle',     icon:'💨', name:'Nozzle / Fitting'},
+  {id:'condenser',  icon:'❄️', name:'Condenser'},
+  {id:'reboiler',   icon:'🔥', name:'Reboiler'},
+  {id:'filter',     icon:'🗂️', name:'Filter / Strainer'},
+];
+
+/* ── INDUSTRIES ── */
+const INDUSTRIES = ['All','Oil & Gas','Chemical','Petrochemical','Water','Power','Food & Bev','Pharma','Mining'];
+
+/* ── FLUID LIBRARY — PROTECTED ── */
+const FLUIDS = [
+  {id:'crude',       name:'Crude Oil',              sub:'Sour / sweet',      color:'#3a2800', ind:'Oil & Gas',      corr:'moderate', acid:false, alkali:false, h2s:true,  cl:false},
+  {id:'nat_gas',     name:'Natural Gas (Dry)',       sub:'Non-corrosive',     color:'#6b5a00', ind:'Oil & Gas',      corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'h2s_gas',     name:'H₂S (Sour Gas)',         sub:'Wet sour service',  color:'#8a4000', ind:'Oil & Gas',      corr:'severe',   acid:true,  alkali:false, h2s:true,  cl:false},
+  {id:'diesel',      name:'Diesel / Fuel Oil',      sub:'Refined product',   color:'#5a4000', ind:'Oil & Gas',      corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'h2so4',       name:'Sulphuric Acid H₂SO₄',  sub:'All concentrations',color:'#8a0000', ind:'Chemical',       corr:'severe',   acid:true,  alkali:false, h2s:false, cl:false},
+  {id:'hcl',         name:'Hydrochloric Acid HCl',  sub:'All concentrations',color:'#6b0000', ind:'Chemical',       corr:'severe',   acid:true,  alkali:false, h2s:false, cl:true},
+  {id:'hno3',        name:'Nitric Acid HNO₃',       sub:'All concentrations',color:'#7a2000', ind:'Chemical',       corr:'severe',   acid:true,  alkali:false, h2s:false, cl:false},
+  {id:'naoh',        name:'Caustic Soda NaOH',      sub:'All concentrations',color:'#004060', ind:'Chemical',       corr:'moderate', acid:false, alkali:true,  h2s:false, cl:false},
+  {id:'hf',          name:'Hydrofluoric Acid HF',   sub:'Alkylation units',  color:'#8a0000', ind:'Petrochemical',  corr:'severe',   acid:true,  alkali:false, h2s:false, cl:false},
+  {id:'h3po4',       name:'Phosphoric Acid H₃PO₄',  sub:'All concentrations',color:'#6b4000', ind:'Chemical',       corr:'severe',   acid:true,  alkali:false, h2s:false, cl:false},
+  {id:'water_sw',    name:'Seawater',               sub:'Cl⁻ ~18,000 ppm',  color:'#004080', ind:'Water',          corr:'severe',   acid:false, alkali:false, h2s:false, cl:true},
+  {id:'water_fw',    name:'Fresh Water',            sub:'General service',   color:'#0066cc', ind:'Water',          corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'water_bw',    name:'Boiler Feed Water',      sub:'Demineralised',     color:'#003366', ind:'Power',          corr:'moderate', acid:false, alkali:false, h2s:false, cl:false},
+  {id:'water_cl',    name:'Cooling Water (CW)',     sub:'Treated CW',        color:'#00668a', ind:'Water',          corr:'moderate', acid:false, alkali:false, h2s:false, cl:true},
+  {id:'steam',       name:'Steam (Process)',        sub:'Saturated/super',   color:'#6b6b6b', ind:'Power',          corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'milk',        name:'Milk / Dairy',           sub:'Sanitary grade',    color:'#b8a060', ind:'Food & Bev',     corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'ethanol',     name:'Ethanol / Alcohol',      sub:'Fermentation',      color:'#8a6000', ind:'Food & Bev',     corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'pharma',      name:'WFI / Pharma Media',     sub:'USP grade',         color:'#6b4080', ind:'Pharma',         corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'benzene',     name:'Benzene / Aromatics',    sub:'Carcinogenic',      color:'#4a3a00', ind:'Petrochemical',  corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'fgd',         name:'FGD Slurry (Gypsum)',    sub:'Power plant',       color:'#808060', ind:'Power',          corr:'moderate', acid:true,  alkali:false, h2s:false, cl:true},
+  {id:'lox',         name:'Liquid Oxygen LOX',      sub:'Cryogenic',         color:'#0080cc', ind:'Chemical',       corr:'moderate', acid:false, alkali:false, h2s:false, cl:false},
+  {id:'lng',         name:'LNG / LPG',              sub:'Cryogenic',         color:'#00666b', ind:'Oil & Gas',      corr:'low',      acid:false, alkali:false, h2s:false, cl:false},
+  {id:'brine',       name:'Produced Water / Brine', sub:'High Cl⁻',         color:'#6b6b00', ind:'Oil & Gas',      corr:'severe',   acid:false, alkali:false, h2s:true,  cl:true},
+  {id:'co2',         name:'CO₂ / Carbonic Acid',   sub:'Wet CO₂',           color:'#666699', ind:'Oil & Gas',      corr:'moderate', acid:true,  alkali:false, h2s:false, cl:false},
+  {id:'amine',       name:'Amine (MEA/DEA/MDEA)',   sub:'H₂S absorption',    color:'#336633', ind:'Oil & Gas',      corr:'moderate', acid:false, alkali:true,  h2s:true,  cl:false},
+  {id:'acid_mine',   name:'Acid Mine Drainage',     sub:'pH 1–4',            color:'#8a4000', ind:'Mining',         corr:'severe',   acid:true,  alkali:false, h2s:false, cl:true},
+  {id:'sulfur',      name:'Molten Sulfur',          sub:'130–160°C',         color:'#b8a000', ind:'Petrochemical',  corr:'severe',   acid:false, alkali:false, h2s:true,  cl:false},
+  {id:'nh3',         name:'Ammonia NH₃',            sub:'Anhydrous/aqueous', color:'#006b4a', ind:'Chemical',       corr:'moderate', acid:false, alkali:true,  h2s:false, cl:false},
+  {id:'cl2',         name:'Chlorine Gas Cl₂',       sub:'Wet / Dry',         color:'#5a6b00', ind:'Chemical',       corr:'severe',   acid:false, alkali:false, h2s:false, cl:true},
+  {id:'chlorine_sol',name:'Brine / NaCl Solution',  sub:'Chlor-alkali',      color:'#006633', ind:'Chemical',       corr:'moderate', acid:false, alkali:false, h2s:false, cl:true},
+];
+
+/* ── FLUID AUTOFILL HINTS (UX only — no engine logic) ── */
+const FLUID_AUTOFILL = {
+  h2so4:{pH:1,H2S:0,Cl:0}, hcl:{pH:1,H2S:0,Cl:100000}, hno3:{pH:1,H2S:0,Cl:0},
+  h3po4:{pH:2,H2S:0,Cl:0}, co2:{pH:5,H2S:0,Cl:0}, naoh:{pH:13,H2S:0,Cl:0},
+  nh3:{pH:11,H2S:0,Cl:0}, acid_mine:{pH:2,H2S:0,Cl:0}, water_sw:{pH:8,H2S:0,Cl:18000},
+  water_fw:{pH:7,H2S:0,Cl:0}, water_bw:{pH:9.5,H2S:0,Cl:0}, water_cl:{pH:7.5,H2S:0,Cl:200},
+  brine:{pH:7,H2S:0.005,Cl:50000}, crude:{pH:6,H2S:0.01,Cl:0}, h2s_gas:{pH:5,H2S:0.1,Cl:0},
+  amine:{pH:9,H2S:0.005,Cl:0}, sulfur:{pH:5,H2S:0.05,Cl:0}, fgd:{pH:4,H2S:0,Cl:0},
+  chlorine_sol:{pH:7,H2S:0,Cl:15000}, cl2:{pH:6,H2S:0,Cl:10000},
+  lox:{pH:7,H2S:0,Cl:0}, lng:{pH:7,H2S:0,Cl:0}, milk:{pH:6.5,H2S:0,Cl:0},
+  ethanol:{pH:7,H2S:0,Cl:0}, benzene:{pH:7,H2S:0,Cl:0},
+};
+
+/* ── MATERIAL DATABASE — PROTECTED ── */
+const MATERIALS = {
+  CS_A106:   {id:'CS_A106',   group:'Carbon Steel',   color:'#5a3e00',name:'Carbon Steel A106',        grade:'ASTM A106 Gr.B / IS 2062 Gr.B',           std:'ASTM A106, A53, IS:2062',      cost_idx:1.0,  t_min:-29, t_max:425, p_max:400,composition:{C:'0.30 max',Mn:'0.29–1.06',P:'0.048 max',S:'0.058 max',Si:'0.10 min',Fe:'Balance'},pros:['Lowest cost','Widely available','Easy to weld','Good for dry non-corrosive service'],cons:['Not for wet/corrosive service','Not for acids/alkalis','Corrosion allowance required'],suits:['nat_gas','diesel','steam','water_bw','lng'],avoids:['h2so4','hcl','hno3','water_sw','cl2','fgd','acid_mine'],desc:'Standard carbon steel for non-corrosive service. Most economical option. Widely used in oil & gas for dry service.',tags:['Low Alloy','Weldable','General Service']},
+  MS_Fe410:  {id:'MS_Fe410',  group:'Mild Steel',     color:'#7a5a00',name:'Mild Steel IS 2062',        grade:'IS 2062 E250/E350 (Fe410)',                std:'IS:2062, BS EN 10025',          cost_idx:0.9,  t_min:-10, t_max:350, p_max:150,composition:{C:'0.23 max',Mn:'1.50 max',P:'0.045 max',S:'0.045 max',Si:'0.40 max',Fe:'Balance'},pros:['Very low cost','Excellent weldability','Good machinability'],cons:['Very prone to corrosion','Not for corrosive service','Limited temperature'],suits:['nat_gas','diesel','benzene'],avoids:['h2so4','hcl','water_sw','water_fw','cl2','brine'],desc:'General structural steel. Lowest cost but poorest corrosion resistance. For structural/non-process components.',tags:['Structural','Low Cost','Non-Corrosive Only']},
+  LAS_P11:   {id:'LAS_P11',   group:'Low Alloy Steel',color:'#4a3000',name:'Low Alloy Steel Cr-Mo',     grade:'ASTM A335 P11 / P22',                     std:'ASTM A335, A387',               cost_idx:2.5,  t_min:-29, t_max:600, p_max:600,composition:{C:'0.05–0.15',Cr:'1.00–1.50',Mo:'0.44–0.65',Mn:'0.30–0.60',Si:'0.50–1.00',Fe:'Balance'},pros:['High temperature service','Good creep resistance','HTHA resistance per API 941 Nelson curves'],cons:['PWHT required','Not for corrosive service'],suits:['steam','nat_gas','diesel'],avoids:['h2so4','hcl','water_sw'],desc:'Cr-Mo alloy steel for high-temperature, high-pressure service. Refinery heaters, steam piping above 400°C.',tags:['High Temp','Cr-Mo','Creep Resistant']},
+  SS_304:    {id:'SS_304',    group:'Stainless Steel',color:'#6a8a9a',name:'Stainless Steel 304',        grade:'ASTM A312 TP304 / UNS S30400',             std:'ASTM A312, A240, IS:6913',      cost_idx:4.5,  t_min:-196,t_max:870, p_max:400,composition:{C:'0.08 max',Cr:'18.0–20.0',Ni:'8.0–10.5',Mn:'2.0 max',Si:'0.75 max',N:'0.10 max',Fe:'Balance'},pros:['Good general corrosion resistance','Food/pharma grade','Wide temperature range'],cons:['Cl SCC above ~60°C','Not for HCl or HF'],suits:['water_fw','steam','milk','ethanol','pharma','naoh','nh3','nat_gas'],avoids:['hcl','hf','water_sw','brine','cl2','acid_mine'],desc:'Austenitic SS for moderate corrosion, food, pharma, and general process. Avoid chloride-rich environments at elevated temperature.',tags:['Austenitic','Food Grade','General Corrosion']},
+  SS_316L:   {id:'SS_316L',   group:'Stainless Steel',color:'#5a7a8a',name:'Stainless Steel 316L',       grade:'ASTM A312 TP316L / UNS S31603',            std:'ASTM A312, A240, IS:6913',      cost_idx:5.5,  t_min:-196,t_max:870, p_max:400,composition:{C:'0.035 max',Cr:'16.0–18.0',Ni:'10.0–14.0',Mo:'2.0–3.0',Mn:'2.0 max',Fe:'Balance'},pros:['Better chloride resistance than 304 (Mo addition)','Low C — no sensitisation','Pharma/food grade'],cons:['Cl SCC risk above 60°C','Not for concentrated HCl/HF'],suits:['water_fw','water_cl','steam','milk','ethanol','pharma','naoh','nh3','co2','amine'],avoids:['hcl','hf','water_sw','cl2','acid_mine'],desc:'Mo-bearing austenitic SS. Preferred over 304 for moderate chloride, pharma, and food process service.',tags:['Austenitic','Mo-Bearing','Low Carbon','Pharma']},
+  SS_317L:   {id:'SS_317L',   group:'Stainless Steel',color:'#5070a0',name:'Stainless Steel 317L',       grade:'ASTM A312 TP317L / UNS S31703',            std:'ASTM A312, A240',               cost_idx:6.5,  t_min:-196,t_max:870, p_max:400,composition:{C:'0.035 max',Cr:'18.0–20.0',Ni:'11.0–15.0',Mo:'3.0–4.0',Mn:'2.0 max',Fe:'Balance'},pros:['Higher Mo than 316L — better Cl resistance','Good for dilute acids','FGD service'],cons:['Higher cost than 316L','Still susceptible to high-Cl SCC'],suits:['water_cl','co2','fgd','amine','h3po4'],avoids:['hcl','water_sw','cl2','hf','acid_mine'],desc:'Higher Mo than 316L. FGD systems, phosphoric acid, moderately aggressive chloride environments.',tags:['High Mo','FGD','Acid Resistant']},
+  SS_321:    {id:'SS_321',    group:'Stainless Steel',color:'#7a90a0',name:'Stainless Steel 321',         grade:'ASTM A312 TP321 / UNS S32100',             std:'ASTM A312, A240',               cost_idx:5.8,  t_min:-196,t_max:900, p_max:400,composition:{C:'0.08 max',Cr:'17.0–19.0',Ni:'9.0–12.0',Ti:'5×C min',Mn:'2.0 max',Fe:'Balance'},pros:['Ti-stabilised — excellent sensitisation resistance','High-temp welded assemblies'],cons:['Similar Cl SCC risk as 304','Not for highly corrosive media'],suits:['steam','nat_gas','diesel','amine','co2'],avoids:['hcl','water_sw','cl2','hf'],desc:'Ti-stabilised austenitic SS for welded construction at elevated temperatures. Refinery HX, furnace tubing.',tags:['Ti-Stabilised','Weld Service','High Temp']},
+  DSS_2205:  {id:'DSS_2205',  group:'Duplex SS',      color:'#304870',name:'Duplex SS 2205',              grade:'ASTM A790 UNS S31803/S32205',              std:'ASTM A790, A928',               cost_idx:8.5,  t_min:-50, t_max:315, p_max:500,composition:{C:'0.03 max',Cr:'21.0–23.0',Ni:'4.5–6.5',Mo:'2.5–3.5',N:'0.08–0.20',Fe:'Balance'},pros:['Excellent Cl SCC resistance (PREN~35)','High strength — thinner walls','Good pitting resistance'],cons:['Max 315°C (sigma phase)','Higher cost','Welding care needed'],suits:['water_sw','brine','water_cl','crude','amine','co2','h3po4'],avoids:['hcl','hf','cl2','h2so4'],desc:'Duplex SS for excellent seawater, brine, and chloride resistance where austenitic grades fail by SCC.',tags:['Duplex','Seawater','High Strength','SCC Resistant']},
+  SDSS_2507: {id:'SDSS_2507', group:'Duplex SS',      color:'#203060',name:'Super Duplex SS 2507',        grade:'ASTM A790 UNS S32750',                     std:'ASTM A790, A928',               cost_idx:12.0, t_min:-50, t_max:300, p_max:500,composition:{C:'0.03 max',Cr:'24.0–26.0',Ni:'6.0–8.0',Mo:'3.0–5.0',N:'0.24–0.32',Fe:'Balance'},pros:['Highest PREN ~42','Extreme Cl/seawater resistance','Very high strength'],cons:['Most expensive standard SS','Strict welding','Max 300°C'],suits:['water_sw','brine','crude','h2s_gas'],avoids:['hcl','hf','cl2'],desc:'Super Duplex for most aggressive chloride environments. Subsea pipelines, topside processing.',tags:['Super Duplex','Subsea','Extreme Cl Resistance']},
+  Inconel625:{id:'Inconel625',group:'Nickel Alloy',   color:'#1a5060',name:'Alloy 625 (Inconel 625)',     grade:'ASTM B444 UNS N06625',                     std:'ASTM B444, B705',               cost_idx:25.0, t_min:-196,t_max:980, p_max:500,composition:{Ni:'58 min',Cr:'20.0–23.0',Mo:'8.0–10.0',Nb:'3.15–4.15',Fe:'5.0 max',Co:'1.0 max'},pros:['Exceptional corrosion resistance','Wide temp range','No Cl SCC','Excellent HCl and H₂SO₄'],cons:['Very high cost','Limited availability'],suits:['hcl','h2so4','water_sw','brine','cl2','acid_mine','hf'],avoids:[],desc:'Ni-based superalloy. Premium MOC for aggressive acids, seawater, and high-temperature corrosive service.',tags:['Ni-Alloy','Premium','All Corrosives','High Temp']},
+  Hast_C276: {id:'Hast_C276', group:'Nickel Alloy',   color:'#0a2840',name:'Hastelloy C-276',             grade:'ASTM B574 UNS N10276',                     std:'ASTM B574, B619',               cost_idx:30.0, t_min:-196,t_max:1040,p_max:500,composition:{Ni:'57 min',Mo:'15.0–17.0',Cr:'14.5–16.5',W:'3.0–4.5',Fe:'4.0–7.0',Co:'2.5 max'},pros:['Best all-round acid resistance','Excellent HCl','Chlorine and halogen service'],cons:['Extremely high cost','Specialist procurement only'],suits:['hcl','h2so4','hno3','cl2','acid_mine','hf','h2s_gas'],avoids:[],desc:'Gold standard Ni-Mo-Cr alloy for severe corrosion. Virtually immune to pitting/crevice/SCC.',tags:['Hastelloy','Best Corrosion','Severe Duty']},
+  Ti_Gr2:    {id:'Ti_Gr2',    group:'Titanium',       color:'#505060',name:'Titanium Grade 2',            grade:'ASTM B338 Grade 2 / UNS R50400',           std:'ASTM B338, B265',               cost_idx:20.0, t_min:-196,t_max:260, p_max:300,composition:{Ti:'99.2 min',Fe:'0.30 max',O:'0.25 max',C:'0.08 max',N:'0.03 max'},pros:['Immune to Cl SCC','Excellent seawater/Cl service','Lightweight (4.5 g/cm³)'],cons:['High cost','Max 260°C','Not for reducing acids or fluoride (HF)'],suits:['water_sw','water_cl','brine','cl2','hno3'],avoids:['hf','hcl'],desc:'Commercially pure titanium. Standard for seawater HX, condenser tubes, and chloride-rich offshore environments.',tags:['Titanium','Seawater','SCC Immune','Lightweight']},
+  Zirconium: {id:'Zirconium', group:'Special Alloy',  color:'#707050',name:'Zirconium 702',               grade:'ASTM B523 UNS R60702',                     std:'ASTM B523',                     cost_idx:40.0, t_min:-196,t_max:370, p_max:300,composition:{Zr:'99.2 min (+ Hf)',Hf:'4.5 max',Fe:'0.20 max',O:'0.16 max'},pros:['Best for hot concentrated HCl','H₂SO₄ resistance','Acetic acid production'],cons:['Highest cost','Ignition risk in some oxidising acids'],suits:['hcl','h2so4','h3po4'],avoids:['hf','cl2'],desc:'Specialty alloy for hot concentrated HCl and sulfuric acid.',tags:['Special','Hot HCl','Sulphuric Acid']},
+  HDPE:      {id:'HDPE',      group:'Polymer',        color:'#005533',name:'HDPE PE100',                   grade:'PE100 / ASTM D3035 / ISO 4427',            std:'ASTM D3035, ISO 4427',          cost_idx:0.8,  t_min:-50, t_max:60,  p_max:16, composition:{PE:'High Density Polyethylene',Density:'0.941–0.965 g/cm³',MFI:'0.2–1.0 g/10min',SDR:'11–26 typical'},pros:['Excellent acid/alkali resistance','Very low cost','No corrosion','Lightweight'],cons:['Max 60°C','Low pressure (<16 bar)','UV degradation outdoors'],suits:['water_fw','water_sw','water_cl','hcl','h2so4','naoh','nh3','acid_mine','h3po4','chlorine_sol'],avoids:['steam','lox','sulfur','lng'],desc:'HDPE for cold corrosive service. Water supply, acid distribution lines, chemical transport.',tags:['Polymer','Acid Resistant','Low Cost','Water']},
+  PP:        {id:'PP',        group:'Polymer',        color:'#003388',name:'Polypropylene PP',             grade:'PP-H / PP-R (DIN 8077 / ISO 15494)',       std:'DIN 8077, ISO 15494',           cost_idx:0.9,  t_min:0,   t_max:80,  p_max:10, composition:{PP:'Polypropylene homopolymer/random copolymer',Density:'0.895–0.920 g/cm³',MFR:'0.3–3 g/10min'},pros:['Broad chemical resistance','Slightly higher temp than HDPE','Hygienic surface'],cons:['Brittle below 0°C','Max 80°C','Low pressure (<10 bar)'],suits:['water_fw','water_cl','hcl','h2so4','naoh','nh3','h3po4','milk','ethanol','acid_mine'],avoids:['steam','lox','sulfur','benzene','cl2'],desc:'Polypropylene piping for chemical, water treatment, and food/beverage service.',tags:['Polymer','Chemical Resistant','Low Pressure']},
+  PVDF:      {id:'PVDF',      group:'Polymer',        color:'#440055',name:'PVDF / Kynar',                 grade:'ASTM D3222 Type I / DIN 16968',            std:'ASTM D3222',                    cost_idx:8.0,  t_min:-40, t_max:140, p_max:12, composition:{PVDF:'Polyvinylidene Fluoride',Density:'1.76–1.78 g/cm³',MW:'180,000–500,000'},pros:['Excellent halogen and acid resistance','Higher temp than PP/HDPE','Semiconductor-grade purity'],cons:['High cost for polymer','UV sensitive','Low pressure (<12 bar)'],suits:['hcl','cl2','water_fw','h3po4','pharma','h2so4'],avoids:['steam','lox','hno3'],desc:'Fluoropolymer for aggressive halogen and acid service.',tags:['Fluoropolymer','Halogen Resistant','Pharma']},
+  FRP_VE:    {id:'FRP_VE',    group:'FRP/GRP',        color:'#006633',name:'FRP Vinyl Ester',              grade:'ASTM D5364 / ASME RTP-1',                  std:'ASME RTP-1, BS 4994',           cost_idx:3.5,  t_min:-40, t_max:100, p_max:6,  composition:{Matrix:'Vinyl Ester Resin',Reinforcement:'E-glass or C-glass',CorrosionBarrier:'2–3mm rich barrier',Laminate:'Filament wound'},pros:['Excellent acid/brine resistance','Lightweight','Large vessels cost-effective'],cons:['Pressure limited (<6 bar vessel)','Max ~100°C','Brittle — impact sensitive'],suits:['hcl','h2so4','water_sw','brine','h3po4','acid_mine','water_cl','fgd'],avoids:['steam','lox','benzene','cl2'],desc:'FRP with vinyl ester resin for FGD absorbers, acid storage tanks, and chemical process vessels.',tags:['FRP','Acid Resistant','Large Vessel','Lightweight']},
+  CuNi_7030: {id:'CuNi_7030',group:'Copper Alloy',   color:'#c87c40',name:'Cupro-Nickel 70/30',           grade:'ASTM B466 UNS C71500',                     std:'ASTM B466, B111',               cost_idx:15.0, t_min:-196,t_max:260, p_max:200,composition:{Cu:'65–70%',Ni:'29–33%',Fe:'0.40–1.0',Mn:'1.0 max'},pros:['Excellent seawater resistance','Biofouling resistance','Standard HX tube for seawater condensers'],cons:['Not for oxidising acids','NH₃/amine attack susceptibility'],suits:['water_sw','water_fw','water_cl'],avoids:['h2so4','hcl','nh3','h2s_gas','crude'],desc:'70/30 Cu-Ni. Standard tube material for seawater-cooled HX, condensers, and desalination plants.',tags:['Cu-Ni','Seawater','HX Tubes','Marine']},
+  Monel_400: {id:'Monel_400', group:'Nickel Alloy',   color:'#508060',name:'Monel 400',                    grade:'ASTM B165 UNS N04400',                     std:'ASTM B165, B127',               cost_idx:18.0, t_min:-196,t_max:480, p_max:400,composition:{Ni:'63 min',Cu:'28.0–34.0',Fe:'2.5 max',Mn:'2.0 max'},pros:['Excellent HF acid resistance','Good seawater resistance','HF alkylation unit standard'],cons:['SCC in moist aerated HF vapour','High cost'],suits:['hf','water_sw','crude','nat_gas'],avoids:['hno3','cl2'],desc:'Ni-Cu alloy. Industry standard for HF alkylation units.',tags:['Monel','HF Service','Ni-Cu','Alkylation']},
+};
+
+/* ── CORROSION RATES — PROTECTED ── */
+const CORR_RATES = {
+  'Carbon Steel':   {low:0.05, moderate:0.3,  severe:2.0},
+  'Mild Steel':     {low:0.07, moderate:0.4,  severe:2.5},
+  'Stainless Steel':{low:0.005,moderate:0.05, severe:0.5},
+  'Duplex SS':      {low:0.002,moderate:0.02, severe:0.15},
+  'Nickel Alloy':   {low:0.001,moderate:0.01, severe:0.05},
+  'Titanium':       {low:0.001,moderate:0.005,severe:0.02},
+  'Copper Alloy':   {low:0.02, moderate:0.1,  severe:0.8},
+  'Polymer':        {low:0.0,  moderate:0.0,  severe:0.0},
+  'FRP/GRP':        {low:0.0,  moderate:0.0,  severe:0.0},
+  'Special Alloy':  {low:0.001,moderate:0.005,severe:0.02},
+};
+
+// ══════════════════════════════════════════════════════════════════════
+//  ENGINE FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════
+
+function getCorrSufficiency(mat, fluidCorr, life) {
+  const rates = CORR_RATES[mat.group];
+  if (!rates) return null;
+  const rate      = rates[fluidCorr] || rates['moderate'];
+  if (rate === 0) return {rate:0,totalLoss:0,minCA:0,adequate:true,note:'Polymer/FRP — no metallic corrosion allowance required.'};
+  const totalLoss = rate * life;
+  const minCA     = Math.ceil(totalLoss * 10) / 10;
+  const minWall   = mat.group==='Nickel Alloy' ? 1.6 : mat.group==='Titanium' ? 0.9 : 3.0;
+  const adequate  = minCA <= (minWall * 0.5);
+  return {rate, totalLoss:totalLoss.toFixed(2), minCA:minCA.toFixed(1), adequate,
+    note: adequate
+      ? `Est. total loss ${totalLoss.toFixed(2)} mm over ${life} yr. Min corrosion allowance: ${minCA.toFixed(1)} mm.`
+      : `⚠ Est. total loss ${totalLoss.toFixed(2)} mm over ${life} yr — corrosion allowance ${minCA.toFixed(1)} mm may be impractical. Consider upgrading material.`
+  };
+}
+
+function scoreFluidMaterial(fluidId, mat, T, P, pH, Cl, H2S, V, costPrio, equipId, industry) {
+  let score = 100;
+  const f = FLUIDS.find(x => x.id === fluidId);
+  if (!f) return 0;
+
+  if (mat.avoids && mat.avoids.includes(fluidId)) return -1;
+  if (T > mat.t_max || T < mat.t_min) return -1;
+  if (P > mat.p_max) return -1;
+
+  if (mat.suits && mat.suits.includes(fluidId)) score += 30;
+
+  if (f.corr==='severe'   && mat.group==='Carbon Steel') score -= 40;
+  if (f.corr==='severe'   && mat.group==='Mild Steel')   score -= 50;
+  if (f.corr==='moderate' && mat.group==='Carbon Steel') score -= 20;
+  if (f.corr==='low'      && (mat.group==='Carbon Steel'||mat.group==='Mild Steel')) score += 10;
+
+  if (Cl > 200 && T > 60) {
+    if (['SS_304','SS_316L','SS_317L','SS_321'].includes(mat.id)) score -= 35;
+    if (['DSS_2205','SDSS_2507'].includes(mat.id)) score += 15;
+    if (mat.id==='Ti_Gr2') score += 20;
+  }
+  if (Cl > 5000) {
+    if (['SS_304','SS_316L','SS_317L','SS_321'].includes(mat.id)) return -1;
+    if (['DSS_2205','SDSS_2507'].includes(mat.id)) score += 10;
+  }
+
+  if (H2S > 0.0003) {
+    if (mat.group==='Carbon Steel' && T > 60)  score -= 20;
+    if (mat.group==='Carbon Steel' && pH < 5)  return -1;
+    if (H2S > 0.1 && (mat.group==='Carbon Steel'||mat.group==='Mild Steel')) return -1;
+    if (['Inconel625','Hast_C276','Monel_400'].includes(mat.id)) score += 12;
+    if (['DSS_2205','SDSS_2507'].includes(mat.id)) score += 8;
+  }
+
+  if (pH < 3) {
+    if (mat.group==='Carbon Steel') score -= 30;
+    if (mat.group==='Mild Steel')   score -= 35;
+    if (['Inconel625','Hast_C276','Zirconium'].includes(mat.id)) score += 20;
+    if (['HDPE','PP','FRP_VE'].includes(mat.id) && T < mat.t_max) score += 15;
+  }
+  if (pH > 11) {
+    if (['Inconel625','SS_304','SS_316L'].includes(mat.id)) score += 8;
+  }
+
+  if (T > 250 && mat.group==='Polymer')  return -1;
+  if (T > 300 && mat.group==='FRP/GRP')  return -1;
+  if (T > 280 && mat.group==='Duplex SS') return -1;
+  if (T > 425 && mat.id==='SS_304') score -= 25;
+  if (T > 400 && ['SS_304','SS_316L','DSS_2205'].includes(mat.id)) score -= 10;
+  if (T > 500 && mat.id==='LAS_P11') score += 20;
+
+  const hthafluids = ['h2s_gas','crude','nat_gas','benzene','diesel','lng'];
+  if (T > 230 && mat.group==='Carbon Steel' && hthafluids.includes(fluidId)) score -= 20;
+
+  if (['co2','brine','crude','amine'].includes(fluidId) && H2S > 0.0003) {
+    if (mat.group==='Carbon Steel'||mat.group==='Mild Steel') score -= 20;
+    if (mat.group==='Stainless Steel') score += 5;
+  }
+
+  if (['water_fw','water_cl','water_sw','acid_mine'].includes(fluidId) &&
+      (mat.group==='Carbon Steel'||mat.group==='Mild Steel')) score -= 15;
+
+  if (V > 3  && ['Polymer','FRP/GRP'].includes(mat.group)) score -= 10;
+  if (V > 5  && ['Polymer','FRP/GRP'].includes(mat.group)) score -= 15;
+  if (V > 5  && mat.group==='Copper Alloy') score -= 20;
+  if (V > 10 && mat.group==='Carbon Steel') score -= 10;
+  if (V > 15 && mat.group==='Carbon Steel') score -= 20;
+  if (V > 20 && mat.group==='Stainless Steel') score -= 10;
+
+  if (equipId) {
+    if (['vessel','pv','pipe'].includes(equipId) && ['Pharmaceutical','Food & Beverage'].includes(industry)) {
+      if (['SS_304','SS_316L'].includes(mat.id)) score += 15;
+      if (mat.group==='Carbon Steel'||mat.group==='Mild Steel') score -= 25;
+    }
+    if (['hx','condenser'].includes(equipId)) {
+      if (mat.id==='Ti_Gr2')    score += 10;
+      if (mat.id==='CuNi_7030') score += 8;
+      if (mat.group==='FRP/GRP') score -= 20;
+    }
+    if (equipId==='pump') {
+      if (mat.group==='Duplex SS') score += 8;
+      if (mat.group==='Polymer')   score -= 10;
+    }
+    if (equipId==='tank' && P > 2 && mat.group==='Polymer') score -= 20;
+    if (['column','reactor'].includes(equipId) && Cl > 500) {
+      if (mat.group==='Stainless Steel') score -= 8;
+      if (mat.group==='Duplex SS')       score += 5;
+    }
+    if (equipId==='reboiler' && T > 350) {
+      if (mat.group==='Low Alloy Steel'||mat.id==='LAS_P11') score += 10;
+      if (mat.group==='Carbon Steel' && T > 400) score -= 20;
+    }
+  }
+
+  if (costPrio==='economy')     score = Math.max(10, score - mat.cost_idx * 3);
+  if (costPrio==='performance') score += mat.cost_idx * 0.5;
+
+  return Math.max(0, Math.min(130, score));
+}
+
+function buildExplanation(mat, fluidId, T, P, pH, Cl, H2S) {
+  const f = FLUIDS.find(x => x.id === fluidId);
+  const lines = [];
+  lines.push(`${mat.name} (${mat.grade}) is recommended based on the following analysis:`);
+  if (mat.suits && mat.suits.includes(fluidId)) lines.push(`• Proven industry suitability for ${f?f.name:fluidId} service.`);
+  if (f) {
+    if (f.corr==='low')    lines.push(`• Fluid has low inherent corrosivity — ${mat.group} is acceptable at these conditions.`);
+    if (f.corr==='severe') lines.push(`• Fluid is highly corrosive — enhanced corrosion resistance of ${mat.name} is required.`);
+  }
+  if (T > 300) lines.push(`• Operating temperature ${T}°C requires creep/oxidation resistance — validated to ${mat.t_max}°C.`);
+  else if (T < -20) lines.push(`• Low service temperature ${T}°C is within the ductile range (min ${mat.t_min}°C).`);
+  else lines.push(`• Temperature ${T}°C is within validated range (${mat.t_min}°C – ${mat.t_max}°C).`);
+  if (Cl > 200 && T > 60) {
+    if (['DSS_2205','SDSS_2507'].includes(mat.id))
+      lines.push(`• Chloride SCC risk: Cl⁻ ${Cl} ppm at ${T}°C — Duplex microstructure provides resistance where austenitic grades fail.`);
+    if (mat.id==='Ti_Gr2')
+      lines.push(`• Titanium is immune to chloride SCC — ideal for ${Cl} ppm Cl⁻ at ${T}°C.`);
+  }
+  if (H2S > 0.0003) lines.push(`• H₂S PP = ${H2S} bar — NACE MR0175/ISO 15156 sour service compliance required. Hardness limits apply.`);
+  if (pH < 4) lines.push(`• pH ${pH} indicates strong acid conditions. This material's corrosion rate is acceptable in this range.`);
+  if (pH > 10) lines.push(`• pH ${pH} alkaline conditions — material selected for caustic SCC resistance.`);
+  lines.push(`Key advantages: ${mat.pros.slice(0,3).join('; ')}.`);
+  if (mat.cons && mat.cons.length) lines.push(`Limitation to note: ${mat.cons[0]}.`);
+  return lines.join('\n');
+}
+
+function buildConstraintRows(mat, fluidId, T, P, pH, Cl, H2S, V, fluidObj) {
+  const rows = [];
+  const tStatus = T <= mat.t_max*0.9 ? 'PASS' : T <= mat.t_max ? 'CAUTION' : 'FAIL';
+  rows.push({label:'Temperature', input:`${T}°C`, limit:`${mat.t_max}°C max`, status:tStatus, note:T>mat.t_max*0.9?'within 10% of limit':''});
+  if (T < 20) rows.push({label:'Min Temperature', input:`${T}°C`, limit:`${mat.t_min}°C min`, status:T>=mat.t_min?'PASS':'FAIL', note:''});
+  const pStatus = P<=mat.p_max*0.8?'PASS':P<=mat.p_max?'CAUTION':'FAIL';
+  rows.push({label:'Pressure (indicative)', input:`${P} bar g`, limit:`${mat.p_max} bar indicative`, status:pStatus, note:'verify by code calc'});
+  const avoidStatus = (mat.avoids||[]).includes(fluidId)?'FAIL':(mat.suits||[]).includes(fluidId)?'PASS':'CAUTION';
+  rows.push({label:'Fluid Compatibility', input:fluidObj?.name||fluidId, limit:'', status:avoidStatus,
+    note:avoidStatus==='FAIL'?'explicitly avoided':avoidStatus==='PASS'?'explicitly suitable':'no explicit data — verify'});
+  if (Cl > 0) {
+    let clStatus='PASS', clNote='';
+    if (['SS_304','SS_316L','SS_317L','SS_321'].includes(mat.id)) {
+      if (Cl>5000&&T>60){clStatus='FAIL';clNote='hard limit exceeded';}
+      else if (Cl>200&&T>60){clStatus='CAUTION';clNote='SCC risk — monitor';}
+    } else if (['DSS_2205','SDSS_2507'].includes(mat.id)) {
+      clStatus=Cl>50000?'CAUTION':'PASS'; clNote=Cl>50000?'verify PREN adequacy':'excellent Cl resistance';
+    } else if (mat.id==='Ti_Gr2'){clStatus='PASS';clNote='immune to Cl SCC';}
+    rows.push({label:'Chloride SCC', input:`Cl⁻ ${Cl} ppm @ ${T}°C`, limit:'200 ppm + 60°C threshold', status:clStatus, note:clNote});
+  }
+  if (H2S > 0) {
+    const h2sStatus = H2S>0.0003&&(mat.group==='Carbon Steel'||mat.group==='Mild Steel')&&pH<5?'FAIL':H2S>0.0003?'CAUTION':'PASS';
+    rows.push({label:'H₂S Sour Service', input:`${H2S} bar H₂S PP`, limit:'0.0003 bar NACE limit', status:h2sStatus, note:H2S>0.0003?'NACE MR0175 applies':'below NACE threshold'});
+  }
+  if (mat.group==='Duplex SS') {
+    const sigmaStatus=T>280?'FAIL':T>260?'CAUTION':'PASS';
+    rows.push({label:'Sigma Phase', input:`${T}°C`, limit:'280°C max (sustained)', status:sigmaStatus, note:T>260?'embrittlement risk':''});
+  }
+  if ((mat.group==='Carbon Steel'||mat.group==='Low Alloy Steel') && ['h2s_gas','crude','nat_gas','benzene','diesel','lng'].includes(fluidId)) {
+    const hthaStatus=T>300?'FAIL':T>230?'CAUTION':'PASS';
+    rows.push({label:'HTHA (API 941)', input:`${T}°C`, limit:'230°C CS limit (indicative)', status:hthaStatus, note:T>230?'verify Nelson curve':''});
+  }
+  if (V > 0) {
+    let vLimit=50,vStatus='PASS',vNote='';
+    if (mat.group==='Copper Alloy') vLimit=3;
+    else if (['Polymer','FRP/GRP'].includes(mat.group)) vLimit=3;
+    else if (mat.group==='Carbon Steel') vLimit=10;
+    if (V>vLimit*1.5){vStatus='FAIL';vNote='erosion damage likely';}
+    else if (V>vLimit){vStatus='CAUTION';vNote='approaching erosion limit';}
+    if (vLimit<50) rows.push({label:'Velocity / Erosion', input:`${V} m/s`, limit:`~${vLimit} m/s guideline`, status:vStatus, note:vNote});
+  }
+  if (mat.id==='SS_304'&&T>425)
+    rows.push({label:'HAZ Sensitization', input:`${T}°C welded service`, limit:'425°C limit for 304', status:'CAUTION', note:'use 316L/321 for welded high-T'});
+  return rows;
+}
+
+function validateInputs(T, P, pH, Cl, H2S, V, life) {
+  const errs=[],warns=[];
+  if (isNaN(T))              errs.push('Temperature is required.');
+  else if (T<-270)           errs.push('Temperature below −270°C is physically impossible.');
+  else if (T>1200)           errs.push('Temperature above 1200°C is outside all standard material limits.');
+  else if (T>700)            warns.push(`Temperature ${T}°C — only refractory alloys operate here. Verify.`);
+  if (isNaN(P))              errs.push('Pressure is required.');
+  else if (P<0)              errs.push('Pressure cannot be negative.');
+  else if (P>3000)           warns.push(`Pressure ${P} bar g is extremely high. Verify.`);
+  if (isNaN(pH))             errs.push('pH is required (0–14).');
+  else if (pH<0||pH>14)      errs.push('pH must be between 0 and 14.');
+  if (isNaN(Cl)||Cl<0)       errs.push('Cl⁻ must be 0 or a positive value in ppm.');
+  else if (Cl>200000)        warns.push('Cl⁻ > 200,000 ppm — verify units.');
+  if (isNaN(H2S)||H2S<0)     errs.push('H₂S partial pressure must be 0 or positive.');
+  else if (H2S>20)           warns.push('H₂S PP > 20 bar is extreme sour service. Verify.');
+  if (isNaN(V)||V<0)         errs.push('Velocity must be 0 or positive.');
+  else if (V>50)             warns.push(`Velocity ${V} m/s is very high.`);
+  if (isNaN(life)||life<1)   errs.push('Design life must be at least 1 year.');
+  else if (life>100)         warns.push('Design life > 100 years — unusual. Verify.');
+  if (pH<2&&H2S>0.0003)      warns.push('pH < 2 with H₂S — extremely aggressive sour service.');
+  if (Cl>5000&&T>150)        warns.push('High Cl⁻ at elevated temperature — Cl SCC near-certain for austenitic SS.');
+  if (T>400&&P>200)          warns.push('High T + High P — ensure ASME code-compliant wall thickness calculation.');
+  if (V>15&&pH<5)            warns.push('High velocity + acidic fluid — severe erosion-corrosion synergy expected.');
+  return {errs,warns};
+}
+
+function runAnalysis({fluidId,equipId,T,P,pH,Cl,H2S,V,life,costPrio,industry,notes}) {
+  const validation = validateInputs(T,P,pH,Cl,H2S,V,life);
+  if (validation.errs.length>0) return {ok:false, errors:validation.errs};
+
+  const fluid = FLUIDS.find(f=>f.id===fluidId);
+  const equip = EQUIPMENT.find(e=>e.id===equipId);
+  if (!fluid) return {ok:false, errors:['Unknown fluid ID.']};
+  if (!equip) return {ok:false, errors:['Unknown equipment ID.']};
+
+  const allScored = Object.values(MATERIALS).map(mat=>({mat, score:scoreFluidMaterial(fluidId,mat,T,P,pH,Cl,H2S,V,costPrio,equipId,industry)}));
+  const eliminated = allScored.filter(x=>x.score<=0).map(x=>x.mat.name);
+  const scored     = allScored.filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+  if (scored.length===0) return {ok:false, errors:['No standard material found for these conditions.']};
+
+  const best=scored[0], alts=scored.slice(1,5);
+  const warnings=[];
+
+  if (Cl>200&&T>60&&['SS_304','SS_316L'].includes(best.mat.id))
+    warnings.push({type:'scc_cl',label:'Chloride SCC Risk',body:`Cl⁻ ${Cl} ppm at ${T}°C exceeds safe limit for austenitic SS. Upgrade to Duplex 2205 or Titanium Gr.2.`});
+  if (T>260&&T<=280&&best.mat.group==='Duplex SS')
+    warnings.push({type:'sigma',label:'Sigma Phase Warning',body:'Duplex SS approaching sigma phase embrittlement range (260–280°C). Restrict to short-duration excursions only.'});
+  if (T>425&&best.mat.id==='SS_304')
+    warnings.push({type:'sensitization',label:'Sensitization / IGC Risk',body:'SS 304 in welded service above 425°C susceptible to IGC. Upgrade to SS 316L, SS 321, or SS 347.'});
+  if (H2S>0.0003) {
+    const sscRisk=pH<6?'HIGH — SSC primary threat':'MODERATE — HIC primary concern';
+    warnings.push({type:'nace',label:'NACE MR0175 / ISO 15156 Sour Service',body:`H₂S PP = ${H2S} bar. SSC risk: ${sscRisk}. Hardness max HV 248 (HRC 22). PWHT mandatory for CS welds. Specify HIC-resistant plate (NACE TM0284).`});
+  }
+  if (H2S>0.0003&&pH<5&&(best.mat.group==='Carbon Steel'||best.mat.group==='Mild Steel'))
+    warnings.push({type:'hic',label:'Hydrogen Blistering / HIC — DOMINANT RISK',body:`Wet H₂S at pH ${pH} — severe hydrogen absorption. Requires HIC-resistant plate (NACE TM0284 Grade A), hardness control (HV ≤ 248). Consider SS 316L, Duplex 2205, or Alloy 625.`});
+  if (T>230&&(best.mat.group==='Carbon Steel'||best.mat.group==='Mild Steel'))
+    warnings.push({type:'htha',label:'HTHA Risk (API 941)',body:'CS/MS above 230°C in hydrocarbon/H₂ service. Verify position on API 941 Nelson curves.'});
+  if (pH<4)
+    warnings.push({type:'acid',label:'Strong Acid Service',body:`pH ${pH} — corrosion rate increases exponentially. Min corrosion allowance 3–6 mm recommended.`});
+  if (T<0&&best.mat.group==='Carbon Steel')
+    warnings.push({type:'lowtemp',label:'Low Temperature Impact Toughness',body:'Below 0°C — Charpy CVN testing required per ASME UCS-66. Consider LTCS A333 Gr.6 or austenitic SS.'});
+  if ((best.mat.group==='Carbon Steel'||best.mat.group==='Mild Steel')&&(fluidId==='water_sw'||Cl>1000))
+    warnings.push({type:'galvanic',label:'Galvanic Corrosion Risk',body:'CS in contact with stainless or copper alloys in saline service — CS acts as anode. Ensure electrical isolation at dissimilar-metal joints.'});
+  if (best.mat.id==='Ti_Gr2'&&(fluidId==='water_sw'||Cl>1000))
+    warnings.push({type:'galvanic',label:'Galvanic Corrosion Risk',body:'Titanium coupled to carbon steel in saline service creates a severe galvanic pair — CS corrodes rapidly. Electrically isolate all flanges.'});
+  if (V>5&&best.mat.group==='Copper Alloy')
+    warnings.push({type:'erosion',label:'Erosion-Corrosion Risk',body:`Cu-Ni velocity limit ~3 m/s. At ${V} m/s impingement attack likely. Consider Titanium or Duplex SS.`});
+  if (notes&&notes.trim().length>0) {
+    const nl=notes.toLowerCase(), noteWarnings=[];
+    if (/oxygen|o2|aerat/.test(nl))           noteWarnings.push('Oxygen present — dissolved O₂ significantly accelerates corrosion in CS/MS.');
+    if (/solid|slurry|sand|particl|abrasiv/.test(nl)) noteWarnings.push('Solids/abrasives noted — erosion-corrosion rate will exceed model predictions.');
+    if (/chloride|cl-/.test(nl)&&Cl===0)      noteWarnings.push('Chloride contamination noted but Cl⁻ input is 0 — re-enter a representative value.');
+    if (/h2s|sour|sulphide|sulfide/.test(nl)&&H2S===0) noteWarnings.push('H₂S noted but H₂S PP input is 0 — enter a representative H₂S partial pressure.');
+    if (noteWarnings.length) warnings.push({type:'notes',label:'Advisory from Notes Field',body:noteWarnings.join(' | ')});
+  }
+
+  const corrSuff      = getCorrSufficiency(best.mat, fluid.corr||'moderate', life);
+  const constraintRows= buildConstraintRows(best.mat, fluidId, T, P, pH, Cl, H2S, V, fluid);
+  const explanation   = buildExplanation(best.mat, fluidId, T, P, pH, Cl, H2S);
+  const displayScore  = Math.min(Math.round(best.score), 100);
+
+  let dominantFailureMode=null;
+  if (Cl>200&&T>60&&['SS_304','SS_316L'].includes(best.mat.id)) dominantFailureMode='Chloride SCC';
+  if (H2S>0.0003&&pH<5&&(best.mat.group==='Carbon Steel'||best.mat.group==='Mild Steel')) dominantFailureMode='Hydrogen Blistering / HIC';
+  if (T>230&&(best.mat.group==='Carbon Steel'||best.mat.group==='Mild Steel')) dominantFailureMode=dominantFailureMode||'HTHA';
+
+  return {
+    ok:true, warnings, inputWarnings:validation.warns,
+    best:{id:best.mat.id,name:best.mat.name,grade:best.mat.grade,std:best.mat.std,group:best.mat.group,color:best.mat.color,desc:best.mat.desc,tags:best.mat.tags,pros:best.mat.pros,cons:best.mat.cons,cost_idx:best.mat.cost_idx,t_min:best.mat.t_min,t_max:best.mat.t_max,p_max:best.mat.p_max,composition:best.mat.composition,score:displayScore},
+    alts:alts.map(a=>({id:a.mat.id,name:a.mat.name,grade:a.mat.grade,std:a.mat.std,group:a.mat.group,desc:a.mat.desc,tags:a.mat.tags,pros:a.mat.pros,cons:a.mat.cons,cost_idx:a.mat.cost_idx,t_max:a.mat.t_max,score:Math.min(Math.round(a.score),100)})),
+    eliminated, constraintRows, explanation, corrSuff, dominantFailureMode,
+    summary:{equip:equip.name,fluid:fluid.name,T,P,pH,Cl,H2S,V,life,industry},
+    totalEvaluated:scored.length,
+  };
+}
+
+// MOC rate limiter (scoped to /api/moc)
+const _mocRateMap = new Map();
+function mocRateLimit(ip) {
+  const now = Date.now(), entry = _mocRateMap.get(ip) || { count: 0, window: now };
+  if (now - entry.window > 60000) { entry.count = 0; entry.window = now; }
+  entry.count++;
+  _mocRateMap.set(ip, entry);
+  return entry.count > 30;
+}
+
+function mocParseBody(body) {
+  const n = (v, def, min, max) => { const f = parseFloat(v); return isNaN(f) ? def : Math.min(max, Math.max(min, f)); };
+  return {
+    fluidId:  String(body.fluidId  || '').slice(0, 40),
+    equipId:  String(body.equipId  || '').slice(0, 40),
+    T:        n(body.T,    100, -270, 1200),
+    P:        n(body.P,     10,    0, 5000),
+    pH:       n(body.pH,     7,    0,   14),
+    Cl:       n(body.Cl,     0,    0, 300000),
+    H2S:      n(body.H2S,    0,    0,   50),
+    V:        n(body.V,      2,    0,  100),
+    life:     n(body.life,  25,    1,  100),
+    costPrio: ['balanced', 'economy', 'performance'].includes(body.costPrio) ? body.costPrio : 'balanced',
+    industry: String(body.industry || 'Oil & Gas').slice(0, 40),
+    notes:    String(body.notes    || '').slice(0, 500),
+  };
+}
+
+async function handle_moc(req, body, res) {
+  // GET → catalog
+  if (req.method === 'GET') {
+    const fluidsDisplay = FLUIDS.map(f => ({
+      id: f.id, name: f.name, sub: f.sub, color: f.color, ind: f.ind,
+      autofill: FLUID_AUTOFILL[f.id] || null,
+    }));
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.status(200).json({ equipment: EQUIPMENT, industries: INDUSTRIES, fluids: fluidsDisplay });
+  }
+  // POST → analyze
+  const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+  if (mocRateLimit(ip)) return res.status(429).json({ error: 'Too many requests. Please wait.' });
+  const result = runAnalysis(mocParseBody(body));
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(result.ok ? 200 : 422).json(result);
+}
+
+
 // ================================================================
 // MAIN VERCEL HANDLER — routes by URL path
 // ================================================================
@@ -7679,23 +8128,30 @@ export default async function handler(req, res) {
                     origin.includes('multicalci.com') ||
                     origin === 'http://localhost:3000';
   res.setHeader('Access-Control-Allow-Origin',  isAllowed ? origin : '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
   res.setHeader('Access-Control-Max-Age',       '86400');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST' && req.method !== 'GET')
+    return res.status(405).json({ error: 'Method not allowed' });
 
   // Determine route from URL: /api/compressor → 'compressor'
   const url   = req.url || '';
   const route = url.split('?')[0].replace(/\/+$/, '').split('/').pop();
 
-  // Parse body safely
+  // Parse body safely (GET requests may have no body)
   let body = req.body || {};
   if (typeof body === 'string') {
     try { body = JSON.parse(body); }
     catch { return res.status(400).json({ error: 'Invalid JSON body' }); }
   }
+
+  // MOC supports both GET and POST on /api/moc
+  if (route === 'moc') return await handle_moc(req, body, res);
+
+  // All other routes require POST
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     switch (route) {
@@ -7715,12 +8171,12 @@ export default async function handler(req, res) {
       case 'steam':                    return await handle_steam(body, res);
       case 'calculate':                return await handle_calculate(body, res);
       case 'npsh-calculator':          return await handle_npsh_calculator(body, res);
-      case 'civil-engineering-calculators':      return await handle_civil_engineering(body, res);
-      case 'instrumentation-calculators':         return await handle_instrumentation(body, res);
-      case 'electrical-engineering-calculators':  return await handle_electrical(body, res);
-      case 'mechanical-engineering-calculators': return await handle_mechanical_engineering(body, res);
+      case 'civil-engineering-calculators':     return await handle_civil_engineering(body, res);
+      case 'instrumentation-calculators':       return await handle_instrumentation(body, res);
+      case 'electrical-engineering-calculators':return await handle_electrical(body, res);
+      case 'mechanical-engineering-calculators':return await handle_mechanical_engineering(body, res);
       default:
-        return res.status(404).json({ error: `Unknown route: "${route}". Valid routes: compressor, control-valve, cooling-tower, eos, fan, heatxpert, orifice-flow, pressure-drop-calculator, psychrometric, pump, rankine, steam-quench, steam-turbine-power, steam` });
+        return res.status(404).json({ error: `Unknown route: "${route}". Valid routes: moc, compressor, control-valve, cooling-tower, eos, fan, heatxpert, orifice-flow, pressure-drop-calculator, psychrometric, pump, rankine, steam-quench, steam-turbine-power, steam, calculate, npsh-calculator, civil-engineering-calculators, instrumentation-calculators, electrical-engineering-calculators, mechanical-engineering-calculators` });
     }
   } catch (e) {
     console.error(`[api/index.js] [${route}] Unhandled error:`, e);
