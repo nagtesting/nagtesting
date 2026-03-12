@@ -7010,6 +7010,653 @@ async function handle_electrical(body, res) {
 
 
 // ================================================================
+// MECHANICAL ENGINEERING CALCULATORS
+// Route: POST /api/mechanical-engineering-calculators
+// Body:  { calculator: string, inputs: object }
+// Response: { ok: boolean, results: object }
+// ================================================================
+
+// ── Protected lookup tables ──────────────────────────────────────
+
+const MECH_MAT = {
+  shaft: {
+    'c45':       { Sy: 390e6, Su: 620e6,  E: 200e9, rho: 7850 },
+    '4140':      { Sy: 655e6, Su: 1020e6, E: 200e9, rho: 7850 },
+    'stainless': { Sy: 207e6, Su: 517e6,  E: 193e9, rho: 7960 },
+  },
+  spring: {
+    'steel-hard': { G: 79000, Ssy: 700 },
+    'steel-ht':   { G: 79000, Ssy: 550 },
+    'ss302':      { G: 69000, Ssy: 480 },
+    'chrome-si':  { G: 77200, Ssy: 750 },
+  },
+  sheet: {
+    'ms':     { K: 0.44, Sy: 250, E: 200, Rmin_factor: 0.5 },
+    'ss304':  { K: 0.44, Sy: 310, E: 193, Rmin_factor: 1.0 },
+    'alum':   { K: 0.40, Sy: 193, E: 70,  Rmin_factor: 4.0 },
+    'copper': { K: 0.44, Sy: 210, E: 117, Rmin_factor: 1.0 },
+    'galv':   { K: 0.44, Sy: 280, E: 200, Rmin_factor: 0.5 },
+  },
+  gear: {
+    'steel-ht':   { Sall: 200 },
+    'steel-soft': { Sall: 83  },
+    'ci':         { Sall: 50  },
+    'bronze':     { Sall: 40  },
+  },
+  pvessel: {
+    'cs':    { S: 138 },
+    'ss':    { S: 138 },
+    'ss316': { S: 115 },
+  },
+  liquid: {
+    water: 1000, diesel: 840, petrol: 720,
+    lpg: 488, acid: 1840, caustic: 1530,
+  },
+  cncKc: {
+    'mild-steel': 1500, 'alloy-steel': 2200, 'ss': 2500,
+    'alum': 700, 'cast-iron': 1100, 'copper': 900, 'titanium': 3000,
+  },
+  cncVc: {
+    'mild-steel': 200, 'alloy-steel': 150, 'ss': 120,
+    'alum': 600, 'cast-iron': 180, 'copper': 300, 'titanium': 50,
+  },
+  fastener: {
+    '4.6':  { Sy: 240 }, '8.8': { Sy: 660 },
+    '10.9': { Sy: 940 }, '12.9': { Sy: 1100 }, 'A2-70': { Sy: 450 },
+  },
+  gasket: {
+    swg:    { m: 3.0,  y: 69  },
+    rtj:    { m: 6.5,  y: 179 },
+    flat:   { m: 4.75, y: 62  },
+    rubber: { m: 0.5,  y: 0   },
+  },
+  bolt: {
+    '800':  { Sy: 724, Su: 862  },
+    '8.8':  { Sy: 660, Su: 800  },
+    '10.9': { Sy: 940, Su: 1040 },
+  },
+  beam: {
+    'steel':  { E: 200, Fy: 250, rho: 7850 },
+    'alum':   { E: 69,  Fy: 276, rho: 2700 },
+    'timber': { E: 12,  Fy: 30,  rho: 500  },
+    'conc':   { E: 30,  Fy: 25,  rho: 2400 },
+  },
+};
+
+// AGMA Lewis Y form factor — interpolated, AGMA 908-B89 (server-side only)
+function mech_lewisY(z) {
+  const T = [
+    [12,0.245],[13,0.261],[14,0.277],[15,0.290],[16,0.296],[17,0.303],
+    [18,0.309],[19,0.314],[20,0.322],[22,0.331],[24,0.337],[26,0.346],
+    [28,0.353],[30,0.359],[34,0.371],[38,0.384],[43,0.397],[50,0.409],
+    [60,0.422],[75,0.435],[100,0.447],[150,0.460],[300,0.472],[400,0.480],
+  ];
+  if (z <= 0) return 0.245;
+  for (let i = T.length - 1; i >= 0; i--) {
+    if (z >= T[i][0]) {
+      if (i === T.length - 1) return T[i][1];
+      return T[i][1] + (T[i+1][1] - T[i][1]) * (z - T[i][0]) / (T[i+1][0] - T[i][0]);
+    }
+  }
+  return 0.245;
+}
+
+// ISO metric coarse pitch (server-side only)
+function mech_isoPitch(d) {
+  if (d <= 6) return 1.0; if (d <= 8) return 1.25; if (d <= 10) return 1.5;
+  if (d <= 12) return 1.75; if (d <= 16) return 2.0; if (d <= 20) return 2.5;
+  if (d <= 24) return 3.0; return 3.5;
+}
+
+// AWS D1.1 Table 5.8 minimum fillet weld size
+function mech_awsMinWeld(leg) {
+  if (leg <= 6) return 3; if (leg <= 12) return 5; if (leg <= 19) return 6; return 8;
+}
+
+// Standard rolled section library (I mm⁴, Z mm³, A mm²) — server-side only
+const MECH_SECTIONS = {
+  'HEA100': { I: 3490000,   Z: 72760,  A: 2124 },
+  'HEA140': { I: 10330000,  Z: 173500, A: 3142 },
+  'HEA180': { I: 27900000,  Z: 324000, A: 4525 },
+  'HEA200': { I: 36920000,  Z: 388800, A: 5383 },
+  'IPE160': { I: 8693000,   Z: 123000, A: 2009 },
+  'IPE200': { I: 19430000,  Z: 194200, A: 2848 },
+  'IPE240': { I: 38920000,  Z: 324300, A: 3912 },
+  'IPE300': { I: 83560000,  Z: 557400, A: 5381 },
+  'UB203x133x30': { I: 28500000,  Z: 279000,  A: 3820 },
+  'UB305x165x54': { I: 117000000, Z: 765000,  A: 6860 },
+};
+
+// ── Calculator engines ───────────────────────────────────────────
+
+function mech_pressureVessel(inp) {
+  let { P, Pu, T_design, T_unit, D, Du, S, E, CA, type, materialKey } = inp;
+  if (Pu === 'bar') P *= 0.1; else if (Pu === 'psi') P *= 0.00689476;
+  const T_C = T_unit === 'F' ? (T_design - 32) * 5/9 : (T_design || 20);
+  if (materialKey && MECH_MAT.pvessel[materialKey]) S = MECH_MAT.pvessel[materialKey].S;
+  let R = D / 2;
+  if (Du === 'in') R *= 25.4;
+  if (P <= 0 || R <= 0 || S <= 0 || CA < 0) return { error: 'Invalid inputs' };
+  let t_calc, formula;
+  const D_inside = R * 2;
+  switch (type) {
+    case 'cyl':       t_calc = (P*R)/(S*E - 0.6*P);         formula = 't = P·R/(S·E−0.6P) [ASME VIII UG-27(c)(1)]'; break;
+    case 'sph':       t_calc = (P*R)/(2*S*E - 0.2*P);       formula = 't = P·R/(2·S·E−0.2P) [ASME VIII UG-27(d)]'; break;
+    case 'head-hemi': t_calc = (P*R)/(2*S*E - 0.2*P);       formula = 't = P·R/(2·S·E−0.2P) [ASME VIII UG-32(f)]'; break;
+    case 'head-ell':  t_calc = (P*D_inside)/(2*S*E - 0.2*P);formula = 't = P·D/(2·S·E−0.2P) [ASME VIII UG-32(d)]'; break;
+    default: return { error: 'Unknown vessel type' };
+  }
+  const t_gross   = t_calc + CA;
+  const t_nominal = Math.ceil(t_gross / 0.5) * 0.5;
+  const t_net     = t_nominal - CA;
+  const t_min_asme = 1.5875;
+  let sigma_h, sigma_l, MAWP;
+  if (type === 'cyl') {
+    sigma_h = P*R/t_net; sigma_l = P*R/(2*t_net); MAWP = S*E*t_net/(R + 0.6*t_net);
+  } else if (type === 'head-ell') {
+    sigma_h = P*D_inside/(2*t_net); sigma_l = sigma_h/2; MAWP = 2*S*E*t_net/(D_inside + 0.2*t_net);
+  } else {
+    sigma_h = P*R/(2*t_net); sigma_l = sigma_h; MAWP = 2*S*E*t_net/(R + 0.2*t_net);
+  }
+  const sf            = S*E / Math.max(sigma_h, 0.001);
+  const thinWallRatio = t_nominal / R;
+  const ok            = sf >= 1.0 && t_nominal >= t_min_asme;
+  const tempWarning   = T_C > 300
+    ? `At ${T_C.toFixed(0)}°C ASME allowable stress is significantly reduced. Verify S from ASME II-D Table 1A.`
+    : T_C > 50 ? `At ${T_C.toFixed(0)}°C confirm S is the temperature-derated value from ASME II-D Table 1A.` : null;
+  return {
+    ok,
+    t_calc:      +t_calc.toFixed(3),      t_gross:   +t_gross.toFixed(3),
+    t_nominal:   +t_nominal.toFixed(1),   t_net:     +t_net.toFixed(3),
+    sigma_h:     +sigma_h.toFixed(2),     sigma_l:   +sigma_l.toFixed(2),
+    MAWP_bar:    +(MAWP*10).toFixed(2),   sf:        +sf.toFixed(3),
+    thinWallRatio: +thinWallRatio.toFixed(3),
+    thinWallOk: thinWallRatio < 0.5,
+    hoopFail:   sigma_h > S*E,
+    t_min_asme, formula,
+    R_mm: +R.toFixed(1), P_bar: +(P*10).toFixed(2), S, E, CA, tempWarning,
+  };
+}
+
+function mech_boltFlange(inp) {
+  let { nb, bd, ba, T, Tu, K, gtype, gm, gy, god, gid, P, Pu, bgrade } = inp;
+  if (Tu === 'lbft') T *= 1.35582;
+  if (Pu === 'bar') P *= 0.1; else if (Pu === 'psi') P *= 0.00689476;
+  const gp = MECH_MAT.gasket[gtype];
+  if (gp) { gm = gp.m; gy = gp.y; }
+  if (!ba || ba <= 0) {
+    const cp = mech_isoPitch(bd);
+    const d2 = bd - 0.6495*cp; const d3 = bd - 1.2269*cp;
+    ba = Math.PI/4 * Math.pow((d2+d3)/2, 2);
+  }
+  const Fi           = T / (K * bd / 1000);
+  const totalPreload = Fi * nb;
+  const G            = (god + gid) / 2;
+  const b            = (god - gid) / 4;
+  const Agasket_eff  = Math.PI * G * b;
+  const Wm1 = Math.PI*G*b*gm*P + Math.PI/4*G*G*P;
+  const Wm2 = Math.PI*G*b*gy;
+  const Sy_bolt  = (MECH_MAT.bolt[bgrade] || { Sy: 724 }).Sy;
+  const Sall     = 0.66 * Sy_bolt;
+  const boltStress = Fi / ba;
+  const util     = boltStress / Sall * 100;
+  const ok       = boltStress < Sall && totalPreload > Math.max(Wm1, Wm2);
+  const Fi_low   = T / (0.40 * bd / 1000);
+  const Fi_high  = T / (0.10 * bd / 1000);
+  return {
+    ok,
+    Fi_kN:          +(Fi/1000).toFixed(2),
+    totalPreload_kN:+(totalPreload/1000).toFixed(2),
+    boltStress:     +boltStress.toFixed(1),
+    Sall:           +Sall.toFixed(1),
+    util:           +util.toFixed(1),
+    Wm1_kN:         +(Wm1/1000).toFixed(2),
+    Wm2_kN:         +(Wm2/1000).toFixed(2),
+    gasketStress:   +(totalPreload/Agasket_eff).toFixed(1),
+    gy, gm,
+    At:             +ba.toFixed(1),
+    nb, bd, T_Nm: +T.toFixed(1), K, P_bar: +(P*10).toFixed(2),
+    preloadRange: {
+      low_kN:  +(Fi_low  * nb / 1000).toFixed(1),
+      high_kN: +(Fi_high * nb / 1000).toFixed(1),
+    },
+    kUncertaintyNote: `K=${K}. Typical range 0.10 (oiled)–0.40 (dry). Preload uncertainty ±~30%.`,
+  };
+}
+
+function mech_weld(inp) {
+  let { w, wLeg_u, Lw, wL_u, wtype, config, V, V_u, N_kN, M_kNm, FEXX, e, gw, gh } = inp;
+  if (wLeg_u === 'in') w  *= 25.4;
+  if (wL_u   === 'in') Lw *= 25.4;
+  if (V_u    === 'N')  V  /= 1000; else if (V_u === 'kip') V *= 4.44822;
+  if (w <= 0 || Lw <= 0 || FEXX <= 0) return { error: 'Invalid weld inputs' };
+  let throat, throatNote;
+  if      (wtype === 'fillet')    { throat = 0.707*w; throatNote = 'a = 0.707·w (45° equal-leg fillet, AWS D1.1 2.4.1)'; }
+  else if (wtype === 'butt-full') { throat = w;        throatNote = 'a = w (complete joint penetration)'; }
+  else                            { throat = Math.max(w-3, w*0.7); throatNote = 'a ≈ w−3mm (partial penetration, 60° bevel approx)'; }
+  const allowable = 0.3 * FEXX;
+  if (config === 'group-rect') {
+    if (!gw || !gh || gw <= 0 || gh <= 0) return { error: 'Enter valid group dimensions' };
+    const Lw_group  = 2*(gw+gh);
+    const Aw        = throat * Lw_group;
+    const Jw_unit   = (gw*gh*(gw*gw + gh*gh)) / 6;
+    const r_max     = Math.sqrt(Math.pow(gw/2,2) + Math.pow(gh/2,2));
+    const tau_V     = V*1000 / Aw;
+    const sigma_N   = (N_kN||0)*1000 / Aw;
+    let tau_torsion = 0, torsionNote = '';
+    if (e > 0) {
+      const Mt    = V*1000*e;
+      tau_torsion = Mt*r_max / (throat*Jw_unit);
+      torsionNote = `Mt=${(Mt/1e6).toFixed(3)} kN·m, τ_tors=${tau_torsion.toFixed(1)} MPa at r_max=${r_max.toFixed(1)} mm`;
+    }
+    const sigma_M   = (M_kNm||0)*1e6 / (throat*(gh*gw*gw/6));
+    const sigma_tot = sigma_N + sigma_M;
+    const tau_tot   = Math.sqrt(
+      Math.pow(tau_V + tau_torsion*(gw/2)/r_max, 2) +
+      Math.pow(tau_torsion*(gh/2)/r_max, 2)
+    );
+    const combined = Math.sqrt(sigma_tot*sigma_tot/3 + tau_tot*tau_tot);
+    const util     = combined / allowable * 100;
+    return {
+      ok: combined <= allowable, isGroup: true,
+      throat: +throat.toFixed(2), Aw: +Aw.toFixed(1),
+      tau_V: +tau_V.toFixed(2), tau_torsion: +tau_torsion.toFixed(2),
+      combined: +combined.toFixed(2), allowable: +allowable.toFixed(1),
+      util: +util.toFixed(1), Lw_group: +Lw_group.toFixed(0),
+      throatNote, torsionNote, FEXX, gw, gh,
+    };
+  }
+  const nWelds    = config === 'double' ? 2 : 1;
+  const Aw        = throat * Lw * nWelds;
+  const tau_V     = V*1000 / Aw;
+  const sigma_N   = (N_kN||0)*1000 / Aw;
+  const sigma_M   = (M_kNm||0)*1e6 / (Aw * Lw / 6);
+  const sigma_tot = sigma_N + sigma_M;
+  const tau_tot   = Math.sqrt(Math.pow(tau_V,2) + Math.pow(sigma_tot/Math.sqrt(3),2));
+  const util      = tau_tot / allowable * 100;
+  const ok        = tau_tot <= allowable;
+  return {
+    ok, isGroup: false,
+    throat: +throat.toFixed(2), Aw: +Aw.toFixed(1),
+    tau_V: +tau_V.toFixed(2), sigma_tot: +sigma_tot.toFixed(2),
+    tau_tot: +tau_tot.toFixed(2), allowable: +allowable.toFixed(1),
+    util: +util.toFixed(1),
+    minWeld: mech_awsMinWeld(w),
+    suggestedLeg: tau_tot > allowable ? Math.ceil(w * Math.sqrt(tau_tot/allowable) + 1) : null,
+    throatNote, FEXX, config,
+    w: +w.toFixed(1), Lw: +Lw.toFixed(0), V: +V.toFixed(1), M_kNm: M_kNm||0,
+  };
+}
+
+function mech_gear(inp) {
+  let { m, z1, z2, F, n1, P, P_u, eta, materialKey, Sall } = inp;
+  if (P_u === 'hp') P *= 0.7457;
+  if (materialKey && MECH_MAT.gear[materialKey]) Sall = MECH_MAT.gear[materialKey].Sall;
+  if (z1 < 6 || z2 < 6) return { error: 'Minimum 6 teeth per gear' };
+  if (m <= 0 || F <= 0 || n1 <= 0 || P <= 0) return { error: 'Invalid gear inputs' };
+  if (F < 8*m) return { error: `Face width F=${F}mm too narrow. AGMA: F ≥ ${8*m}mm` };
+  const i = z2/z1, n2 = n1/i, d1 = m*z1, d2 = m*z2, a = (d1+d2)/2;
+  const T1 = P*1000/(2*Math.PI*n1/60), T2 = T1*i*eta;
+  const Wt = T1*1000/(d1/2);
+  const Vp = Math.PI*d1*n1/60000;
+  const Vp_fpm = Vp * 196.85, Qv = 6;
+  const A_agma = 56 + Math.sqrt(200 - Qv*Qv);
+  const Kv = Math.max(1.0, (A_agma + Math.sqrt(Vp_fpm)) / A_agma);
+  const Ks = Math.max(1.0, 1.192 * Math.pow(F * Math.sqrt(mech_lewisY(Math.min(z1,z2))) / m, 0.0535));
+  const F_over_d = F / d1;
+  const Km = 1 + 0.0675*F_over_d + 0.0128*F_over_d*F_over_d + (n1 > 3600 ? 0.15 : 0);
+  const Y1 = mech_lewisY(z1), Y2 = mech_lewisY(z2);
+  const sigma_lewis = Wt / (F * m * Math.min(Y1,Y2));
+  const sigma_agma  = Wt * Kv * Ks * Km / (F * m * Math.min(Y1,Y2));
+  const sf = Sall / sigma_agma;
+  const ok = sf > 1.5 && Vp < 25;
+  return {
+    ok, i: +i.toFixed(3), n2: +n2.toFixed(1), d1: +d1.toFixed(1), d2: +d2.toFixed(1), a: +a.toFixed(1),
+    Wt: +Wt.toFixed(1), T1_Nm: +T1.toFixed(2), T2_Nm: +T2.toFixed(2), Vp: +Vp.toFixed(2),
+    sigma_lewis: +sigma_lewis.toFixed(2), sigma_agma: +sigma_agma.toFixed(2),
+    Kv: +Kv.toFixed(3), Ks: +Ks.toFixed(3), Km: +Km.toFixed(3),
+    Y1: +Y1.toFixed(4), Y2: +Y2.toFixed(4), sf: +sf.toFixed(3), Sall,
+    P_kW: +P.toFixed(2), P_out_kW: +(P*eta).toFixed(2),
+    eta_recommended: Vp < 5 ? 0.96 : Vp < 15 ? 0.97 : 0.98,
+    faceWidthWarn: F > 16*m ? `Face width F=${F}mm exceeds AGMA max 16×m=${16*m}mm.` : null,
+  };
+}
+
+function mech_shaft(inp) {
+  let { M, T, Fa, d, d_u, L, Sy, Su, SF, Lk, materialKey } = inp;
+  const mat = MECH_MAT.shaft[materialKey];
+  if (mat) { Sy = mat.Sy/1e6; Su = mat.Su/1e6; }
+  if (d_u === 'in') d *= 25.4;
+  d /= 1000; L /= 1000; Lk /= 1000;
+  Sy *= 1e6; Su *= 1e6;
+  if (d <= 0 || SF < 1 || M < 0 || T < 0) return { error: 'Invalid shaft inputs' };
+  const r = d/2;
+  const J = Math.PI*Math.pow(d,4)/32;
+  const I = Math.PI*Math.pow(d,4)/64;
+  const A = Math.PI*d*d/4;
+  const sigma_b = M*r/I, tau_t = T*r/J, sigma_a = (Fa||0)/A;
+  const sigma_total = sigma_b + sigma_a;
+  const sigma_vm = Math.sqrt(sigma_total*sigma_total + 3*tau_t*tau_t);
+  const sf_vm = Sy / sigma_vm;
+  const Se = 0.504 * Su;
+  const sf_fatigue = 1 / (sigma_b/Se + tau_t/(0.577*Se));
+  const E_s   = mat ? mat.E : 200e9;
+  const rho_s = mat ? mat.rho : 7850;
+  const w_self = rho_s * A * 9.81;
+  const delta_ss = 5 * w_self * Math.pow(L,4) / (384 * E_s * I);
+  const Nc = (30/Math.PI) * Math.sqrt(9.81 / Math.max(delta_ss, 1e-9));
+  const kw = Math.max(4, Math.round(d*1000/4));
+  const key_shear   = 2*T / (d * (kw/1000) * Lk);
+  const key_bearing = 4*T / (d * (kw/2000) * Lk);
+  const ok = sf_vm > SF;
+  return {
+    ok,
+    sigma_b: +(sigma_b/1e6).toFixed(3), sigma_a: +(sigma_a/1e6).toFixed(3),
+    tau_t:   +(tau_t/1e6).toFixed(3),   sigma_vm: +(sigma_vm/1e6).toFixed(3),
+    Sy_MPa: +(Sy/1e6).toFixed(0), sf_vm: +sf_vm.toFixed(3), sf_fatigue: +sf_fatigue.toFixed(3),
+    Nc_rpm: +Nc.toFixed(0), Se_MPa: +(Se/1e6).toFixed(0),
+    key_shear: +(key_shear/1e6).toFixed(2), key_bearing: +(key_bearing/1e6).toFixed(2),
+    kw, kh: kw, d_mm: +(d*1000).toFixed(0), L_mm: +(L*1000).toFixed(0),
+    J_mm4: +(J*1e12).toFixed(2), Fa_N: Fa||0, SF,
+    vmFail: sigma_vm > Sy, keyShearFail: key_shear > 0.577*Sy, keyBearFail: key_bearing > Sy,
+  };
+}
+
+function mech_sheetMetal(inp) {
+  let { t, t_u, K, theta, R, A, B, Sy, E, materialKey } = inp;
+  const mat = MECH_MAT.sheet[materialKey];
+  if (mat) { K = mat.K; Sy = mat.Sy; E = mat.E; }
+  if (t_u === 'in') t *= 25.4;
+  const E_MPa = E * 1000;
+  if (t <= 0 || R < 0 || theta <= 0) return { error: 'Invalid sheet metal inputs' };
+  const BA        = (Math.PI/180) * theta * (R + K*t);
+  const BD        = 2*(R+t)*Math.tan(theta/2*Math.PI/180) - BA;
+  const TotalFlat = A + B + BA;
+  const Kf        = Sy * R / (E_MPa * t);
+  const thetaFinal = theta * (1 - 3*Kf + 4*Math.pow(Kf,3));
+  const springback = Math.max(0, theta - thetaFinal);
+  const effMat = MECH_MAT.sheet[materialKey] || MECH_MAT.sheet['ms'];
+  const Rmin   = effMat.Rmin_factor * t;
+  const Rmin_labels = { ms:'0.5t (mild steel)', ss304:'1.0t (SS304)', alum:'4.0t (Al 6061)', copper:'1.0t (copper)', galv:'0.5t (galvanised)' };
+  return {
+    ok: R >= Rmin,
+    BA: +BA.toFixed(3), BD: +BD.toFixed(3), TotalFlat: +TotalFlat.toFixed(3),
+    springback: +springback.toFixed(2), overbend: +(theta+springback).toFixed(1),
+    Rmin: +Rmin.toFixed(2), Rmin_note: Rmin_labels[materialKey] || `${effMat.Rmin_factor}t`,
+    Kf: +Kf.toFixed(4), neutral_mm: +(K*t).toFixed(3), arc_R: +(R+K*t).toFixed(3),
+    bendOk: R >= Rmin, Kf_warn: Kf > 0.3,
+    t, K, theta, R, A, B, Sy, E,
+  };
+}
+
+function mech_spring(inp) {
+  let { dw, D, Na, F, G, Ssy, ends, materialKey } = inp;
+  const mat = MECH_MAT.spring[materialKey];
+  if (mat) { G = mat.G; Ssy = mat.Ssy; }
+  if (dw <= 0 || D <= 0 || dw >= D) return { error: 'Invalid wire/coil diameter' };
+  if (Na < 1 || F <= 0) return { error: 'Invalid active coils or load' };
+  const C  = D / dw;
+  const Kw = (4*C-1)/(4*C-4) + 0.615/C;
+  const k  = G * Math.pow(dw,4) / (8 * Math.pow(D,3) * Na);
+  const delta = F / k;
+  const tau   = Kw * 8*F*D / (Math.PI*Math.pow(dw,3));
+  const sf    = Ssy / tau;
+  const p_free = dw * 1.25;
+  let Nt, Lf;
+  if      (ends === 'closed-ground') { Nt = Na+2; Lf = Na*p_free + 2*dw; }
+  else if (ends === 'closed')        { Nt = Na+2; Lf = Na*p_free + 3*dw; }
+  else                               { Nt = Na;   Lf = Na*p_free + dw;   }
+  const solid_h        = Nt * dw;
+  const endDw          = ends === 'closed-ground' ? 2 : ends === 'closed' ? 3 : 1;
+  const pitch          = (Lf - endDw*dw) / Na;
+  const coil_gap       = pitch - dw;
+  const clash_clearance = Lf - delta - solid_h;
+  const slenderness    = Lf / D;
+  return {
+    ok: sf >= 1.2 && C >= 4 && C <= 12,
+    k: +k.toFixed(3), delta: +delta.toFixed(3), Kw: +Kw.toFixed(4), C: +C.toFixed(2),
+    tau: +tau.toFixed(2), Ssy: +Ssy.toFixed(1), sf: +sf.toFixed(3),
+    Lf: +Lf.toFixed(2), solid_h: +solid_h.toFixed(2), pitch: +pitch.toFixed(3),
+    coil_gap: +coil_gap.toFixed(3), clash_clearance: +clash_clearance.toFixed(3),
+    slenderness: +slenderness.toFixed(3), Nt,
+    bucklingRisk: slenderness > 4.0, clashWarn: clash_clearance < 0.15*Lf, C_warn: C < 4 || C > 12,
+    dw, D, Na, G, F, ends,
+  };
+}
+
+function mech_fastener(inp) {
+  let { d, p, Sy, T, Tu, K, Fa_kN, gradeKey } = inp;
+  if (gradeKey && MECH_MAT.fastener[gradeKey]) Sy = MECH_MAT.fastener[gradeKey].Sy;
+  if (Tu === 'lbft') T *= 1.35582;
+  if (d <= 0 || p <= 0 || Sy <= 0 || T <= 0) return { error: 'Invalid fastener inputs' };
+  if (K < 0.05 || K > 0.5) return { error: 'K outside typical range 0.05–0.5' };
+  const d2 = d - 0.6495*p, d3 = d - 1.2269*p;
+  const At = Math.PI/4 * Math.pow((d2+d3)/2, 2);
+  const Fi = T*1000 / (K*d);
+  const sigma_preload = Fi / At;
+  const tau_tighten   = sigma_preload * 0.5 * Math.tan(Math.atan(p / (Math.PI*d2)));
+  const sigma_vm_tight = Math.sqrt(sigma_preload*sigma_preload + 3*tau_tighten*tau_tighten);
+  const Fa            = (Fa_kN||0) * 1000;
+  const sigma_service = (Fi + Fa) / At;
+  const sf   = Sy / Math.max(sigma_vm_tight, sigma_service);
+  const util = sigma_service / Sy * 100;
+  const ok   = sf >= 1.2 && sigma_service < Sy;
+  const T_strip = 0.18 * Sy * At * d / 1000;
+  return {
+    ok,
+    At: +At.toFixed(2), d2: +d2.toFixed(3), d3: +d3.toFixed(3),
+    Fi_kN: +(Fi/1000).toFixed(3), sigma_preload: +sigma_preload.toFixed(1),
+    sigma_service: +sigma_service.toFixed(1), Sy, sf: +sf.toFixed(3),
+    util: +util.toFixed(1), T_strip_Nm: +T_strip.toFixed(1),
+    T_strip_ratio: +(T_strip/T).toFixed(2),
+    p, K, T, Fa_kN: Fa_kN||0, gradeKey,
+  };
+}
+
+function mech_cnc(inp) {
+  let { D, Vc, Vc_u, fz, z, ap, ae, workMat, toolMat } = inp;
+  if (Vc_u === 'sfm') Vc *= 0.3048;
+  if (!Vc && workMat) {
+    const base = MECH_MAT.cncVc[workMat] || 200;
+    Vc = toolMat === 'hss' ? Math.round(base/4) : base;
+  }
+  if (D <= 0 || Vc <= 0 || fz <= 0 || z < 1 || ap <= 0 || ae <= 0) return { error: 'Invalid CNC inputs' };
+  if (ae > D) return { error: `Radial depth ae=${ae}mm exceeds tool diameter D=${D}mm` };
+  const n   = 1000*Vc / (Math.PI*D);
+  const f   = fz*z*n;
+  const MRR = ae*ap*f / 1000;
+  const kc_val = MECH_MAT.cncKc[workMat] || 1500;
+  const Pc  = kc_val*ae*ap*f / (60*1e6);
+  const tc  = 100 / (f/60);
+  return {
+    ok: true,
+    n: +n.toFixed(0), f: +f.toFixed(0), Vc, fz,
+    MRR: +MRR.toFixed(2), Pc: +Pc.toFixed(3), tc_per_100mm: +tc.toFixed(1),
+    kc_val, D, ae, ap, z,
+    highSpindleWarn: n > 30000 ? `Spindle ${Math.round(n)} rpm is very high. Verify machine maximum.` : null,
+    aeWarn: ae > D*0.75 ? `High radial engagement ae/D=${(ae/D*100).toFixed(0)}%. Consider reducing.` : null,
+  };
+}
+
+function mech_tank(inp) {
+  let { D, Du, H, fill_pct, rho, type, thk, liquidKey } = inp;
+  if (Du === 'm') D *= 1000; else if (Du === 'ft') D *= 304.8;
+  if (liquidKey && MECH_MAT.liquid[liquidKey]) rho = MECH_MAT.liquid[liquidKey];
+  const R    = D / 2;
+  const fill = fill_pct / 100;
+  let V_total = 0, V_fill = 0;
+  switch (type) {
+    case 'vert-cyl':       V_total = Math.PI*R*R*H/1e6; V_fill = V_total*fill; break;
+    case 'horiz-cyl': {
+      V_total = Math.PI*R*R*H/1e6;
+      const h_fill  = D*fill;
+      const theta_h = 2*Math.acos(Math.max(-1, Math.min(1, 1 - 2*h_fill/D)));
+      V_fill = (R*R*(theta_h - Math.sin(theta_h))/2) * H/1e6; break;
+    }
+    case 'rect':           V_total = D*D*H/1e6; V_fill = V_total*fill; break;
+    case 'cone':           V_total = Math.PI*R*R*H/3/1e6; V_fill = V_total*Math.pow(fill,3); break;
+    case 'sph':            V_total = 4/3*Math.PI*Math.pow(R,3)/1e6; V_fill = V_total*fill; break;
+    case 'vert-cyl-heads': {
+      const Vcyl = Math.PI*R*R*H/1e6; const Vhead = 2*(Math.PI/12*D*R*R/1e6);
+      V_total = Vcyl+Vhead; V_fill = V_total*fill; break;
+    }
+    default: return { error: 'Unknown tank type' };
+  }
+  const OD          = D + 2*thk;
+  const mass_liquid = V_fill * rho;
+  const hydrostatic = rho*9.81*(H/1000)*fill/1e5;
+  const V_litre     = V_total * 1000;
+  return {
+    ok: true,
+    V_total_L:      +V_litre.toFixed(1),
+    V_fill_L:       +(V_fill*1000).toFixed(1),
+    V_total_m3:     +V_total.toFixed(4),
+    V_gal:          +(V_litre*0.264172).toFixed(1),
+    V_bbls:         +(V_litre/158.987).toFixed(2),
+    mass_liquid_kg: +mass_liquid.toFixed(1),
+    hydrostatic_bar:+hydrostatic.toFixed(3),
+    OD: +OD.toFixed(0), D, H, fill_pct, rho, thk,
+  };
+}
+
+function mech_cog(inp) {
+  const { components } = inp;
+  if (!components || components.length === 0) return { error: 'No components provided' };
+  let totalM = 0, sumMx = 0, sumMy = 0;
+  for (const c of components) { totalM += c.m; sumMx += c.m*c.x; sumMy += c.m*c.y; }
+  if (totalM === 0) return { error: 'Total mass is zero' };
+  const cogX = sumMx/totalM, cogY = sumMy/totalM;
+  return {
+    ok: true,
+    totalM: +totalM.toFixed(4), weight_N: +(totalM*9.81).toFixed(1),
+    cogX: +cogX.toFixed(2), cogY: +cogY.toFixed(2),
+    breakdown: components.map(c => ({
+      name: c.name, m: c.m, x: c.x, y: c.y,
+      pct: +(c.m/totalM*100).toFixed(1),
+    })),
+  };
+}
+
+function mech_beam(inp) {
+  let { loadType, section, L, load, a_pos, E, Fy, materialKey,
+        b_rect, h_rect, bf, tf, hw, tw, bh, hh, th, dia } = inp;
+  const mat = MECH_MAT.beam[materialKey];
+  if (mat) { E = mat.E; if (!Fy) Fy = mat.Fy; }
+  // Resolve section properties
+  let I_mm4, Z_mm3, A_mm2, sectionDesc = '';
+  if (MECH_SECTIONS[section]) {
+    ({ I: I_mm4, Z: Z_mm3, A: A_mm2 } = MECH_SECTIONS[section]); sectionDesc = section;
+  } else if (section === 'rect' && b_rect > 0 && h_rect > 0) {
+    I_mm4 = b_rect*Math.pow(h_rect,3)/12; Z_mm3 = b_rect*h_rect*h_rect/6; A_mm2 = b_rect*h_rect;
+    sectionDesc = `Rect ${b_rect}×${h_rect} mm`;
+  } else if (section === 'circle' && dia > 0) {
+    I_mm4 = Math.PI*Math.pow(dia,4)/64; Z_mm3 = Math.PI*Math.pow(dia,3)/32; A_mm2 = Math.PI*dia*dia/4;
+    sectionDesc = `Circle ⌀${dia} mm`;
+  } else if (section === 'ibeam' && bf > 0 && tf > 0 && hw > 0 && tw > 0) {
+    const I_f = 2*(bf*Math.pow(tf,3)/12 + bf*tf*Math.pow((hw/2+tf/2),2));
+    const I_w = tw*Math.pow(hw,3)/12;
+    I_mm4 = I_f + I_w; Z_mm3 = I_mm4/((hw/2+tf)); A_mm2 = 2*bf*tf + hw*tw;
+    sectionDesc = `I-beam ${bf}×${tf}f / ${hw}×${tw}w mm`;
+  } else if (section === 'hollow-rect' && bh > 0 && hh > 0 && th > 0) {
+    const bi = bh-2*th, hi = hh-2*th;
+    I_mm4 = (bh*Math.pow(hh,3) - bi*Math.pow(hi,3))/12; Z_mm3 = I_mm4/(hh/2); A_mm2 = bh*hh - bi*hi;
+    sectionDesc = `Hollow ${bh}×${hh}×${th} mm`;
+  } else {
+    return { error: 'Unknown section or missing dimensions' };
+  }
+  if (!I_mm4 || I_mm4 <= 0 || L <= 0 || load <= 0) return { error: 'Invalid beam inputs' };
+  const E_Pa  = E * 1e9, I_m4 = I_mm4*1e-12, L_m = L/1000;
+  const EI    = E_Pa * I_m4;
+  let delta_max_m = 0, M_max_Nm = 0, V_max_N = 0, reaction_A = 0, reaction_B = 0, formulaStr = '';
+  if (loadType === 'udl-ss') {
+    const w = load;
+    delta_max_m = 5*w*Math.pow(L_m,4)/(384*EI); M_max_Nm = w*L_m*L_m/8;
+    V_max_N = w*L_m/2; reaction_A = reaction_B = V_max_N; formulaStr = 'δ=5wL⁴/384EI · M=wL²/8';
+  } else if (loadType === 'point-ss-mid') {
+    const P = load;
+    delta_max_m = P*Math.pow(L_m,3)/(48*EI); M_max_Nm = P*L_m/4;
+    V_max_N = P/2; reaction_A = reaction_B = P/2; formulaStr = 'δ=PL³/48EI · M=PL/4';
+  } else if (loadType === 'point-ss-off') {
+    const P = load, a = (a_pos||L/2)/1000, b = L_m-a;
+    reaction_A = P*b/L_m; reaction_B = P*a/L_m; M_max_Nm = reaction_A*a; V_max_N = Math.max(reaction_A,reaction_B);
+    const tmp = P*a*b*(a+2*b)*Math.sqrt(3*a*(a+2*b));
+    delta_max_m = tmp/(27*EI*L_m); formulaStr = 'δ_max=Pa·b·(a+2b)√(3a(a+2b))/27EIL';
+  } else if (loadType === 'cantilever-udl') {
+    const w = load;
+    delta_max_m = w*Math.pow(L_m,4)/(8*EI); M_max_Nm = w*L_m*L_m/2;
+    V_max_N = w*L_m; reaction_A = V_max_N; formulaStr = 'δ=wL⁴/8EI · M=wL²/2 (cantilever)';
+  } else if (loadType === 'cantilever-point') {
+    const P = load;
+    delta_max_m = P*Math.pow(L_m,3)/(3*EI); M_max_Nm = P*L_m;
+    V_max_N = P; reaction_A = P; formulaStr = 'δ=PL³/3EI · M=PL (cantilever)';
+  } else {
+    return { error: 'Unknown load type' };
+  }
+  const sigma   = Z_mm3 > 0 ? M_max_Nm*1e3/Z_mm3 : 0;
+  const dLimit  = L_m / 360;
+  const Fy_Pa   = (Fy||250) * 1e6;
+  const ok      = sigma <= Fy_Pa && delta_max_m <= dLimit;
+  return {
+    ok,
+    Mmax: +(M_max_Nm/1000).toFixed(3), Vmax: +(V_max_N/1000).toFixed(3),
+    delta_mm: +(delta_max_m*1000).toFixed(3), dLimit_mm: +(dLimit*1000).toFixed(3),
+    sigma_MPa: +(sigma/1e6).toFixed(2), Fy_MPa: Fy||250,
+    sf: +(Fy_Pa/Math.max(sigma,1)).toFixed(3),
+    EI_kNm2: +(EI/1e3).toFixed(1),
+    reaction_A_kN: +(reaction_A/1000).toFixed(3), reaction_B_kN: +(reaction_B/1000).toFixed(3),
+    I_mm4: I_mm4.toExponential(3), Z_mm3: Z_mm3.toExponential(3), A_mm2,
+    E_GPa: E, L_m: +L_m.toFixed(3), sectionDesc, formulaStr,
+    stressFail: sigma > Fy_Pa, deflFail: delta_max_m > dLimit,
+  };
+}
+
+function mech_materialProps(inp) {
+  const { category, key } = inp;
+  const cat = MECH_MAT[category];
+  if (!cat) return { ok: false, error: `Unknown category "${category}"` };
+  if (key) {
+    if (cat[key] !== undefined) return { ok: true, props: cat[key] };
+    return { ok: false, error: `Key "${key}" not found in "${category}"` };
+  }
+  return { ok: true, keys: Object.keys(cat) };
+}
+
+// ── Route handler ─────────────────────────────────────────────────
+
+async function handle_mechanical_engineering(body, res) {
+  const { calculator, inputs } = body || {};
+  if (!calculator || !inputs) {
+    return res.status(400).json({ ok: false, error: 'Missing "calculator" or "inputs" in request body.' });
+  }
+  let result;
+  try {
+    switch (calculator) {
+      case 'pressure-vessel': result = mech_pressureVessel(inputs); break;
+      case 'bolt-flange':     result = mech_boltFlange(inputs);     break;
+      case 'weld':            result = mech_weld(inputs);           break;
+      case 'gear':            result = mech_gear(inputs);           break;
+      case 'shaft':           result = mech_shaft(inputs);          break;
+      case 'sheet-metal':     result = mech_sheetMetal(inputs);     break;
+      case 'spring':          result = mech_spring(inputs);         break;
+      case 'fastener':        result = mech_fastener(inputs);       break;
+      case 'cnc':             result = mech_cnc(inputs);            break;
+      case 'tank':            result = mech_tank(inputs);           break;
+      case 'cog':             result = mech_cog(inputs);            break;
+      case 'beam':            result = mech_beam(inputs);           break;
+      case 'material-props':  result = mech_materialProps(inputs);  break;
+      default:
+        return res.status(400).json({ ok: false, error: `Unknown calculator: "${calculator}"` });
+    }
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: 'Calculation error: ' + err.message });
+  }
+  if (result && result.error) return res.status(422).json({ ok: false, error: result.error });
+  return res.status(200).json({ ok: true, results: result });
+}
+
+
+
+// ================================================================
 // MAIN VERCEL HANDLER — routes by URL path
 // ================================================================
 
@@ -7059,6 +7706,7 @@ export default async function handler(req, res) {
       case 'civil-engineering-calculators':      return await handle_civil_engineering(body, res);
       case 'instrumentation-calculators':         return await handle_instrumentation(body, res);
       case 'electrical-engineering-calculators':  return await handle_electrical(body, res);
+      case 'mechanical-engineering-calculators': return await handle_mechanical_engineering(body, res);
       default:
         return res.status(404).json({ error: `Unknown route: "${route}". Valid routes: compressor, control-valve, cooling-tower, eos, fan, heatxpert, orifice-flow, pressure-drop-calculator, psychrometric, pump, rankine, steam-quench, steam-turbine-power, steam` });
     }
