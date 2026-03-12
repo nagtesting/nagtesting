@@ -7553,10 +7553,12 @@ function mech_beam(inp) {
     I_mm4 = Math.PI*Math.pow(dia,4)/64; Z_mm3 = Math.PI*Math.pow(dia,3)/32; A_mm2 = Math.PI*dia*dia/4;
     sectionDesc = `Circle ⌀${dia} mm`;
   } else if (section === 'ibeam' && bf > 0 && tf > 0 && hw > 0 && tw > 0) {
-    const I_f = 2*(bf*Math.pow(tf,3)/12 + bf*tf*Math.pow((hw/2+tf/2),2));
-    const I_w = tw*Math.pow(hw,3)/12;
-    I_mm4 = I_f + I_w; Z_mm3 = I_mm4/((hw/2+tf)); A_mm2 = 2*bf*tf + hw*tw;
-    sectionDesc = `I-beam ${bf}×${tf}f / ${hw}×${tw}w mm`;
+    // hw may be overall depth H (from HTML) or pure web height — derive web height
+    const hw_web = hw > 2*tf ? hw - 2*tf : hw; // if overall H sent, subtract flanges
+    const I_f = 2*(bf*Math.pow(tf,3)/12 + bf*tf*Math.pow((hw_web/2+tf/2),2));
+    const I_w = tw*Math.pow(hw_web,3)/12;
+    I_mm4 = I_f + I_w; Z_mm3 = I_mm4/((hw_web/2+tf)); A_mm2 = 2*bf*tf + hw_web*tw;
+    sectionDesc = `I-beam ${bf}×${tf}f / ${hw_web}×${tw}w mm`;
   } else if (section === 'hollow-rect' && bh > 0 && hh > 0 && th > 0) {
     const bi = bh-2*th, hi = hh-2*th;
     I_mm4 = (bh*Math.pow(hh,3) - bi*Math.pow(hi,3))/12; Z_mm3 = I_mm4/(hh/2); A_mm2 = bh*hh - bi*hi;
@@ -7589,6 +7591,16 @@ function mech_beam(inp) {
     const P = load;
     delta_max_m = P*Math.pow(L_m,3)/(3*EI); M_max_Nm = P*L_m;
     V_max_N = P; reaction_A = P; formulaStr = 'δ=PL³/3EI · M=PL (cantilever)';
+  } else if (loadType === 'fixed-point') {
+    // Fixed-fixed, central point load
+    const P = load;
+    delta_max_m = P*Math.pow(L_m,3)/(192*EI); M_max_Nm = P*L_m/8;
+    V_max_N = P/2; reaction_A = reaction_B = P/2; formulaStr = 'δ=PL³/192EI · M=PL/8 (fixed-fixed)';
+  } else if (loadType === 'fixed-udl') {
+    // Fixed-fixed, UDL
+    const w = load;
+    delta_max_m = w*Math.pow(L_m,4)/(384*EI); M_max_Nm = w*L_m*L_m/12;
+    V_max_N = w*L_m/2; reaction_A = reaction_B = V_max_N; formulaStr = 'δ=wL⁴/384EI · M=wL²/12 (fixed-fixed)';
   } else {
     return { error: 'Unknown load type' };
   }
