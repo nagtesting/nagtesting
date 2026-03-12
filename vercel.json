@@ -176,6 +176,14 @@
       "destination": "/api/index"
     },
     {
+      "source": "/api/moc/",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/moc",
+      "destination": "/api/index"
+    },
+    {
       "source": "/steam-properties-calculator",
       "destination": "/steam-properties-calculator/index.html"
     },
@@ -318,6 +326,14 @@
     {
       "source": "/mechanical-engineering-calculators/",
       "destination": "/mechanical-engineering-calculators/index.html"
+    },
+    {
+      "source": "/moc-selector",
+      "destination": "/moc-selector/index.html"
+    },
+    {
+      "source": "/moc-selector/",
+      "destination": "/moc-selector/index.html"
     }
   ],
   "headers": [
@@ -330,7 +346,7 @@
         },
         {
           "key": "Access-Control-Allow-Methods",
-          "value": "POST, OPTIONS"
+          "value": "GET, POST, OPTIONS"
         },
         {
           "key": "Access-Control-Allow-Headers",
