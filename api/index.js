@@ -107,9 +107,8 @@ export default async function handler(req, res) {
     // referenced it (steam-turbine-power, psychrometric) now use their proper
     // named routes above. This case is kept as a safety net.
     case 'calculate':
-      return res.status(410).json({
-        error: 'The /api/calculate endpoint is retired. Use /api/steam-turbine-power or /api/psychrometric.',
-      });
+      // Vessel & Separator HTML calls /api/calculate — route it there
+      return await vesselSeparator_handler(req, res);
 
     // ── Additional calculators (sections 15–21) ──────────────────────────────
     case 'vessel-separator-sizing':
@@ -7699,7 +7698,7 @@ async function npsh_handler(req, res) {
     return res.status(400).json({ error: 'Invalid request body.' });
 
   try {
-    return await handle_npsh_calculator(req, body, res);
+    return await handle_npsh_calculator(body, res);
   } catch (e) {
     console.error('[npsh-calculator.js] Unhandled error:', e);
     return res.status(500).json({ error: e.message || 'Internal server error' });
@@ -8526,7 +8525,7 @@ async function civil_handler(req, res) {
     return res.status(400).json({ error: 'Invalid request body.' });
 
   try {
-    return await handle_civil_engineering(req, body, res);
+    return await handle_civil_engineering(body, res);
   } catch (e) {
     console.error('[civil-engineering-calculators.js] Unhandled error:', e);
     return res.status(500).json({ error: e.message || 'Internal server error' });
@@ -8881,7 +8880,7 @@ async function instrumentation_handler(req, res) {
     return res.status(400).json({ error: 'Invalid request body.' });
 
   try {
-    return await handle_instrumentation(req, body, res);
+    return await handle_instrumentation(body, res);
   } catch (e) {
     console.error('[instrumentation-calculators.js] Unhandled error:', e);
     return res.status(500).json({ error: e.message || 'Internal server error' });
@@ -9487,7 +9486,7 @@ async function electrical_handler(req, res) {
     return res.status(400).json({ error: 'Invalid request body.' });
 
   try {
-    return await handle_electrical(req, body, res);
+    return await handle_electrical(body, res);
   } catch (e) {
     console.error('[electrical-engineering-calculators.js] Unhandled error:', e);
     return res.status(500).json({ error: e.message || 'Internal server error' });
@@ -10183,7 +10182,7 @@ async function mechanical_handler(req, res) {
     return res.status(400).json({ error: 'Invalid request body.' });
 
   try {
-    return await handle_mechanical_engineering(req, body, res);
+    return await handle_mechanical_engineering(body, res);
   } catch (e) {
     console.error('[mechanical-engineering-calculators.js] Unhandled error:', e);
     return res.status(500).json({ error: e.message || 'Internal server error' });
