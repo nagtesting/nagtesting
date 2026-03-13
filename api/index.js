@@ -394,18 +394,6 @@ function fmt2(v) {
   return v.toFixed(2);
 }
 
-function fmtN(v) {
-  if (!isFinite(v) || v === 0) return 0;
-  const mag = Math.floor(Math.log10(Math.abs(v)));
-  const factor = Math.pow(10, 3 - mag);
-  return Math.round(v * factor) / factor;
-}
-
-function fmt2(v) {
-  if (!isFinite(v)) return '—';
-  return v.toFixed(2);
-}
-
 async function handle_control_valve(req, body, res) {
   const SECRET_KEY = 'cv-k3y9x';
   if (req.headers['x-api-key'] !== SECRET_KEY)
