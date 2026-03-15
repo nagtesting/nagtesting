@@ -3128,7 +3128,7 @@ ${pl?`
 <div class="div-strip">
   <div class="div-item">Status: <span>${pl.stTxt||'—'}</span></div>
   <span class="div-sep">|</span>
-  <div class="div-item">Close Approach ΔT: <span>${(Math.min(pl.hTi-pl.cTo, pl.hTo-pl.cTi)).toFixed(2)} ${T}</span></div>
+  <div class="div-item">Close Approach ΔT: <span>${pl.minApproachDT!=null?pl.minApproachDT.toFixed(2):(Math.min(pl.hTi-pl.cTo, pl.hTo-pl.cTi)).toFixed(2)} ${T}</span></div>
   <span class="div-sep">|</span>
   <div class="div-item">Balance Error: <span>${pl.balErr!=null?pl.balErr.toFixed(2)+'%':'—'}</span></div>
 </div>
@@ -3838,28 +3838,25 @@ document.getElementById('stForm').addEventListener('submit', async function(e){
   e.preventDefault(); if(_apiPending) return; hideErr('st');
   startCalc('st');
   try {
-    // Read all inputs in SI (server always works in SI/metric)
+    // Send raw values + unitSys — server handles all unit conversion
     const hFlKey=g('st_hFl').value, cFlKey=g('st_cFl').value;
     const hPop=parseFloat(g('st_hPop')||{value:'1.01325'}).value||1.01325;
     const cPop=parseFloat(g('st_cPop')||{value:'1.01325'}).value||1.01325;
-    let hTi=tC(v('st_hTi')), hTo=tC(v('st_hTo')), cTi=tC(v('st_cTi'));
+    const hTi=v('st_hTi'), hTo=v('st_hTo'), cTi=v('st_cTi');
     const hFraw=parseFloat(g('st_hF').value)||0;
     const hFunit=(g('st_hFunit')||{value:'kgh'}).value;
-    let hF = hFunit==='kgh' ? hFraw : hFraw; // server resolves units
-    if(unitSys==='imperial') hF=hF/2.20462;
 
     let cFraw=0, cToVal=0;
     if(coldMode==='flow'){
       cFraw=parseFloat(g('st_cF').value)||0;
-      if(unitSys==='imperial') cFraw=cFraw/2.20462;
     } else {
-      cToVal=tC(v('st_cTo'));
+      cToVal=v('st_cTo');
     }
 
     const payload = {
-      calcType:'shellTube',
+      calcType:'shellTube', unitSys,
       hFlKey, cFlKey, hPop, cPop,
-      hTi, hTo, cTi, hF,
+      hTi, hTo, cTi, hF: hFraw, hFunit,
       coldMode, cF: cFraw, cTo: cToVal,
       OD: v('st_od'), tw: v('st_tw'), L: v('st_len'),
       pitch: v('st_pitch'),
@@ -3896,15 +3893,14 @@ document.getElementById('plForm').addEventListener('submit', async function(e){
     const hFlKey=g('pl_hFl').value, cFlKey=g('pl_cFl').value;
     const hPop=parseFloat((g('pl_hPop')||{value:'1.01325'}).value)||1.01325;
     const cPop=parseFloat((g('pl_cPop')||{value:'1.01325'}).value)||1.01325;
-    let hTi=tC(v('pl_hTi')), hTo=tC(v('pl_hTo')), cTi=tC(v('pl_cTi'));
-    let hF=parseFloat(g('pl_hF').value)||0;
-    if(unitSys==='imperial') hF/=2.20462;
+    const hTi=v('pl_hTi'), hTo=v('pl_hTo'), cTi=v('pl_cTi');
+    const hF=parseFloat(g('pl_hF').value)||0;
     const plColdMode=g('pl_coldMode').value;
     let cToVal=0, cFval=0;
-    if(plColdMode==='temp') cToVal=tC(v('pl_cTo'));
-    else { cFval=parseFloat(g('pl_cF').value)||0; if(unitSys==='imperial') cFval/=2.20462; }
+    if(plColdMode==='temp') cToVal=v('pl_cTo');
+    else { cFval=parseFloat(g('pl_cF').value)||0; }
     const payload = {
-      calcType:'plate', hFlKey, cFlKey, hPop, cPop,
+      calcType:'plate', unitSys, hFlKey, cFlKey, hPop, cPop,
       hTi, hTo, cTi, hF, coldMode:plColdMode, cTo:cToVal, cF:cFval,
       th: v('pl_th'), angle: v('pl_angle'), gap: v('pl_gap'),
       pw: v('pl_width'), plen: v('pl_plen'), phi: parseFloat((g('pl_phi')||{value:'1.17'}).value)||1.17,
@@ -3926,12 +3922,11 @@ document.getElementById('acForm').addEventListener('submit', async function(e){
   e.preventDefault(); if(_apiPending) return; hideErr('ac');
   startCalc('ac');
   try {
-    let Ti=tC(v('ac_Ti')), To=tC(v('ac_To'));
-    let F_=parseFloat(g('ac_F').value)||0;
-    if(unitSys==='imperial') F_/=2.20462;
+    const Ti=v('ac_Ti'), To=v('ac_To');
+    const F_=parseFloat(g('ac_F').value)||0;
     const payload = {
-      calcType:'airCooled', flKey: g('ac_Fl').value,
-      Ti, To, F: F_, Tamb: tC(v('ac_amb')), dTa: v('ac_dTa'),
+      calcType:'airCooled', unitSys, flKey: g('ac_Fl').value,
+      Ti, To, F: F_, Tamb: v('ac_amb'), dTa: v('ac_dTa'),
       rows: v('ac_rows'), bayW: v('ac_bayW'),
       fmat: g('ac_fmat').value, fpm: v('ac_fpm'),
       fanType: g('ac_fan').value
@@ -3951,15 +3946,14 @@ document.getElementById('dpForm').addEventListener('submit', async function(e){
     const hFlKey=g('dp_hFl').value, cFlKey=g('dp_cFl').value;
     const hPop=parseFloat((g('dp_hPop')||{value:'1.01325'}).value)||1.01325;
     const cPop=parseFloat((g('dp_cPop')||{value:'1.01325'}).value)||1.01325;
-    let hTi=tC(v('dp_hTi')), hTo=tC(v('dp_hTo')), cTi=tC(v('dp_cTi'));
-    let hF=parseFloat(g('dp_hF').value)||0;
-    if(unitSys==='imperial') hF/=2.20462;
+    const hTi=v('dp_hTi'), hTo=v('dp_hTo'), cTi=v('dp_cTi');
+    const hF=parseFloat(g('dp_hF').value)||0;
     const dpColdMode=g('dp_coldMode').value;
     let cFval=0, cToVal=0;
-    if(dpColdMode==='flow'){cFval=parseFloat(g('dp_cF').value)||0;if(unitSys==='imperial')cFval/=2.20462;}
-    else cToVal=tC(v('dp_cTo'));
+    if(dpColdMode==='flow'){cFval=parseFloat(g('dp_cF').value)||0;}
+    else cToVal=v('dp_cTo');
     const payload = {
-      calcType:'doublePipe', hFlKey, cFlKey, hPop, cPop,
+      calcType:'doublePipe', unitSys, hFlKey, cFlKey, hPop, cPop,
       hTi, hTo, cTi, hF, coldMode:dpColdMode, cF:cFval, cTo:cToVal,
       iOD: v('dp_iOD'), iTW: v('dp_iW'), oID: v('dp_oID'),
       L: v('dp_hplen'), nHairpins: 1,
@@ -3979,10 +3973,10 @@ document.getElementById('ffForm').addEventListener('submit', async function(e){
   e.preventDefault(); if(_apiPending) return; hideErr('ff');
   startCalc('ff');
   try {
-    let tTi=tC(v('ff_tTi')), tTo=tC(v('ff_tTo'));
-    let aTamb=tC(v('ff_aTamb')), aTout=tC(v('ff_aTout'));
+    const tTi=v('ff_tTi'), tTo=v('ff_tTo');
+    const aTamb=v('ff_aTamb'), aTout=v('ff_aTout');
     const payload = {
-      calcType:'finFan',
+      calcType:'finFan', unitSys,
       tFlKey: g('ff_tFl').value,
       tTi, tTo, tF_kgh: parseFloat(g('ff_tF').value)||0,
       tFoul: parseFloat(g('ff_tFoul').value)||2.9e-4,
@@ -4014,9 +4008,9 @@ document.getElementById('lmForm').addEventListener('submit', async function(e){
   e.preventDefault(); if(_apiPending) return; hideErr('lm');
   try {
     const payload = {
-      calcType:'lmtdNtu',
-      hTi:tC(v('lm_hTi')), hTo:tC(v('lm_hTo')),
-      cTi:tC(v('lm_cTi')), cTo:tC(v('lm_cTo')),
+      calcType:'lmtdNtu', unitSys,
+      hTi:v('lm_hTi'), hTo:v('lm_hTo'),
+      cTi:v('lm_cTi'), cTo:v('lm_cTo'),
       Ch: v('lm_Ch')||null, Cc: v('lm_Cc')||null,
       UA: v('lm_UA')||null, arr: g('lm_arr').value
     };
@@ -4026,7 +4020,7 @@ document.getElementById('lmForm').addEventListener('submit', async function(e){
     g('lm_spin').classList.remove('show');
     if (r.error) { _apiPending = false; return showErr('lm', r.error); }
     lastResults.lm = r;
-    const T=tU(), FLMTD=r.lmtd*r.F;
+    const T=tU(), FLMTD=r.FLMTD;
     const sumText=`LMTD=${r.lmtd.toFixed(2)}${T}, F=${r.F.toFixed(3)}, FLMTD=${FLMTD.toFixed(2)}${T}${r.eff!=null?', ε='+(r.eff*100).toFixed(1)+'%':''}`;
     const lmRes=g('lm_res');
     lmRes.innerHTML=`
