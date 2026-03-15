@@ -1893,8 +1893,8 @@ const KMAT = {cs:50, ss304:16, ss316:14, copper:385, titanium:21, inconel:10, ni
 function getFluid(key) { return FP[(key||"").toLowerCase().trim()] || FP.water; }
 
 // ─── TEMPERATURE INTERPOLATION HELPER ───────────────────────────────────────
-function interpProp(pts, T) {
-  if (!pts || pts.length === 0) return null;
+function interpProp(pts, T, fallback) {
+  if (!pts || pts.length === 0) return fallback;
   if (T <= pts[0][0])              return pts[0][1];
   if (T >= pts[pts.length-1][0])   return pts[pts.length-1][1];
   for (let i = 1; i < pts.length; i++) {
@@ -1908,10 +1908,10 @@ function interpProp(pts, T) {
 function getFluidAtT(key, T_degC) {
   const raw = FP[(key||'').toLowerCase().trim()] || FP.water;
   return {
-    rho:  raw.rho_pts  ? interpProp(raw.rho_pts,  T_degC) : raw.rho,
-    mu:   raw.mu_pts   ? interpProp(raw.mu_pts,   T_degC) : raw.mu,
-    cp:   raw.cp_pts   ? interpProp(raw.cp_pts,   T_degC) : raw.cp,
-    k:    raw.k_pts    ? interpProp(raw.k_pts,    T_degC) : raw.k,
+    rho:  raw.rho_pts  ? interpProp(raw.rho_pts,  T_degC, raw.rho) : raw.rho,
+    mu:   raw.mu_pts   ? interpProp(raw.mu_pts,   T_degC, raw.mu)  : raw.mu,
+    cp:   raw.cp_pts   ? interpProp(raw.cp_pts,   T_degC, raw.cp)  : raw.cp,
+    k:    raw.k_pts    ? interpProp(raw.k_pts,    T_degC, raw.k)   : raw.k,
     name: raw.name, MW: raw.MW, Tc: raw.Tc, Pc: raw.Pc,
     omega: raw.omega, hvap: raw.hvap, Tsat: raw.Tsat
   };
