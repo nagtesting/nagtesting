@@ -593,11 +593,7 @@ function controlValve_handler(req, res) {
     const d_valve_in  = d_valve_raw ? (m ? d_valve_raw/25.4 : d_valve_raw) : null;
     // Q_min for turndown check
     const Q_min_raw   = d.Q_min ? parseFloat(d.Q_min) : null;
-// ── SG temperature correction warning ────────────────────────────────────
-    if (isL && T_F > 176 && SG > 0.940 && SG < 1.050)
-      warns.push({ cls:'warn-amber',
-        txt:`⚠ Process temperature ${m?T.toFixed(0)+'°C':T_F.toFixed(0)+'°F'} > 80°C: verify SG is corrected for process temperature. Using ambient SG can cause Cv errors up to 5%.` });
-      
+
     // ── VALIDATION ────────────────────────────────────────────────────────────
     const warns = [];
     let hasError = false;
@@ -631,6 +627,10 @@ function controlValve_handler(req, res) {
       D_in  = D / 25.4;  // mm → in
       T_F   = T * 9/5 + 32; // °C → °F
     }
+      // ── SG temperature correction warning ────────────────────────────────────
+    if (isL && T_F > 176 && SG > 0.940 && SG < 1.050)
+      warns.push({ cls:'warn-amber',
+        txt:`⚠ Process temperature ${m?T.toFixed(0)+'°C':T_F.toFixed(0)+'°F'} > 80°C: verify SG is corrected for process temperature. Using ambient SG can cause Cv errors up to 5%.` });
     const dP   = Math.max(P1a - P2a, 0.0001);
     const TR   = T_F + 459.67;  // Rankine
     const A_in2 = Math.PI / 4 * D_in * D_in;
