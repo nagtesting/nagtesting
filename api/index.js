@@ -1633,6 +1633,21 @@ function heatxpert_handler(req, res) {
     const { calcType } = body;
     if (!calcType) return res.status(400).json({ error: 'calcType required' });
 
+   // ── Normalise units before dispatch ──────────────────────────────────
+    const us = body.unitSys || 'metric';
+    if (us === 'imperial') {
+      ['hTi','hTo','cTi','cTo','Ti','To','Tamb','tTi','tTo','aTamb','aTout'].forEach(k => {
+        if (body[k] != null) body[k] = toSI_temp(body[k], 'imperial');
+      });
+      ['hF','cF','F','tF_kgh'].forEach(k => {
+        if (body[k] != null) body[k] = toSI_flow(body[k], 'imperial');
+      });
+    }
+    if (body.hFunit && body.hFunit !== 'kgh')
+      body.hF = toSI_flowWithUnit(body.hF, body.hFunit, body.hFlKey, body.hTi, body.hPop);
+    if (body.cFunit && body.cFunit !== 'kgh')
+      body.cF = toSI_flowWithUnit(body.cF, body.cFunit, body.cFlKey, body.cTi, body.cPop);
+
     switch (calcType) {
       case 'shellTube':   return res.json(calcShellTube(body));
       case 'plate':       return res.json(calcPlate(body));
@@ -1849,7 +1864,9 @@ function calcHtube(fluid, massFlowKgS, Di_m, L_m) {
   } else if (Re < 10000) {
     Nu = 0.116*(Math.pow(Re,0.667)-125)*Math.pow(Pr,0.333)*(1+Math.pow(Di_m/L_m,0.667));
   } else {
-    Nu = 0.023*Math.pow(Re,0.8)*Math.pow(Pr,0.333);
+   const f_gn = Math.pow(0.790*Math.log(Math.max(Re,10))-1.64, -2);
+Nu = (f_gn/8)*(Re-1000)*Pr / (1+12.7*Math.sqrt(f_gn/8)*(Math.pow(Pr,2/3)-1));
+Nu = Math.max(Nu, 0.023*Math.pow(Re,0.8)*Math.pow(Pr,0.4)); // floor
   }
   return {h:Nu*k/Di_m, Re, vel, Nu};
 }
@@ -1861,7 +1878,7 @@ function calcBellDelaware(fluid, massFlowKgS, shellID_m, OD_m, pitch_ratio, bcut
   const PT = pitch_ratio*OD_m;
   const bsp = bsp_ratio*shellID_m;
   const bundleFrac = pitchLayout==='triangular' ? 0.866 : 1.0;
-  const Sm = bsp*shellID_m*(1-OD_m/PT)*Math.sqrt(bundleFrac)*0.5;
+  const Sm = bsp_ratio * shellID_m * (PT - OD_m) / PT;
   const G_s = massFlowKgS/Math.max(Sm,1e-6);
   const Re_s = G_s*OD_m/mu;
   const Pr_s = Math.max(mu*cp*1000/k, 0.5);
@@ -1873,7 +1890,7 @@ function calcBellDelaware(fluid, massFlowKgS, shellID_m, OD_m, pitch_ratio, bcut
   // Bell-Delaware correction factors
   const Jc = 0.55 + 0.72*(bcut_frac - 0.15);
   const clearance_tema = {R:0.0003,C:0.0005,B:0.0007}[tema]||0.0005;
-  const Jl = Math.max(0.70, 1 - 0.6*clearance_tema/Math.max(bsp*shellID_m,0.001));
+ const Jl = Math.max(0.70, 1 - 0.6*clearance_tema/Math.max(bsp,0.001));
   const Jb = Math.max(0.70, 1 - 0.3*(1-bsp_ratio));
   const Jr = Re_s<100 ? Math.max(0.4, 0.8-0.003*Re_s) : 1.0;
   const Js = 1.0;
@@ -1917,8 +1934,8 @@ function toSI_flow(val, unitSys) {
 function toSI_flowWithUnit(val, flowUnit, fluidKey, T_degC, P_bar) {
   if (!flowUnit || flowUnit === 'kgh') return val;
   const fluid = getFluid(fluidKey);
-  const rho_n = (fluid.M || 29) * P_REF_DB * 1e5 / (8314 * T_REF_DB);
-  const rho_s = (fluid.M || 29) * P_REF_DB * 1e5 / (8314 * 288.15);
+const rho_n = (fluid.MW || 29) * P_REF_DB * 1e5 / (8314 * T_REF_DB);
+const rho_s = (fluid.MW || 29) * P_REF_DB * 1e5 / (8314 * 288.15);
   if (flowUnit === 'nm3h') return val * rho_n;
   if (flowUnit === 'sm3h') return val * rho_s;
   return val;
