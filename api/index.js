@@ -518,8 +518,6 @@ function compressor_handler(req, res) {
 // Protected by secret key — requests without key return 403
 // ============================================================
 
-const SECRET_KEY = 'cv-k3y9x';  // must match _K in index.html
-
 function controlValve_handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -527,12 +525,7 @@ function controlValve_handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST')   return res.status(405).json({ error: 'Method Not Allowed' });
 
-  // ── SECRET KEY CHECK ──────────────────────────────────────────────────────
-  if (req.headers['x-api-key'] !== SECRET_KEY) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
-  try {
+    try {
     const d = req.body;
 
     // ── RAW INPUTS ────────────────────────────────────────────────────────────
@@ -557,6 +550,8 @@ function controlValve_handler(req, res) {
     const fluidVisc  = parseFloat(d.fluidVisc) || 1.0;
     const fluidPc    = d.fluidPc ? parseFloat(d.fluidPc) : null;
     const steamFluid = d.steamFluid || '';
+    const charType   = d.charType  || 'equal_pct'; // valve characteristic for open% calc
+    const R_trim     = Math.max(10, Math.min(200, parseFloat(d.R_trim) || 50)); // rangeability
 
     // ── VALIDATION ────────────────────────────────────────────────────────────
     const warns = [];
@@ -733,27 +728,60 @@ function controlValve_handler(req, res) {
     const pu        = m ? 'bar' : 'psi';
     const dp2label  = v => v == null ? '—' : (m ? (v/14.5038).toFixed(3) : v.toFixed(2)) + ' ' + pu;
 
+    // ── OPEN % CALCULATION (moved from client) ────────────────────────────────
+    function openPct_eq(CvReq, szCv) {
+      const ratio = Math.min(CvReq / Math.max(szCv, 0.001), 1.5);
+      if (charType === 'equal_pct') {
+        const h = ratio <= 0 ? 0 : 1 + Math.log(Math.max(ratio, 1 / R_trim)) / Math.log(R_trim);
+        return Math.max(0, Math.min(h * 100, 200));
+      } else if (charType === 'quick_open') {
+        return Math.min(ratio * ratio * 100, 200);
+      } else {
+        return Math.min(ratio * 100, 200); // linear and others
+      }
+    }
+    const openPct_rec     = openPct_eq(Cv, sizes.rec.Cv_rated);
+    const openPct_smaller = openPct_eq(Cv, sizes.smaller.Cv_rated);
+    const openPct_larger  = openPct_eq(Cv, sizes.larger.Cv_rated);
+
+    // ── >100% open warning (moved from client) ────────────────────────────────
+    if (openPct_rec > 100) {
+      warns.push({ cls:'warn-red', txt:`⚠️ Cv ${fmtN(Cv)} exceeds rated Cv of ${sizes.rec.s} (${sizes.rec.Cv_rated}). Select: ${sizes.larger.s}.` });
+    }
+
+    // ── DISPLAY LABELS (all formatting done server side) ──────────────────────
+    const pu       = m ? 'bar' : 'psi';
+    const dp2label = v => v == null ? '—' : (m ? (v / 14.5038).toFixed(3) : v.toFixed(2)) + ' ' + pu;
+
     return res.status(200).json({
-      Cv:         fmtN(Cv),
-      Kv:         fmtN(Kv),
-      vel:        fmtN(vel_disp),
+      Cv:              fmtN(Cv),
+      Kv:              fmtN(Kv),
+      CvLabel:         fmtN(Cv) == null ? '—' : String(fmtN(Cv)),
+      KvLabel:         fmtN(Kv) == null ? '—' : String(fmtN(Kv)),
+      vel:             fmtN(vel_disp),
+      velLabel:        (fmtN(vel_disp) ?? '—') + ' ' + (m ? 'm/s' : 'ft/s'),
       velOk,
       velLim,
-      dP,   dPeff, dPmax,
-      dpRatioPct: ((dP / Math.max(P1a,0.001)) * 100).toFixed(1),
-      Y:          isG ? fmtN(Y) : null,
-      Rev:        isL && Rev != null ? Rev : null,
+      dP,   dPeff,   dPmax,
+      dPLabel:         dp2label(dP),
+      dPeffLabel:      dp2label(dPeff),
+      dPmaxLabel:      isL || isS ? dp2label(dPmax) : 'x_crit=' + ((k / 1.4) * FL).toFixed(3),
+      dpRatioPct:      ((dP / Math.max(P1a, 0.001)) * 100).toFixed(1),
+      Y:               isG ? fmtN(Y) : null,
+      Rev:             isL && Rev != null ? Rev : null,
       flowState,
       noiseDb,
       sizes,
+      openPct_rec,
+      openPct_smaller,
+      openPct_larger,
       warns,
-      // Display labels — all formatting done server side
-      sgLabel:    SG.toFixed(3) + (isL?' (SG)': isG?' g/mol':' (steam MW=18.02)'),
-      tempLabel:  m ? ((T_F-32)*5/9).toFixed(1)+'°C' : T_F.toFixed(1)+'°F',
-      flLabel:    FL.toFixed(3) + (isG?' (xT)':' (FL)'),
-      pipeLabel:  m ? (D_in*25.4).toFixed(1)+' mm' : D_in.toFixed(3)+' in',
-      dPmaxLabel: isL||isS ? dp2label(dPmax) : 'x_crit='+((k/1.4)*FL).toFixed(3),
-    });
+      // Display labels
+      sgLabel:         SG.toFixed(3) + (isL ? ' (SG)' : isG ? ' g/mol' : ' (steam MW=18.02)'),
+      tempLabel:       m ? ((T_F - 32) * 5 / 9).toFixed(1) + '°C' : T_F.toFixed(1) + '°F',
+      flLabel:         FL.toFixed(3) + (isG ? ' (xT)' : ' (FL)'),
+      pipeLabel:       m ? (D_in * 25.4).toFixed(1) + ' mm' : D_in.toFixed(3) + ' in',
+        });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
