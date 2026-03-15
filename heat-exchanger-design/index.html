@@ -614,6 +614,17 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
               <option value="cross1">Crossflow</option>
             </select>
           </div>
+          <div class="fg"><label class="tip" data-tip="Single-phase: standard sensible heat transfer. Condensing: Nusselt film condensation on tube side. Evaporating: Chen correlation for flow boiling on tube side.">Thermal Mode</label>
+            <select id="st_shellMode" onchange="onShellModeChange()">
+              <option value="single-phase" selected>Single Phase (sensible heat)</option>
+              <option value="condensing">Condensing (tube-side)</option>
+              <option value="evaporating">Evaporating / Boiling (tube-side)</option>
+            </select>
+          </div>
+        </div>
+        <div id="st_phaseNote" style="display:none;padding:7px 12px;border-radius:7px;margin-bottom:10px;
+             font-size:.76rem;font-weight:600;background:var(--gold-lt);border:1.5px solid rgba(192,120,0,.25);color:var(--gold)">
+          🌡️ <span id="st_phaseNoteText"></span>
         </div>
 
         <div class="sec-hd" style="color:var(--red);border-bottom-color:#f0cfc0">🔴 Hot Side (Shell)</div>
@@ -1164,6 +1175,40 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
           </div>
           <div class="fg"><label>Bay Width (m)</label>
             <div class="irow"><input type="number" id="ac_bayW" value="3" step="0.5" min="1" max="6"><div class="ulab u-len-l">m</div></div>
+          </div>
+          <div class="fg"><label>No. of Tubes</label>
+            <div class="irow"><input type="number" id="ac_nTubes" value="40" step="1" min="4" max="500"><div class="ulab">tubes</div></div>
+          </div>
+          <div class="fg"><label>Tube Length (m)</label>
+            <div class="irow"><input type="number" id="ac_tubeLen" value="6" step="0.5" min="1" max="15"><div class="ulab">m</div></div>
+          </div>
+        </div>
+        <div class="sec-hd teal">🔩 Tube &amp; Fin Geometry</div>
+        <div style="background:var(--teal-lt);border:1.5px solid rgba(0,143,118,.2);border-radius:var(--r-md);
+             padding:8px 12px;margin-bottom:10px;font-size:.72rem;color:var(--teal);font-weight:600">
+          ⚙ Default values match a typical API 661 aluminium-finned tube bundle. Override if known.
+        </div>
+        <div class="fgrid">
+          <div class="fg"><label class="tip" data-tip="Bare tube outside diameter. Typical: 25.4 mm (1 in)">Tube OD (mm)</label>
+            <div class="irow"><input type="number" id="ac_tubeOD" value="25.4" step="0.1" min="10" max="60"><div class="ulab">mm</div></div>
+          </div>
+          <div class="fg"><label class="tip" data-tip="Tube inside diameter. Typical: 20–22 mm for 25.4 mm OD">Tube ID (mm)</label>
+            <div class="irow"><input type="number" id="ac_tubeID" value="20.0" step="0.1" min="6" max="55"><div class="ulab">mm</div></div>
+          </div>
+          <div class="fg"><label class="tip" data-tip="Fin height above tube surface. Typical: 12.5–16 mm">Fin Height (mm)</label>
+            <div class="irow"><input type="number" id="ac_finH" value="12.5" step="0.5" min="5" max="25"><div class="ulab">mm</div></div>
+          </div>
+          <div class="fg"><label class="tip" data-tip="Fin thickness. Aluminium: 0.4 mm typical">Fin Thickness (mm)</label>
+            <div class="irow"><input type="number" id="ac_finThk" value="0.4" step="0.05" min="0.2" max="1.5"><div class="ulab">mm</div></div>
+          </div>
+          <div class="fg"><label class="tip" data-tip="Fins per metre of tube. 394 fins/m ≈ 10 fins/inch (common API 661 standard)">Fin Density (fins/m)</label>
+            <div class="irow"><input type="number" id="ac_finDens" value="394" step="10" min="100" max="800"><div class="ulab">fins/m</div></div>
+          </div>
+          <div class="fg"><label class="tip" data-tip="Transverse pitch: centre-to-centre distance between tubes in a row. Typical: 60–65 mm for 25.4 mm OD tubes">Transverse Pitch (mm)</label>
+            <div class="irow"><input type="number" id="ac_pitchT" value="63.5" step="0.5" min="30" max="120"><div class="ulab">mm</div></div>
+          </div>
+          <div class="fg"><label class="tip" data-tip="Airside fouling resistance. Default 0.0002 m²K/W per API 661">Airside Fouling (m²K/W)</label>
+            <div class="irow"><input type="number" id="ac_Rfo" value="0.0002" step="0.00005" min="0"><div class="ulab">—</div></div>
           </div>
         </div>
         <div id="ac_err" class="err-box">⚠ <span id="ac_err_txt"></span></div>
@@ -2754,10 +2799,13 @@ function renderSTResults(r, warns=[]) {
   const T=tU(),H=hU(),Au=aU(),Pu=pU(),Uu=uU();
   const warnHtml=warns.length?`<div class="note warn"><div class="note-title">⚠ Design Warnings</div><div class="note-body"><ul>${warns.map(w=>`<li>${w}</li>`).join('')}</ul></div></div>`:'';
   const sumText=`Q=${Q.toFixed(1)}${H}, Area=${A.toFixed(1)}${Au}, U=${U.toFixed(0)}${Uu}, Eff=${(r.eff*100).toFixed(1)}%`;
+  const modeLabel = r.shellMode==='condensing' ? '🌡️ Condensing (Nusselt film)' : r.shellMode==='evaporating' ? '♨️ Evaporating (Chen)' : '💧 Single Phase';
+  const modeBadge = r.shellMode && r.shellMode!=='single-phase'
+    ? `<span style="font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--gold-lt);color:var(--gold);border:1px solid rgba(192,120,0,.3);margin-left:6px">${modeLabel}</span>` : '';
   return `
   <div class="res-hd">
     <div class="res-hd-left">
-      <h3>Shell &amp; Tube — Design Results</h3>
+      <h3>Shell &amp; Tube — Design Results${modeBadge}</h3>
       <div class="res-meta">TEMA Class ${r.tema} | ${unitSys==='metric'?'SI':'Imperial'} | ${r.nPasses} pass(es) / ${r.nShells} shell(s) | ${r.pitchLayout||'triangular'} pitch</div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
@@ -2833,6 +2881,8 @@ function renderSTResults(r, warns=[]) {
         <td>${r.shellRe ? r.shellRe.toFixed(0) : '—'} / ${r.bdCorr ? r.bdCorr.hShell.toFixed(0)+' W/m²K' : '—'}</td>
         <td>Re: ${r.cFluid && r.Di ? (r.cFluid.rho * r.tubeVel * r.Di / (r.cFluid.mu*1e-3)).toFixed(0) : '—'} / h: ${r.bdCorr ? r.bdCorr.hTube.toFixed(0)+' W/m²K' : '—'}
           ${r.cFluid && r.cFluid._isGas ? `<br><span style="font-size:.7rem;color:var(--blue)">⚗ gas props at ${r.cTmean?r.cTmean.toFixed(0):'—'}°C, ${r.cPop?r.cPop.toFixed(2):'—'} bar, Z=${r.cFluid.Z?r.cFluid.Z.toFixed(4):'1.0'}</span>` : ''}
+          ${r.shellMode==='condensing'?`<br><span style="font-size:.7rem;color:var(--gold)">🌡️ Nusselt film condensation — h=${r.bdCorr?r.bdCorr.hTube.toFixed(0):'—'} W/m²K</span>`:''}
+          ${r.shellMode==='evaporating'?`<br><span style="font-size:.7rem;color:var(--gold)">♨️ Chen correlation (flow boiling) — h=${r.bdCorr?r.bdCorr.hTube.toFixed(0):'—'} W/m²K</span>`:''}
         </td>
       </tr>
       <tr><td class="lbl-col">Tube Length / Count</td>
@@ -4173,6 +4223,7 @@ document.getElementById('stForm').addEventListener('submit', async function(e){
       pdAllowTube: getPresVal('st_pdAllowTube'),
       pitchLayout: (g('st_pitchlayout')||{value:'triangular'}).value,
       numTubesFixed: parseInt(g('st_numTubesFixed')||{value:'0'}).value||0,
+      shellMode: (g('st_shellMode')||{value:'single-phase'}).value,
     };
     const r = await callAPI(payload);
     if (r.error) return showErr('st', r.error);
@@ -4235,6 +4286,15 @@ document.getElementById('acForm').addEventListener('submit', async function(e){
       calcType:'airCooled', unitSys:'metric', flKey: g('ac_Fl').value,
       Ti, To, F: F_, Tamb: getTempVal('ac_amb'), dTa: v('ac_dTa'),
       rows: v('ac_rows'), bayW: v('ac_bayW'),
+      nTubes: parseInt(g('ac_nTubes').value)||40,
+      tubeLen: parseFloat(g('ac_tubeLen').value)||6,
+      tubeOD: parseFloat(g('ac_tubeOD').value)||25.4,
+      tubeID: parseFloat(g('ac_tubeID').value)||20.0,
+      finH:   parseFloat(g('ac_finH').value)||12.5,
+      finThk: parseFloat(g('ac_finThk').value)||0.4,
+      finDens:parseFloat(g('ac_finDens').value)||394,
+      pitchT: parseFloat(g('ac_pitchT').value)||63.5,
+      Rfo:    parseFloat(g('ac_Rfo').value)||0.0002,
       fmat: g('ac_fmat').value, fpm: v('ac_fpm'),
       fanType: g('ac_fan').value
     };
@@ -4455,21 +4515,66 @@ function renderPlateResults(r){
 }
 
 function renderAirCooledResults(r){
-  const Q=convQ(r.Q),A=convA(r.area),T=tU(),H=hU(),Au=aU();
-  const sumText=`Q=${Q.toFixed(1)}${H}, Area=${A.toFixed(1)}${Au}, Bays=${r.numBays}`;
-  return `<div class="res-hd"><div class="res-hd-left"><h3>Air Cooled HX — Results</h3></div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="badge badge-${r.st}">${r.stTxt}</span>
-    <button class="share-result-btn" onclick="shareResult('ac','${sumText}')">🔗 Share</button></div></div>
+  const Q=convQ(r.Q), Au=aU(), T=tU(), H=hU();
+  const A_total = r.A_total ? convA(r.A_total) : null;
+  const A_req   = r.A_req   ? convA(r.A_req)   : null;
+  const sumText = A_total
+    ? `Q=${Q.toFixed(1)}${H}, ExtArea=${A_total.toFixed(1)}${Au}, OD=${r.overDesign!=null?r.overDesign.toFixed(1):'—'}%`
+    : `Q=${Q.toFixed(1)}${H}`;
+  const warnHtml = r.warns&&r.warns.length
+    ? `<div class="note warn"><div class="note-title">⚠ Warnings</div><div class="note-body"><ul>${r.warns.map(w=>`<li>${w}</li>`).join('')}</ul></div></div>` : '';
+  return `<div class="res-hd"><div class="res-hd-left"><h3>Air Cooled HX — Results</h3>
+    <div class="res-meta">Robinson-Briggs j-factor | Schmidt fin efficiency</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <span class="badge badge-${r.st}">${r.stTxt}</span>
+      <button class="share-result-btn" onclick="shareResult('ac','${sumText}')">🔗 Share</button>
+    </div></div>
   <div class="kpi-grid">
     <div class="kpi red"><div class="kpi-label">Heat Duty</div><div class="kpi-val">${Q.toFixed(1)}<span class="kpi-unit">${H}</span></div></div>
     <div class="kpi blue"><div class="kpi-label">F×LMTD</div><div class="kpi-val">${r.FLMTD.toFixed(2)}<span class="kpi-unit">${T}</span></div></div>
-    <div class="kpi teal"><div class="kpi-label">Transfer Area</div><div class="kpi-val">${A.toFixed(1)}<span class="kpi-unit">${Au}</span></div></div>
+    <div class="kpi teal"><div class="kpi-label">Ext. Surface Area</div><div class="kpi-val">${A_total!=null?A_total.toFixed(1):'—'}<span class="kpi-unit">${Au}</span></div></div>
     <div class="kpi gold"><div class="kpi-label">Overall U</div><div class="kpi-val">${convU(r.U).toFixed(0)}<span class="kpi-unit">${uU()}</span></div></div>
+    <div class="kpi ${r.overDesign>=5?'ok':'warn'}"><div class="kpi-label">Overdesign</div><div class="kpi-val">${r.overDesign!=null?r.overDesign.toFixed(1):'—'}<span class="kpi-unit">%</span></div></div>
     <div class="kpi"><div class="kpi-label">Air Flow</div><div class="kpi-val">${(r.mAir*3.6).toFixed(1)}<span class="kpi-unit">t/h</span></div></div>
-    <div class="kpi"><div class="kpi-label">Fan Power</div><div class="kpi-val">${convQ(r.fanPower).toFixed(2)}<span class="kpi-unit">${H}</span></div></div>
     <div class="kpi ${r.ApproachTemp>=15?'ok':'warn'}"><div class="kpi-label">Approach ΔT</div><div class="kpi-val">${r.ApproachTemp.toFixed(1)}<span class="kpi-unit">${T}</span></div></div>
-    <div class="kpi"><div class="kpi-label">Est. Bays</div><div class="kpi-val">${r.numBays}</div></div>
-  </div>`;
+    <div class="kpi"><div class="kpi-label">Fan Power</div><div class="kpi-val">${r.fanPower!=null?convQ(r.fanPower).toFixed(2):'—'}<span class="kpi-unit">${H}</span></div></div>
+  </div>
+  <div class="tbl-wrap"><table class="dtbl" style="margin-top:12px">
+    <thead><tr><th>Parameter</th><th>Value</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="lbl-col">Airside Re</td>
+        <td style="color:${r.Re_fin&&r.Re_fin>=2000?'var(--ok)':'var(--warn)'};font-weight:700">${r.Re_fin!=null?r.Re_fin.toFixed(0):'—'}</td>
+        <td style="font-size:.75rem;color:var(--t3)">Valid range: 2,000–50,000</td></tr>
+      <tr><td class="lbl-col">Fin Efficiency η_fin</td>
+        <td style="color:${r.eta_fin&&r.eta_fin>=0.7?'var(--ok)':r.eta_fin&&r.eta_fin>=0.6?'var(--warn)':'var(--err)'};font-weight:700">
+          ${r.eta_fin!=null?(r.eta_fin*100).toFixed(1)+'%':'—'}
+        </td>
+        <td style="font-size:.75rem;color:var(--t3)">Schmidt approx. Target ≥ 70%</td></tr>
+      <tr><td class="lbl-col">Surface Efficiency η₀</td>
+        <td style="font-weight:700">${r.eta_0!=null?(r.eta_0*100).toFixed(1)+'%':'—'}</td>
+        <td style="font-size:.75rem;color:var(--t3)">Overall (bare + fin weighted)</td></tr>
+      <tr><td class="lbl-col">Airside h (bare)</td>
+        <td style="font-weight:700">${r.h_air_bare!=null?r.h_air_bare.toFixed(0)+' W/m²K':'—'}</td>
+        <td style="font-size:.75rem;color:var(--t3)">Robinson-Briggs j-factor</td></tr>
+      <tr><td class="lbl-col">Effective h_air</td>
+        <td style="font-weight:700">${r.h_eff!=null?r.h_eff.toFixed(0)+' W/m²K':'—'}</td>
+        <td style="font-size:.75rem;color:var(--t3)">h_bare × η₀</td></tr>
+      <tr><td class="lbl-col">Tube-side Velocity</td>
+        <td style="color:${r.tubeVel&&r.tubeVel>=0.5&&r.tubeVel<=4?'var(--ok)':'var(--warn)'};font-weight:700">
+          ${r.tubeVel!=null?r.tubeVel.toFixed(3)+' m/s':'—'}
+        </td>
+        <td style="font-size:.75rem;color:var(--t3)">Target 0.5–4 m/s (liquid)</td></tr>
+      <tr><td class="lbl-col">Area: Required / Provided</td>
+        <td style="font-weight:700">${A_req!=null?A_req.toFixed(1):' —'} / ${A_total!=null?A_total.toFixed(1):'—'} ${Au}</td>
+        <td style="font-size:.75rem;color:var(--t3)">Extended surface basis</td></tr>
+      <tr><td class="lbl-col">Fluid / Approach Temp</td>
+        <td style="font-weight:700">${r.fluidName||'—'}</td>
+        <td style="font-size:.75rem;color:${r.ApproachTemp>=15?'var(--ok)':'var(--warn)'}">
+          Approach: ${r.ApproachTemp!=null?r.ApproachTemp.toFixed(1):'—'} ${T} ${r.ApproachTemp>=15?'✓ OK':'⚠ Close'}
+        </td></tr>
+    </tbody>
+  </table></div>
+  ${warnHtml}`;
 }
 
 function renderDoublePipeResults(r){
@@ -4531,6 +4636,27 @@ function renderFinFanResults(r){
       <tr><td class="lbl-col">Tubeside ΔP</td><td>bar</td><td style="color:${r.dpTube>r.tPdAllow?'var(--err)':'var(--ok)'}">${r.dpTube.toFixed(3)}</td></tr>
     </tbody></table></div>
   ${warnHtml}`;
+}
+
+// ── SHELL MODE CHANGE (phase change selector) ────────────────────────────────
+function onShellModeChange() {
+  const mode = (document.getElementById('st_shellMode')||{}).value || 'single-phase';
+  const note = document.getElementById('st_phaseNote');
+  const txt  = document.getElementById('st_phaseNoteText');
+  if (!note) return;
+  if (mode === 'condensing') {
+    note.style.display = 'block';
+    txt.textContent = 'Condensing mode: tube-side HTC uses Nusselt horizontal film condensation. '
+      + 'Supported fluids: steam, ammonia-liquid, r134a, r717. '
+      + 'Enter condensate inlet/outlet temperatures on the cold side.';
+  } else if (mode === 'evaporating') {
+    note.style.display = 'block';
+    txt.textContent = 'Evaporating mode: tube-side HTC uses simplified Chen correlation '
+      + '(forced convection + nucleate boiling). For preliminary sizing only. '
+      + 'Enter boiling fluid on the cold (tube) side.';
+  } else {
+    note.style.display = 'none';
+  }
 }
 
 // ── INIT ────────────────────────────────────────────────────────────────────
