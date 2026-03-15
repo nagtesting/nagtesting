@@ -686,8 +686,8 @@ footer{text-align:center;padding:1.4rem;font-size:.78rem;color:var(--muted);
       </div>
       <div class="fr4">
         <div class="fg"><label>Joint Efficiency (E)</label>
-          <div class="iw"><input type="number" id="pv-E" value="1.0" min="0.1" max="1.0" step="0.05">
-          <select id="pv-Ecat" onchange="syncE()" title="ASME weld category"><option value="1.0">E=1.0 — Full RT</option><option value="0.85">E=0.85 — Spot RT</option><option value="0.70">E=0.70 — No RT</option></select></div></div>
+          <div class="iw"><input type="text" id="pv-E" value="E=1.0 (Full RT)" readonly style="opacity:0.7;cursor:default;" title="Resolved server-side from weld category — cannot be manually overridden">
+          <select id="pv-Ecat" title="ASME weld category — E resolved server-side"><option value="1.0">E=1.0 — Full RT</option><option value="0.85">E=0.85 — Spot RT</option><option value="0.70">E=0.70 — No RT</option></select></div></div>
         <div class="fg"><label>Corrosion Allow. (CA)</label>
           <div class="iw"><input type="number" id="pv-CA" value="3" step="0.5" min="0">
           <select id="pv-CAu"><option value="mm">mm</option><option value="in">inch</option></select></div></div>
@@ -867,7 +867,8 @@ footer{text-align:center;padding:1.4rem;font-size:.78rem;color:var(--muted);
             <option value="liq-outlet">Liquid Outlet</option>
             <option value="manway">Manway / Vent</option>
             <option value="drain">Drain</option>
-          </select></div>
+          </select>
+          <div id="nz-svc-hint" style="font-size:.72rem;color:var(--muted);font-family:var(--mono);margin-top:3px;"></div></div>
         <div class="fg"><label>Volumetric Flow Rate</label>
           <div class="iw"><input type="number" id="nz-Q" placeholder="e.g. 500" step="any" min="0">
           <select id="nz-Qu"><option value="m3h">m³/h</option><option value="m3s">m³/s</option><option value="gpm">gal/min</option><option value="ft3min">ft³/min</option></select></div></div>
@@ -1574,7 +1575,9 @@ function setUnit(tool, mode, btn) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// HIGH-PRESSURE NOTICE (client-side display only)
+// HIGH-PRESSURE NOTICE (UI display only — thresholds validated server-side)
+// The 70/150 barg thresholds here drive a visual advisory banner only.
+// All engineering enforcement of these thresholds happens in the API.
 // ══════════════════════════════════════════════════════════════════════
 function toBara_local(val, u) {
   if (!isFinite(val)) return NaN;
@@ -1635,13 +1638,16 @@ function rGrid(items, cls) {
 
 const PRELIM = `<div class="prelim">⚠ PRELIMINARY SIZING — Budgetary/conceptual use only. Not for detailed engineering, procurement or construction. Verify with a certified process engineer against applicable codes (ASME / API / GPSA).</div>`;
 
+// DEFAULTS — UI reset values only (form placeholder restoration on Reset button).
+// Engineering defaults (K, CA, minT, E, surge, tr etc.) are enforced server-side
+// via VS_DEFAULTS in api/index.js. Values here are for display/UX only.
 const DEFAULTS = {
   h2p: {'h2p-tr':'3','h2p-ld':'3','h2p-K':'0.107','h2p-surge':'1.25','h2p-margin':'85'},
   v2p: {'v2p-tr':'3','v2p-K':'0.107','v2p-surge':'1.25','v2p-margin':'85','v2p-boot':'0.3','v2p-intern':'0.4'},
   '3ph':{'p3-tro':'3','p3-trw':'3','p3-ld':'4','p3-K':'0.107','p3-surge':'1.25','p3-dp':'200','p3-mu':'2.0','p3-boot':'0.3','p3-icm':'0.15'},
-  pv:  {'pv-E':'1.0','pv-CA':'3','pv-minT':'3.175'},
-  mist:{'mist-margin':'80','mist-K':'0.107'},
-  nz:  {'nz-rhov2':'4000','nz-vel':'20'}
+  pv:  {'pv-CA':'3'},   // pv-E removed — API resolves E from pv-Ecat server-side
+  mist:{'mist-margin':'80'},   // mist-K removed — API resolves K from device type
+  nz:  {}               // nz-vel and nz-rhov2 removed — API enforces NZ_SVC_LIMITS
 };
 
 function resetTool(pfx) {
@@ -1773,22 +1779,19 @@ function calc3P(btn) {
 // ══════════════════════════════════════════════════════════════════════
 // CALC 4: PRESSURE VESSEL THICKNESS
 // ══════════════════════════════════════════════════════════════════════
-function syncE() {
-  const cat = gs('pv-Ecat');
-  const el = document.getElementById('pv-E');
-  if (el) el.value = cat;
-}
+// syncE() REMOVED — joint efficiency E is now resolved server-side from
+// the category string (body.cat). API owns JOINT_EFF_MAP. See api/index.js.
 
 function calcPV(btn) {
   const params = {
     P: gv('pv-P'), P_u: gs('pv-Pu'),
     D: gv('pv-D'), D_u: gs('pv-Du'),
     S: gv('pv-S'), S_u: gs('pv-Su'),
-    E: gv('pv-E'),
+    // E is intentionally NOT sent — API resolves it from cat via JOINT_EFF_MAP
     CA: gv('pv-CA'), CA_u: gs('pv-CAu'),
     head: gs('pv-head'), minT: gs('pv-minT'),
     T: gv('pv-T'), T_u: gs('pv-Tu'),
-    cat: gs('pv-cat')
+    cat: gs('pv-Ecat')   // send category string; API maps it to correct E
   };
   callAPI('pv', params, 'pv-result', 'pv-badge', 'pv-err', 'pv-warn', btn);
 }
@@ -1796,30 +1799,37 @@ function calcPV(btn) {
 // ══════════════════════════════════════════════════════════════════════
 // CALC 5: DEMISTER / MIST ELIMINATOR
 // ══════════════════════════════════════════════════════════════════════
+// syncMistK() — K constants REMOVED from client.
+// DEMISTER_K_MAP now lives in API (api/index.js).
+// This function only controls the UI read-only state of the K field.
+// For non-custom types the K field is locked (display only); API ignores
+// any K value sent for non-custom types and applies its own map server-side.
 function syncMistK() {
   const t = gs('mist-type');
-  const Km = {wiremesh:0.107, vane:0.18, cyclonic:0.25};
   const el = document.getElementById('mist-K');
   if (!el) return;
   if (t !== 'custom') {
-    el.value = Km[t] || '';
+    el.value = '';           // clear — API will apply the correct value
     el.readOnly = true;
     el.style.opacity = '0.6';
-    el.title = 'K auto-set by device type. Select "Custom" to override.';
+    el.title = 'K auto-set server-side by device type. Select "Custom" to override.';
   } else {
     el.readOnly = false;
     el.style.opacity = '1';
-    el.title = '';
+    el.title = 'Enter custom K (0.02–0.40 m/s). Validated server-side.';
   }
 }
 
 function calcMist(btn) {
+  const mtype = gs('mist-type');
   const params = {
     Qg: gv('mist-qg'), Qg_u: gs('mist-qg-u'),
     rhog: gv('mist-rhog'), rhog_u: gs('mist-rhou-g'),
     rhol: gv('mist-rhol'), rhol_u: gs('mist-rhou-l'),
     margin: gv('mist-margin'),
-    mtype: gs('mist-type'), K: gv('mist-K'),
+    mtype,
+    // Only send K when custom — for standard types API resolves K server-side
+    K: mtype === 'custom' ? gv('mist-K') : undefined,
     svcFactor: gs('mist-svc'),
     pcorrMode: gs('mist-pcorr'),
     P: gv('mist-P'), P_u: gs('mist-Pu'),
@@ -1831,19 +1841,23 @@ function calcMist(btn) {
 // ══════════════════════════════════════════════════════════════════════
 // CALC 6: NOZZLE SIZING
 // ══════════════════════════════════════════════════════════════════════
-const NZ_SVC_CLIENT = {
-  'gas-inlet': {vel:25, rhov2:4000},
-  'gas-outlet':{vel:20, rhov2:4000},
-  'liq-inlet': {vel:2,  rhov2:15000},
-  'liq-outlet':{vel:1.5,rhov2:15000},
-  'manway':    {vel:20, rhov2:4000},
-  'drain':     {vel:1,  rhov2:10000},
-};
+// NZ_SVC_CLIENT REMOVED — service velocity/ρv² limits now live in API
+// as NZ_SVC_LIMITS (api/index.js). Client cannot read or manipulate them.
+// setNzDefaults() now only shows a UI hint label — it does NOT pre-fill
+// engineering limits into the form fields.
 function setNzDefaults() {
+  // UI hint only — actual limits enforced server-side via NZ_SVC_LIMITS
   const svc = gs('nz-svc');
-  const d = NZ_SVC_CLIENT[svc] || {vel:20, rhov2:4000};
-  const ve = document.getElementById('nz-vel'); if (ve) ve.value = d.vel;
-  const re = document.getElementById('nz-rhov2'); if (re) re.value = d.rhov2;
+  const hints = {
+    'gas-inlet':  'Typical: ≤25 m/s | ρv²≤4000 Pa',
+    'gas-outlet': 'Typical: ≤20 m/s | ρv²≤4000 Pa',
+    'liq-inlet':  'Typical: ≤2 m/s  | ρv²≤15000 Pa',
+    'liq-outlet': 'Typical: ≤1.5 m/s | ρv²≤15000 Pa',
+    'manway':     'Typical: ≤20 m/s | ρv²≤4000 Pa',
+    'drain':      'Typical: ≤1 m/s  | ρv²≤10000 Pa',
+  };
+  const hintEl = document.getElementById('nz-svc-hint');
+  if (hintEl) hintEl.textContent = hints[svc] || '';
 }
 
 function calcNozzle(btn) {
@@ -1853,6 +1867,7 @@ function calcNozzle(btn) {
     rho: gv('nz-rho'), rho_u: gs('nz-rhu'),
     rhov2: gv('nz-rhov2'),
     svc: gs('nz-svc'), sch: gs('nz-sch')
+    // Note: vel and rhov2 are clamped server-side to NZ_SVC_LIMITS if exceeded
   };
   callAPI('nozzle', params, 'nz-result', 'nz-badge', 'nz-err', 'nz-warn', btn);
 }
