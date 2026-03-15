@@ -7595,13 +7595,180 @@ function calcNozzle(p) {
 }
 
 
-// ================================================================
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
+// SERVER-SIDE SECURITY: Engineering constants & input sanitiser
+// Transferred from client HTML — these must never live in the browser.
+// Called by handle_vessel_separator() before any calc function runs.
+// ════════════════════════════════════════════════════════════════════════════
 
-// ════════════════════════════════════════════════════════════════════════════
-// Internal dispatcher — routes by body.type to the correct calc function
-// ════════════════════════════════════════════════════════════════════════════
-async function handle_vessel_separator(req, body, res) {
+// ── 1. JOINT EFFICIENCY MAP (ASME VIII Table UW-12) ──────────────────────
+// Previously: syncE() in HTML lines 1776–1780 set this in the browser.
+// Now:        API enforces the correct E for each weld category.
+// HTML must send only body.cat (the category string); E is resolved here.
+const JOINT_EFF_MAP = {
+  '1.0':  1.00,   // Full radiography — Cat. 1 (RT-1)
+  '0.85': 0.85,   // Spot radiography — Cat. 2 (RT-2)
+  '0.70': 0.70,   // No radiography   — Cat. 3 (RT-3)
+  '0.65': 0.65,   // Fillet weld, no RT
+  '0.50': 0.50,   // Double fillet, no RT
+};
+
+// ── 2. DEMISTER K-FACTOR MAP (GPSA Fig.7-3 base values) ──────────────────
+// Previously: const Km = {wiremesh:0.107, vane:0.18, cyclonic:0.25}
+//             lived in HTML syncMistK() (HTML lines 1799–1814).
+// Now:        API owns these values. Custom K is validated against limits.
+const DEMISTER_K_MAP = {
+  wiremesh: 0.107,
+  vane:     0.18,
+  cyclonic: 0.25,
+};
+const DEMISTER_K_MIN = 0.02;   // absolute lower bound — any K below this is physically unrealistic
+const DEMISTER_K_MAX = 0.40;   // absolute upper bound per GPSA
+
+// ── 3. NOZZLE SERVICE LIMITS (API RP 14E / Shell DEP 31.22.05.12) ────────
+// Previously: const NZ_SVC_CLIENT lived in HTML lines 1834–1841.
+//             setNzDefaults() pre-filled vel and rhov2 fields in the browser.
+// Now:        API owns the authoritative service limits.
+//             HTML sends only the service type string (body.svc).
+//             vel and rhov2 supplied by the client are accepted only if
+//             they do NOT exceed the API limits — otherwise API limits win.
+const NZ_SVC_LIMITS = {
+  'gas-inlet':  { vel_max: 25,  rhov2_max: 4000  },
+  'gas-outlet': { vel_max: 20,  rhov2_max: 4000  },
+  'liq-inlet':  { vel_max: 2,   rhov2_max: 15000 },
+  'liq-outlet': { vel_max: 1.5, rhov2_max: 15000 },
+  'manway':     { vel_max: 20,  rhov2_max: 4000  },
+  'drain':      { vel_max: 1,   rhov2_max: 10000 },
+};
+
+// ── 4. ENGINEERING DEFAULTS (code-based minimums) ────────────────────────
+// Previously: DEFAULTS object in HTML lines 1638–1644 pre-filled fields.
+// Now:        API applies these when client sends blank / zero / missing values.
+const VS_DEFAULTS = {
+  h2p:  { tr: 3,      LD: 3,   K: 0.107, surge: 1.25, margin: 85 },
+  v2p:  { tr: 3,      K: 0.107, surge: 1.25, margin: 85, boot: 0.3, intern: 0.4 },
+  '3ph':{ tro: 3,     trw: 3,  LD: 4,   K: 0.107, surge: 1.25,
+          dp_um: 200, mu_cP: 2.0, boot: 0.3, icm: 0.15 },
+  pv:   { E: 1.0,     CA: 3,   minT: 3.175 },
+  mist: { margin: 80, K: 0.107 },
+  nz:   { vel: 20,    rhov2: 4000 },
+};
+
+// ── 5. MASTER INPUT SANITISER ─────────────────────────────────────────────
+// Call this at the top of handle_vessel_separator() before dispatch.
+// Returns a sanitised, safe copy of body — never mutates the original.
+function sanitiseVesselInputs(body) {
   const type = body.type || body.calculator || '';
+  const b    = { ...body };   // shallow copy — safe to mutate
+  const def  = VS_DEFAULTS[type] || {};
+
+  const applyDefault = (field, fallback) => {
+    const v = parseFloat(b[field]);
+    if (!isFinite(v) || v <= 0) b[field] = fallback;
+  };
+
+  // ── Common defaults by calc type ──
+  switch (type) {
+    case 'h2p':
+      applyDefault('tr',     def.tr);
+      applyDefault('LD',     def.LD);
+      applyDefault('K',      def.K);
+      applyDefault('surge',  def.surge);
+      applyDefault('margin', def.margin);
+      // Clamp margin to 50–100 %
+      b.margin = Math.min(100, Math.max(50, parseFloat(b.margin) || def.margin));
+      break;
+
+    case 'v2p':
+      applyDefault('tr',     def.tr);
+      applyDefault('K',      def.K);
+      applyDefault('surge',  def.surge);
+      applyDefault('margin', def.margin);
+      applyDefault('boot',   def.boot);
+      applyDefault('intern', def.intern);
+      b.margin = Math.min(100, Math.max(50, parseFloat(b.margin) || def.margin));
+      break;
+
+    case '3ph':
+      applyDefault('tro',   def.tro);
+      applyDefault('trw',   def.trw);
+      applyDefault('LD',    def.LD);
+      applyDefault('K',     def.K);
+      applyDefault('surge', def.surge);
+      applyDefault('dp_um', def.dp_um);
+      applyDefault('mu_cP', def.mu_cP);
+      applyDefault('boot',  def.boot);
+      applyDefault('icm',   def.icm);
+      break;
+
+    case 'pv': {
+      // Joint efficiency: resolve from category string; ignore raw E from client
+      const cat = String(b.cat || '1.0');
+      b.E = JOINT_EFF_MAP[cat] ?? 1.0;   // server owns this — client cannot override
+
+      // Corrosion allowance minimum: never below 0, apply code default if missing
+      const ca = parseFloat(b.CA);
+      if (!isFinite(ca) || ca < 0) b.CA = def.CA;
+
+      // Minimum thickness: must be a positive number
+      const mt = parseFloat(b.minT);
+      if (!isFinite(mt) || mt <= 0) b.minT = def.minT;
+      break;
+    }
+
+    case 'mist': {
+      // K-factor: resolve from device type; only accept custom K within bounds
+      const mtype = String(b.mtype || 'wiremesh');
+      if (mtype !== 'custom') {
+        b.K = DEMISTER_K_MAP[mtype] ?? 0.107;  // server owns base K
+      } else {
+        const kc = parseFloat(b.K);
+        if (!isFinite(kc) || kc < DEMISTER_K_MIN || kc > DEMISTER_K_MAX) {
+          return { __sanitiseError: `Custom K must be between ${DEMISTER_K_MIN} and ${DEMISTER_K_MAX} m/s.` };
+        }
+      }
+      b.margin = Math.min(100, Math.max(50, parseFloat(b.margin) || def.margin));
+      break;
+    }
+
+    case 'nozzle': {
+      // Nozzle service: apply API limits — client cannot raise them
+      const svc     = String(b.svc || 'gas-outlet');
+      const limits  = NZ_SVC_LIMITS[svc];
+      if (!limits) {
+        return { __sanitiseError: `Unknown nozzle service type: "${svc}".` };
+      }
+      // If client sent vel or rhov2 above the API limit, clamp to the API limit
+      const vel_in   = parseFloat(b.vel);
+      const rhov2_in = parseFloat(b.rhov2);
+      b.vel   = isFinite(vel_in)   ? Math.min(vel_in,   limits.vel_max)   : limits.vel_max;
+      b.rhov2 = isFinite(rhov2_in) ? Math.min(rhov2_in, limits.rhov2_max) : limits.rhov2_max;
+      break;
+    }
+  }
+
+  // ── High-pressure guard: reject absurd pressure values ──
+  const Pval = parseFloat(b.P);
+  if (isFinite(Pval) && Pval > 5000) {
+    return { __sanitiseError: 'Operating pressure exceeds 5000 bar — check units or input value.' };
+  }
+
+  return b;  // sanitised body, safe to pass to calc functions
+}
+// ── End of security/sanitisation block ───────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════
+// Internal dispatcher — routes by body.type to the correct calc function
+// ═══════════════════════════════════════════════════════════════════
+async function handle_vessel_separator(req, body, res) {
+  
+  const safe = sanitiseVesselInputs(body);
+  if (safe.__sanitiseError)
+    return res.status(422).json({ ok: false, error: safe.__sanitiseError });
+
+  const type = safe.type || safe.calculator || '';
 
   // Dispatch map
   // type values match what the frontend sends in body.type:
@@ -7614,12 +7781,12 @@ async function handle_vessel_separator(req, body, res) {
 
   let result;
   switch (type) {
-    case 'h2p':    result = calcH2P(body);    break;
-    case 'v2p':    result = calcV2P(body);    break;
-    case '3p':     result = calc3P(body);     break;
-    case 'pv':     result = calcPV(body);     break;
-    case 'mist':   result = calcMist(body);   break;
-    case 'nozzle': result = calcNozzle(body); break;
+    case 'h2p':    result = calcH2P(safe);    break;
+    case 'v2p':    result = calcV2P(safe);    break;
+    case '3p':     result = calc3P(safe);     break;
+    case 'pv':     result = calcPV(safe);     break;
+    case 'mist':   result = calcMist(safe);   break;
+    case 'nozzle': result = calcNozzle(safe); break;
     default:
       return res.status(400).json({
         ok: false,
