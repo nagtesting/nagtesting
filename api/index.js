@@ -2227,7 +2227,8 @@ function calcDoublePipe(b) {
   const L=requireFinite(b.L,'L'), nHairpins=Math.max(1,parseInt(b.nHairpins)||1);
   const arr=b.arr||'counter', kw=KMAT[b.mat]||16;
   const foul=parseFloat(b.foul)||0.0002;
-  const pdAllow=parseFloat(b.pdAllow)||1.0;
+  const pdAllowInner = parseFloat(b.pdAllowInner || b.pdAllow) || 1.0;
+  const pdAllowAnn   = parseFloat(b.pdAllowAnn   || b.pdAllow) || 1.0;
   const iID=iOD-2*iTW;
   if (iID<=0) throw new Error('Wall thickness too large for inner pipe');
   if (oID<=iOD) throw new Error('Outer pipe ID must be greater than inner pipe OD');
@@ -2259,13 +2260,13 @@ function calcDoublePipe(b) {
   const eff=Cmin>0?Q/(Cmin*(hTi-cTi)):0;
   const st=overDesign<0?'err':overDesign<5?'warn':'ok';
   const warns=[];
-  if(dpInner>pdAllow) warns.push(`Inner pipe ΔP ${dpInner.toFixed(3)} bar exceeds allowable`);
-  if(dpAnn>pdAllow) warns.push(`Annulus ΔP ${dpAnn.toFixed(3)} bar exceeds allowable`);
+  if(dpInner>pdAllowInner) warns.push(`Inner pipe ΔP ${dpInner.toFixed(3)} bar exceeds allowable ${pdAllowInner} bar`);
+if(dpAnn>pdAllowAnn)     warns.push(`Annulus ΔP ${dpAnn.toFixed(3)} bar exceeds allowable ${pdAllowAnn} bar`);
   if(FLMTD<3) warns.push('FLMTD < 3°C — very close approach');
   return {
     Q,Qhot,Qcold,U,balErr,lmtd,F,FLMTD,dT1,dT2,
     A_req,A_provided,overDesign,hInner:htInner.h,hAnn,
-    dpInner,dpAnn,pdAllow,NTU,eff,
+    dpInner,dpAnn,pdAllow:pdAllowInner,pdAllowInner,pdAllowAnn,NTU,eff,
     hTi,hTo,cTi,cTo,cF,iID,iOD,L,L_total,nHairpins,
     hFluid,cFluid,Re_inner:htInner.Re,Re_ann,velInner:htInner.vel,velAnn,
     st,warns
