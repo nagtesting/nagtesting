@@ -68,8 +68,8 @@ header p{font-size:.8rem;color:rgba(255,255,255,.75);font-family:var(--mono);mar
 /* ── SLIDES ── */
 .slides-wrapper{position:relative;overflow:hidden}
 .slides-track{display:flex;transition:transform .36s cubic-bezier(.4,0,.2,1);will-change:transform}
-.slide{flex:0 0 100%;width:100%;padding:1.6rem 2rem 2.5rem;min-height:calc(100vh - 128px)}
-.slide-inner{max-width:900px;margin:0 auto}
+.slide{flex:0 0 100%;width:100%;padding:1.6rem 1.5rem 2.5rem;min-height:calc(100vh - 128px);box-sizing:border-box}
+.slide-inner{max-width:900px;margin:0 auto;width:100%}
 
 .slide-title{display:flex;align-items:flex-start;justify-content:space-between;
   gap:1rem;margin-bottom:1.4rem;padding-bottom:.9rem;border-bottom:2px solid var(--border);flex-wrap:wrap}
@@ -100,29 +100,31 @@ header p{font-size:.8rem;color:rgba(255,255,255,.75);font-family:var(--mono);mar
 
 /* ── SECTION BOX ── */
 .section-box{background:var(--white);border:1px solid var(--border);
-  border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:1.1rem;overflow:hidden}
+  border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:1.1rem;overflow:hidden;width:100%;box-sizing:border-box}
 .section-head{background:linear-gradient(135deg,#edf3fb,#f2f6fb);
   padding:.6rem 1rem;border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:.5rem}
 .shd{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
 .section-head span{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent)}
-.section-body{padding:1rem;display:flex;flex-direction:column;gap:.8rem}
+.section-body{padding:.85rem;display:flex;flex-direction:column;gap:.8rem;box-sizing:border-box;width:100%}
 
 /* ── FORM ── */
 .fg{display:flex;flex-direction:column;gap:.28rem}
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem}
-.fr4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.55rem}
+.fr4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem}
 label{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--label);font-weight:700}
 .iw{display:flex;border:1.5px solid var(--border);border-radius:5px;
-  overflow:hidden;background:#fff;transition:border-color .14s}
+  overflow:hidden;background:#fff;transition:border-color .14s;min-width:0;width:100%}
 .iw:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px rgba(10,53,96,.1)}
 .iw input{flex:1;background:transparent;border:none;padding:.5rem .65rem;
-  color:#0a1420;font-family:var(--mono);font-size:.95rem;font-weight:600;outline:none;min-width:0}
+  color:#0a1420;font-family:var(--mono);font-size:.95rem;font-weight:600;outline:none;min-width:0;width:0}
 .iw input::placeholder{color:#7a92aa;font-weight:400}
-.iw select{border-left:1px solid var(--border);color:#1a2c42;font-size:.78rem;
-  background:#eaf0f8;cursor:pointer;font-weight:700;flex:0 0 auto;max-width:115px;
-  padding:0 .4rem;border:none;outline:none;font-family:var(--mono);border-left:1px solid var(--border)}
+.iw select{border-left:1px solid var(--border);color:#1a2c42;font-size:.75rem;
+  background:#eaf0f8;cursor:pointer;font-weight:700;flex:0 0 auto;
+  min-width:52px;max-width:105px;width:auto;
+  padding:0 .25rem;border:none;outline:none;font-family:var(--mono);
+  border-left:1px solid var(--border);overflow:hidden;text-overflow:ellipsis}
 select.field{width:100%;background:#fff;border:1.5px solid var(--border);
   border-radius:5px;padding:.5rem .65rem;color:#0a1420;
   font-family:var(--mono);font-size:.9rem;font-weight:600;outline:none;cursor:pointer;transition:border-color .14s}
@@ -232,13 +234,19 @@ select.field:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(10,53,96
 footer{text-align:center;padding:1.4rem;font-size:.78rem;color:var(--muted);
   font-family:var(--mono);border-top:1px solid var(--border)}
 
+@media(max-width:900px){
+  .fr4{grid-template-columns:1fr 1fr}
+}
 @media(max-width:700px){
   .slide{padding:1rem 1rem 2rem} .rg{grid-template-columns:1fr 1fr}
   header{padding:.85rem 1rem} .header-badge{display:none}
+  .fr3{grid-template-columns:1fr 1fr}
+  .fr4{grid-template-columns:1fr 1fr}
 }
 @media(max-width:480px){
-  .fr2,.fr3{grid-template-columns:1fr} .fr4{grid-template-columns:1fr 1fr}
+  .fr2,.fr3,.fr4{grid-template-columns:1fr}
   .rg{grid-template-columns:1fr} .slide-title{flex-direction:column} .btn-row{flex-direction:column}
+  .iw select{max-width:80px;font-size:.7rem}
 }
 
 /* ── EDUCATION HUB ── */
