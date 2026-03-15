@@ -199,6 +199,13 @@ label{
 }
 .irow{display:flex;gap:5px}
 .irow input{flex:1;min-width:0}
+.u-sel{
+  font-family:var(--mono);font-weight:600;color:var(--t2);
+  background:var(--surf2);border:1px solid var(--bdr);
+  border-radius:5px;padding:3px 2px;font-size:.68rem;
+  cursor:pointer;min-width:52px;max-width:80px;
+}
+.u-sel:focus{outline:1px solid var(--blue);border-color:var(--blue)}
 .ulab{
   min-width:66px;padding:8px 8px;
   background:var(--blue-lt);border:1.5px solid #b8ccf5;border-radius:var(--r-sm);
@@ -612,10 +619,18 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="sec-hd" style="color:var(--red);border-bottom-color:#f0cfc0">🔴 Hot Side (Shell)</div>
         <div class="fgrid">
           <div class="fg"><label>Inlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="st_hTi" step="0.1" value="120" required oninput="coldBalancePreview()"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="st_hTi" step="0.1" value="120" required oninput="coldBalancePreview()"><select id="st_hTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('st_hTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Outlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="st_hTo" step="0.1" value="60" required oninput="coldBalancePreview()"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="st_hTo" step="0.1" value="60" required oninput="coldBalancePreview()"><select id="st_hTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('st_hTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Flow Rate</label>
             <div class="irow" style="gap:4px">
@@ -635,7 +650,13 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
             </label>
             <div class="irow">
               <input type="number" id="st_hPop" value="1.01325" step="0.1" min="0.01" max="500" oninput="autoTubeSpecs()">
-              <div class="ulab">bar a</div>
+              <select id="st_hPop_usel" class="u-sel u-pres-sel" onchange="onPresUnitChange('st_hPop',this.value)" style="width:72px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar a</option>
+<option value="kpa">kPa a</option>
+<option value="mpa">MPa a</option>
+<option value="psi">psia</option>
+<option value="kgcm2">kg/cm²</option>
+</select>
             </div>
             <div id="st_hPoplabel" style="font-size:.68rem;color:var(--t3);margin-top:2px">Shell-side operating pressure (absolute)</div>
           </div>
@@ -664,7 +685,11 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
           <div class="fg">
             <label>Inlet Temp (<span class="u-temp">°C</span>)</label>
             <div class="irow"><input type="number" id="st_cTi" step="0.1" value="30"
-              oninput="coldBalancePreview()"><div class="ulab u-temp-l">°C</div></div>
+              oninput="coldBalancePreview()"><select id="st_cTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('st_cTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg" id="coldToGroup">
             <label id="coldToLabel">Outlet Temp <span id="coldToMode" style="font-size:.65rem;
@@ -673,8 +698,11 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
               <input type="number" id="st_cTo" step="0.01" placeholder="auto"
                 style="flex:1;background:var(--surf2);border-style:dashed;
                        color:var(--t3);font-style:italic" readonly>
-              <div class="ulab u-temp-l" style="background:var(--teal-lt);
-                   border-color:rgba(0,143,118,.3);color:var(--teal)">°C</div>
+              <select id="st_cTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('st_cTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid rgba(0,143,118,.3);background:var(--teal-lt);color:var(--teal);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select>
             </div>
           </div>
           <div class="fg" id="coldFlowGroup">
@@ -702,7 +730,13 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
             </label>
             <div class="irow">
               <input type="number" id="st_cPop" value="1.01325" step="0.1" min="0.01" max="500" oninput="autoTubeSpecs();coldBalancePreview()">
-              <div class="ulab">bar a</div>
+              <select id="st_cPop_usel" class="u-sel u-pres-sel" onchange="onPresUnitChange('st_cPop',this.value)" style="width:72px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar a</option>
+<option value="kpa">kPa a</option>
+<option value="mpa">MPa a</option>
+<option value="psi">psia</option>
+<option value="kgcm2">kg/cm²</option>
+</select>
             </div>
             <div id="st_cPoplabel" style="font-size:.68rem;color:var(--t3);margin-top:2px">Tube-side operating pressure (absolute)</div>
           </div>
@@ -727,20 +761,31 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
               <input type="number" id="st_od" value="25.4" step="0.1" min="6" max="80"
                 oninput="document.getElementById('odAutoTag').textContent='(manual)';
                          document.getElementById('odAutoTag').style.color='var(--warn)';autoTubeSpecs()">
-              <div class="ulab">mm</div>
+              <select id="st_od_usel" class="u-sel u-dim-sel" onchange="onDimUnitChange2('st_od',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="mm" selected>mm</option>
+<option value="cm">cm</option>
+<option value="in">in</option>
+</select>
             </div>
           </div>
           <div class="fg">
             <label>Wall Thickness (mm)</label>
             <div class="irow"><input type="number" id="st_tw" value="2.0" step="0.1" min="0.5" max="10"
-              oninput="autoTubeSpecs()"><div class="ulab">mm</div></div>
+              oninput="autoTubeSpecs()"><select id="st_tw_usel" class="u-sel u-dim-sel" onchange="onDimUnitChange2('st_tw',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="mm" selected>mm</option>
+<option value="cm">cm</option>
+<option value="in">in</option>
+</select></div>
           </div>
           <div class="fg">
             <label>Tube Length (m)
               <span style="font-size:.63rem;color:var(--t3);font-weight:500"> ↓ shorter → more passes</span>
             </label>
             <div class="irow"><input type="number" id="st_len" value="6" step="0.5" min="0.5" max="20"
-              oninput="autoTubeSpecs()"><div class="ulab">m</div></div>
+              oninput="autoTubeSpecs()"><select id="st_len_usel" class="u-sel u-len-sel" onchange="onLenUnitChange('st_len',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="m" selected>m</option>
+<option value="ft">ft</option>
+</select></div>
           </div>
           <div class="fg">
             <label class="tip" data-tip="Typical: 1.25 (square), 1.25–1.5 (triangular)">Pitch / OD Ratio</label>
@@ -838,10 +883,18 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
             <div class="irow"><input type="number" id="st_pdes" value="10" step="0.5"><div class="ulab">bar</div></div>
           </div>
           <div class="fg"><label class="tip" data-tip="Maximum allowable shell-side pressure drop. Flagged if calculated ΔP exceeds this.">Allow. Shell ΔP</label>
-            <div class="irow"><input type="number" id="st_pdAllowShell" value="0.70" step="0.05" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="st_pdAllowShell" value="0.70" step="0.05" min="0.01"><select id="st_pdAllowShell_usel" class="u-sel u-pdrop-sel" onchange="onPresUnitChange('st_pdAllowShell',this.value)" style="width:68px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar</option>
+<option value="kpa">kPa</option>
+<option value="psi">psi</option>
+</select></div>
           </div>
           <div class="fg"><label class="tip" data-tip="Maximum allowable tube-side pressure drop. Flagged if calculated ΔP exceeds this.">Allow. Tube ΔP</label>
-            <div class="irow"><input type="number" id="st_pdAllowTube" value="1.00" step="0.05" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="st_pdAllowTube" value="1.00" step="0.05" min="0.01"><select id="st_pdAllowTube_usel" class="u-sel u-pdrop-sel" onchange="onPresUnitChange('st_pdAllowTube',this.value)" style="width:68px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar</option>
+<option value="kpa">kPa</option>
+<option value="psi">psi</option>
+</select></div>
           </div>
           <div class="fg"><label>TEMA Class</label>
             <select id="st_tema">
@@ -884,13 +937,27 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="fgrid">
           <div class="fg"><label>Fluid</label><select id="pl_hFl" onchange="fluidChange('pl_hFl');plUpdateColdOutlet();plUpdateColdFlow();" data-fluid></select></div>
           <div class="fg"><label class="tip" data-tip="Operating pressure for gas density correction (ideal gas + Z). Ignored for liquids.">Op. Pressure (bar abs)</label>
-            <div class="irow"><input type="number" id="pl_hPop" value="1.01325" step="0.1" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="pl_hPop" value="1.01325" step="0.1" min="0.01"><select id="pl_hPop_usel" class="u-sel u-pres-sel" onchange="onPresUnitChange('pl_hPop',this.value)" style="width:72px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar a</option>
+<option value="kpa">kPa a</option>
+<option value="mpa">MPa a</option>
+<option value="psi">psia</option>
+<option value="kgcm2">kg/cm²</option>
+</select></div>
           </div>
           <div class="fg"><label>Inlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="pl_hTi" step="0.1" value="80" required oninput="plUpdateColdOutlet();plUpdateColdFlow();"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="pl_hTi" step="0.1" value="80" required oninput="plUpdateColdOutlet();plUpdateColdFlow();"><select id="pl_hTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('pl_hTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Outlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="pl_hTo" step="0.1" value="45" required oninput="plUpdateColdOutlet();plUpdateColdFlow();"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="pl_hTo" step="0.1" value="45" required oninput="plUpdateColdOutlet();plUpdateColdFlow();"><select id="pl_hTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('pl_hTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Flow Rate</label>
             <div class="irow">
@@ -909,10 +976,20 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="fgrid">
           <div class="fg"><label>Fluid</label><select id="pl_cFl" onchange="fluidChange('pl_cFl');plUpdateColdOutlet();plUpdateColdFlow();" data-fluid></select></div>
           <div class="fg"><label class="tip" data-tip="Operating pressure for gas density correction. Ignored for liquids.">Op. Pressure (bar abs)</label>
-            <div class="irow"><input type="number" id="pl_cPop" value="1.01325" step="0.1" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="pl_cPop" value="1.01325" step="0.1" min="0.01"><select id="pl_cPop_usel" class="u-sel u-pres-sel" onchange="onPresUnitChange('pl_cPop',this.value)" style="width:72px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar a</option>
+<option value="kpa">kPa a</option>
+<option value="mpa">MPa a</option>
+<option value="psi">psia</option>
+<option value="kgcm2">kg/cm²</option>
+</select></div>
           </div>
           <div class="fg"><label>Cold Inlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="pl_cTi" step="0.1" value="20" required oninput="plUpdateColdOutlet();plUpdateColdFlow();"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="pl_cTi" step="0.1" value="20" required oninput="plUpdateColdOutlet();plUpdateColdFlow();"><select id="pl_cTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('pl_cTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg">
             <label>Cold Side Mode</label>
@@ -923,7 +1000,11 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
           </div>
           <div class="fg" id="pl_cTo_grp">
             <label>Cold Outlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="pl_cTo" step="0.1" value="55" required oninput="plUpdateColdFlow()"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="pl_cTo" step="0.1" value="55" required oninput="plUpdateColdFlow()"><select id="pl_cTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('pl_cTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg" id="pl_cF_calc" style="">
             <label>Calculated Cold Flow Rate</label>
@@ -981,10 +1062,18 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
             <div class="irow"><input type="number" id="pl_foul" value="0.0002" step="0.00005" min="0"><div class="ulab">m²K/W</div></div>
           </div>
           <div class="fg"><label>Allow. Hot ΔP (bar)</label>
-            <div class="irow"><input type="number" id="pl_pdH" value="1.50" step="0.1" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="pl_pdH" value="1.50" step="0.1" min="0.01"><select id="pl_pdH_usel" class="u-sel u-pdrop-sel" onchange="onPresUnitChange('pl_pdH',this.value)" style="width:68px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar</option>
+<option value="kpa">kPa</option>
+<option value="psi">psi</option>
+</select></div>
           </div>
           <div class="fg"><label>Allow. Cold ΔP (bar)</label>
-            <div class="irow"><input type="number" id="pl_pdC" value="1.50" step="0.1" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="pl_pdC" value="1.50" step="0.1" min="0.01"><select id="pl_pdC_usel" class="u-sel u-pdrop-sel" onchange="onPresUnitChange('pl_pdC',this.value)" style="width:68px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar</option>
+<option value="kpa">kPa</option>
+<option value="psi">psi</option>
+</select></div>
           </div>
         </div>
 
@@ -1014,10 +1103,18 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="sec-hd" style="color:var(--red);border-bottom-color:#f0cfc0">🔴 Process Side (Hot)</div>
         <div class="fgrid">
           <div class="fg"><label>Inlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="ac_Ti" step="0.1" value="120" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="ac_Ti" step="0.1" value="120" required><select id="ac_Ti_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('ac_Ti',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Outlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="ac_To" step="0.1" value="60" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="ac_To" step="0.1" value="60" required><select id="ac_To_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('ac_To',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Flow Rate (<span class="u-flow">kg/h</span>)</label>
             <div class="irow"><input type="number" id="ac_F" step="1" value="10000" required><div class="ulab u-flow-l">kg/h</div></div>
@@ -1027,7 +1124,11 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="sec-hd" style="color:var(--blue);border-bottom-color:#c0d5f8">🌬 Air Side</div>
         <div class="fgrid">
           <div class="fg"><label>Ambient Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="ac_amb" step="0.1" value="35"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="ac_amb" step="0.1" value="35"><select id="ac_amb_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('ac_amb',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Design Air Rise (°C)</label>
             <div class="irow"><input type="number" id="ac_dTa" step="0.5" value="15"><div class="ulab">°C</div></div>
@@ -1062,7 +1163,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
             <div class="irow"><input type="number" id="ac_rows" value="4" step="1" min="2" max="10"><div class="ulab">rows</div></div>
           </div>
           <div class="fg"><label>Bay Width (m)</label>
-            <div class="irow"><input type="number" id="ac_bayW" value="3" step="0.5" min="1" max="6"><div class="ulab">m</div></div>
+            <div class="irow"><input type="number" id="ac_bayW" value="3" step="0.5" min="1" max="6"><div class="ulab u-len-l">m</div></div>
           </div>
         </div>
         <div id="ac_err" class="err-box">⚠ <span id="ac_err_txt"></span></div>
@@ -1093,13 +1194,27 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="fgrid">
           <div class="fg"><label>Fluid</label><select id="ff_tFl" onchange="fluidChange('ff_tFl')" data-fluid></select></div>
           <div class="fg"><label class="tip" data-tip="Tubeside operating pressure for gas density/Z-factor correction">Op. Pressure (bar abs)</label>
-            <div class="irow"><input type="number" id="ff_tPop" value="4.0" step="0.1" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="ff_tPop" value="4.0" step="0.1" min="0.01"><select id="ff_tPop_usel" class="u-sel u-pres-sel" onchange="onPresUnitChange('ff_tPop',this.value)" style="width:72px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar a</option>
+<option value="kpa">kPa a</option>
+<option value="mpa">MPa a</option>
+<option value="psi">psia</option>
+<option value="kgcm2">kg/cm²</option>
+</select></div>
           </div>
           <div class="fg"><label>Inlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="ff_tTi" step="0.1" value="151" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="ff_tTi" step="0.1" value="151" required><select id="ff_tTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('ff_tTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Outlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="ff_tTo" step="0.1" value="47" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="ff_tTo" step="0.1" value="47" required><select id="ff_tTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('ff_tTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Flow Rate (<span class="u-flow">kg/h</span>)</label>
             <div class="irow"><input type="number" id="ff_tF" step="1" value="295415" required><div class="ulab u-flow-l">kg/h</div></div>
@@ -1108,7 +1223,11 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
             <div class="irow"><input type="number" id="ff_tFoul" value="0.00029" step="0.00001" min="0"><div class="ulab">m²K/W</div></div>
           </div>
           <div class="fg"><label>Allow. Tube ΔP (bar)</label>
-            <div class="irow"><input type="number" id="ff_tPdAllow" value="0.6" step="0.05" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="ff_tPdAllow" value="0.6" step="0.05" min="0.01"><select id="ff_tPdAllow_usel" class="u-sel u-pdrop-sel" onchange="onPresUnitChange('ff_tPdAllow',this.value)" style="width:68px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar</option>
+<option value="kpa">kPa</option>
+<option value="psi">psi</option>
+</select></div>
           </div>
           <div class="fg"><label class="tip" data-tip="Multiply required area by this safety factor. 1.0 = no safety margin.">Heat Transfer Safety Factor</label>
             <div class="irow"><input type="number" id="ff_htSF" value="1.0" step="0.05" min="0.5" max="2.5"><div class="ulab">—</div></div>
@@ -1118,13 +1237,27 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="sec-hd" style="color:var(--blue);border-bottom-color:#c0d5f8">🌬️ Airside Conditions</div>
         <div class="fgrid">
           <div class="fg"><label>Ambient Air Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="ff_aTamb" step="0.1" value="34" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="ff_aTamb" step="0.1" value="34" required><select id="ff_aTamb_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('ff_aTamb',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Design Air Outlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="ff_aTout" step="0.1" value="55" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="ff_aTout" step="0.1" value="55" required><select id="ff_aTout_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('ff_aTout',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Air Op. Pressure (bar abs)</label>
-            <div class="irow"><input type="number" id="ff_aPop" value="1.01325" step="0.01" min="0.5"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="ff_aPop" value="1.01325" step="0.01" min="0.5"><select id="ff_aPop_usel" class="u-sel u-pres-sel" onchange="onPresUnitChange('ff_aPop',this.value)" style="width:72px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar a</option>
+<option value="kpa">kPa a</option>
+<option value="mpa">MPa a</option>
+<option value="psi">psia</option>
+<option value="kgcm2">kg/cm²</option>
+</select></div>
           </div>
           <div class="fg"><label>Airside Fouling (m²K/W)</label>
             <div class="irow"><input type="number" id="ff_aFoul" value="0.00018" step="0.00001" min="0"><div class="ulab">m²K/W</div></div>
@@ -1291,13 +1424,27 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="fgrid">
           <div class="fg"><label>Fluid</label><select id="dp_hFl" onchange="fluidChange('dp_hFl');dpUpdateColdOutlet();dpUpdateColdFlow();" data-fluid></select></div>
           <div class="fg"><label class="tip" data-tip="Operating pressure for real-gas Z-factor density correction. Ignored for liquids.">Op. Pressure (bar abs)</label>
-            <div class="irow"><input type="number" id="dp_hPop" value="1.01325" step="0.1" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="dp_hPop" value="1.01325" step="0.1" min="0.01"><select id="dp_hPop_usel" class="u-sel u-pres-sel" onchange="onPresUnitChange('dp_hPop',this.value)" style="width:72px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar a</option>
+<option value="kpa">kPa a</option>
+<option value="mpa">MPa a</option>
+<option value="psi">psia</option>
+<option value="kgcm2">kg/cm²</option>
+</select></div>
           </div>
           <div class="fg"><label>Inlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="dp_hTi" step="0.1" value="100" required oninput="dpUpdateColdOutlet();dpUpdateColdFlow();"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="dp_hTi" step="0.1" value="100" required oninput="dpUpdateColdOutlet();dpUpdateColdFlow();"><select id="dp_hTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('dp_hTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Outlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="dp_hTo" step="0.1" value="55" required oninput="dpUpdateColdOutlet();dpUpdateColdFlow();"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="dp_hTo" step="0.1" value="55" required oninput="dpUpdateColdOutlet();dpUpdateColdFlow();"><select id="dp_hTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('dp_hTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Flow Rate</label>
             <div class="irow">
@@ -1316,10 +1463,20 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="fgrid">
           <div class="fg"><label>Fluid</label><select id="dp_cFl" onchange="fluidChange('dp_cFl');dpUpdateColdOutlet();dpUpdateColdFlow();" data-fluid></select></div>
           <div class="fg"><label class="tip" data-tip="Operating pressure for real-gas density correction. Ignored for liquids.">Op. Pressure (bar abs)</label>
-            <div class="irow"><input type="number" id="dp_cPop" value="1.01325" step="0.1" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="dp_cPop" value="1.01325" step="0.1" min="0.01"><select id="dp_cPop_usel" class="u-sel u-pres-sel" onchange="onPresUnitChange('dp_cPop',this.value)" style="width:72px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar a</option>
+<option value="kpa">kPa a</option>
+<option value="mpa">MPa a</option>
+<option value="psi">psia</option>
+<option value="kgcm2">kg/cm²</option>
+</select></div>
           </div>
           <div class="fg"><label>Cold Inlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="dp_cTi" step="0.1" value="25" required oninput="dpUpdateColdOutlet();dpUpdateColdFlow();"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="dp_cTi" step="0.1" value="25" required oninput="dpUpdateColdOutlet();dpUpdateColdFlow();"><select id="dp_cTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('dp_cTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg">
             <label>Cold Side Mode</label>
@@ -1330,7 +1487,11 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
           </div>
           <div class="fg" id="dp_cTo_grp">
             <label>Cold Outlet Temp (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="dp_cTo" step="0.1" value="65" required oninput="dpUpdateColdFlow()"><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="dp_cTo" step="0.1" value="65" required oninput="dpUpdateColdFlow()"><select id="dp_cTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('dp_cTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg" id="dp_cF_calc" style="">
             <label>Calculated Cold Flow Rate</label>
@@ -1359,10 +1520,18 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="sec-hd blue">🔧 Pipe Dimensions</div>
         <div class="fgrid">
           <div class="fg"><label>Inner Pipe OD (mm)</label>
-            <div class="irow"><input type="number" id="dp_iOD" value="50" step="0.5" min="10"><div class="ulab">mm</div></div>
+            <div class="irow"><input type="number" id="dp_iOD" value="50" step="0.5" min="10"><select id="dp_iOD_usel" class="u-sel u-dim-sel" onchange="onDimUnitChange2('dp_iOD',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="mm" selected>mm</option>
+<option value="cm">cm</option>
+<option value="in">in</option>
+</select></div>
           </div>
           <div class="fg"><label>Inner Pipe Wall (mm)</label>
-            <div class="irow"><input type="number" id="dp_iW" value="3" step="0.5" min="1"><div class="ulab">mm</div></div>
+            <div class="irow"><input type="number" id="dp_iW" value="3" step="0.5" min="1"><select id="dp_iW_usel" class="u-sel u-dim-sel" onchange="onDimUnitChange2('dp_iW',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="mm" selected>mm</option>
+<option value="cm">cm</option>
+<option value="in">in</option>
+</select></div>
           </div>
           <div class="fg"><label>Outer Pipe ID (mm)</label>
             <div class="irow"><input type="number" id="dp_oID" value="80" step="0.5" min="20"><div class="ulab">mm</div></div>
@@ -1382,13 +1551,20 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
             </select>
           </div>
           <div class="fg"><label>Hairpin Length (m)</label>
-            <div class="irow"><input type="number" id="dp_hplen" value="6" step="0.5" min="1"><div class="ulab">m</div></div>
+            <div class="irow"><input type="number" id="dp_hplen" value="6" step="0.5" min="1"><select id="dp_hplen_usel" class="u-sel u-len-sel" onchange="onLenUnitChange('dp_hplen',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="m" selected>m</option>
+<option value="ft">ft</option>
+</select></div>
           </div>
           <div class="fg"><label class="tip" data-tip="Combined fouling resistance both sides. Typical: 0.0002 m²K/W for clean water.">Fouling Factor (m²K/W)</label>
             <div class="irow"><input type="number" id="dp_foul" value="0.0002" step="0.00005" min="0"><div class="ulab">m²K/W</div></div>
           </div>
           <div class="fg"><label>Allow. Inner ΔP (bar)</label>
-            <div class="irow"><input type="number" id="dp_pdH" value="1.00" step="0.1" min="0.01"><div class="ulab">bar</div></div>
+            <div class="irow"><input type="number" id="dp_pdH" value="1.00" step="0.1" min="0.01"><select id="dp_pdH_usel" class="u-sel u-pdrop-sel" onchange="onPresUnitChange('dp_pdH',this.value)" style="width:68px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="bar" selected>bar</option>
+<option value="kpa">kPa</option>
+<option value="psi">psi</option>
+</select></div>
           </div>
           <div class="fg"><label>Allow. Annulus ΔP (bar)</label>
             <div class="irow"><input type="number" id="dp_pdC" value="1.00" step="0.1" min="0.01"><div class="ulab">bar</div></div>
@@ -1421,16 +1597,32 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="sec-hd">🌡 Temperature Inputs</div>
         <div class="fgrid">
           <div class="fg"><label>Hot Inlet (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="lm_hTi" step="0.1" value="100" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="lm_hTi" step="0.1" value="100" required><select id="lm_hTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('lm_hTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Hot Outlet (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="lm_hTo" step="0.1" value="60" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="lm_hTo" step="0.1" value="60" required><select id="lm_hTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('lm_hTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Cold Inlet (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="lm_cTi" step="0.1" value="25" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="lm_cTi" step="0.1" value="25" required><select id="lm_cTi_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('lm_cTi',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
           <div class="fg"><label>Cold Outlet (<span class="u-temp">°C</span>)</label>
-            <div class="irow"><input type="number" id="lm_cTo" step="0.1" value="70" required><div class="ulab u-temp-l">°C</div></div>
+            <div class="irow"><input type="number" id="lm_cTo" step="0.1" value="70" required><select id="lm_cTo_usel" class="u-sel u-temp-sel" onchange="onTempUnitChange('lm_cTo',this.value)" style="width:52px;padding:4px 2px;font-size:.68rem;border-radius:5px;border:1px solid var(--bdr);background:var(--surf2);cursor:pointer">
+<option value="c" selected>°C</option>
+<option value="f">°F</option>
+<option value="k">K</option>
+</select></div>
           </div>
         </div>
         <div class="sec-hd blue">⚡ Heat Capacity Rates (optional)</div>
@@ -3538,6 +3730,85 @@ function convA(m2) { return unitSys==='imperial'?m2*10.7639:m2; }
 function convP(b)  { return unitSys==='imperial'?b*14.504:b; }
 function convU(w)  { return unitSys==='imperial'?w*0.17611:w; }
 
+// ═══════════════════════════════════════════════════════════════════
+// PER-FIELD UNIT CONVERSION FUNCTIONS
+// Each reads the unit selector for that field and converts to SI.
+// The API always receives SI values (°C, bar, kg/h, mm for dims).
+// ═══════════════════════════════════════════════════════════════════
+
+// Conversion factors to SI
+const PRES_TO_BAR = { bar:1, kpa:0.01, mpa:10, psi:0.0689476, kgcm2:0.980665 };
+const TEMP_OFFSETS = { c:[1,0], f:[5/9,-32*5/9], k:[1,-273.15] };
+const DIM_TO_MM = { mm:1, cm:10, 'in':25.4 };
+const LEN_TO_M = { m:1, ft:0.3048 };
+
+function getPresVal(inputId) {
+  const raw = parseFloat(g(inputId)?.value) || 0;
+  const unit = g(inputId+'_usel')?.value || 'bar';
+  return raw * (PRES_TO_BAR[unit] || 1);
+}
+function getTempVal(inputId) {
+  const raw = parseFloat(g(inputId)?.value);
+  if (isNaN(raw)) return NaN;
+  const unit = g(inputId+'_usel')?.value || 'c';
+  const [m,b] = TEMP_OFFSETS[unit] || [1,0];
+  return raw * m + b;
+}
+function getDimMm(inputId) {
+  const raw = parseFloat(g(inputId)?.value) || 0;
+  const unit = g(inputId+'_usel')?.value || 'mm';
+  return raw * (DIM_TO_MM[unit] || 1);
+}
+function getLenM(inputId) {
+  const raw = parseFloat(g(inputId)?.value) || 0;
+  const unit = g(inputId+'_usel')?.value || 'm';
+  return raw * (LEN_TO_M[unit] || 1);
+}
+function getFlowKgh(inputId) {
+  const raw = parseFloat(g(inputId)?.value) || 0;
+  if (unitSys === 'imperial') return raw / 2.20462;
+  return raw;
+}
+
+// When SI/US global toggle fires, also flip all individual selectors
+const _origSetUnit = setUnit;
+function setUnit(sys, btn) {
+  unitSys = sys;
+  document.querySelectorAll('.unit-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  updateAllUnitLabels();
+  // Flip all temp selectors
+  document.querySelectorAll('.u-temp-sel').forEach(sel=>{
+    sel.value = sys==='metric' ? 'c' : 'f';
+  });
+  // Flip all pressure selectors
+  document.querySelectorAll('.u-pres-sel, .u-pdrop-sel').forEach(sel=>{
+    sel.value = sys==='metric' ? 'bar' : 'psi';
+  });
+  // Flip flow labels
+  document.querySelectorAll('.u-flow-l').forEach(el=>{
+    el.textContent = sys==='metric' ? 'kg/h' : 'lb/h';
+  });
+  // Flip length selectors
+  document.querySelectorAll('.u-len-sel').forEach(sel=>{
+    sel.value = sys==='metric' ? 'm' : 'ft';
+  });
+}
+
+// onchange callbacks for individual selectors
+function onPresUnitChange(baseId, unit) {
+  // Just visual — conversion happens at submit via getPresVal()
+}
+function onTempUnitChange(baseId, unit) {
+  // Just visual — conversion happens at submit via getTempVal()
+}
+function onDimUnitChange2(baseId, unit) {
+  // Just visual — conversion happens at submit via getDimMm()
+}
+function onLenUnitChange(baseId, unit) {
+  // Just visual — conversion happens at submit via getLenM()
+}
+
 // ── Core API call ────────────────────────────────────────────────────────────
 async function callAPI(payload) {
   const resp = await fetch(API_URL, {
@@ -3602,16 +3873,52 @@ function switchTab(id,btn){
   document.getElementById('tab-'+id).classList.add('active');
   if(btn) btn.classList.add('active');
 }
-function setUnit(sys,btn){
-  unitSys=sys;
-  document.querySelectorAll('.unit-btn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  updateAllUnitLabels();
-}
 function updateAllUnitLabels(){
+  // data-unit-metric / data-unit-imperial generic labels
   document.querySelectorAll('[data-unit-metric]').forEach(el=>{
     el.textContent=unitSys==='metric'?el.dataset.unitMetric:el.dataset.unitImperial;
   });
+  // Temperature labels
+  document.querySelectorAll('.u-temp-l').forEach(el=>{
+    const sel=el.closest('.irow')?.querySelector('.u-temp-sel');
+    if(!sel) el.textContent=unitSys==='metric'?'°C':'°F';
+  });
+  // Simple flow labels (no dropdown — air cooled, fin-fan)
+  document.querySelectorAll('.u-flow-l').forEach(el=>{
+    el.textContent=unitSys==='metric'?'kg/h':'lb/h';
+  });
+  // Pressure labels (bar / psi)
+  document.querySelectorAll('.u-pres-l').forEach(el=>{
+    el.textContent=unitSys==='metric'?'bar a':'psia';
+  });
+  // Pressure allowable labels (bar / psi)
+  document.querySelectorAll('.u-pdrop-l').forEach(el=>{
+    el.textContent=unitSys==='metric'?'bar':'psi';
+  });
+  // Length labels (m / ft) — tube length etc
+  document.querySelectorAll('.u-len-l').forEach(el=>{
+    el.textContent=unitSys==='metric'?'m':'ft';
+  });
+  // Dimension labels mm/in driven by per-field dropdown (u-dim-sel)
+  // These are handled by their own onchange. No bulk update needed.
+}
+
+// ── Per-input unit conversion helpers ────────────────────────────────────────
+// Called by pressure unit selectors
+function convInputPres(inputId, selId) {
+  const sel=g(selId), inp=g(inputId);
+  if(!sel||!inp) return;
+  const val=parseFloat(inp.value)||0;
+  const unit=sel.value;
+  // Convert displayed value → bar_a for storage; display in chosen unit
+  // We store nothing; just update the ulab text
+  g(selId+'_lbl') && (g(selId+'_lbl').textContent=unit);
+}
+
+// Called when dimension unit selector changes (mm / cm / in)
+function onDimUnitChange(selId, labId) {
+  const sel=g(selId); if(!sel) return;
+  if(g(labId)) g(labId).textContent=sel.value;
 }
 
 // ── Fluid selector ───────────────────────────────────────────────────────────
@@ -3832,25 +4139,25 @@ document.getElementById('stForm').addEventListener('submit', async function(e){
   try {
     // Send raw values + unitSys — server handles all unit conversion
     const hFlKey=g('st_hFl').value, cFlKey=g('st_cFl').value;
-    const hPop=parseFloat(g('st_hPop')||{value:'1.01325'}).value||1.01325;
-    const cPop=parseFloat(g('st_cPop')||{value:'1.01325'}).value||1.01325;
-    const hTi=v('st_hTi'), hTo=v('st_hTo'), cTi=v('st_cTi');
+    const hTi=getTempVal('st_hTi'), hTo=getTempVal('st_hTo'), cTi=getTempVal('st_cTi');
+    const hPop=getPresVal('st_hPop'), cPop=getPresVal('st_cPop');
     const hFraw=parseFloat(g('st_hF').value)||0;
     const hFunit=(g('st_hFunit')||{value:'kgh'}).value;
 
     let cFraw=0, cToVal=0;
     if(coldMode==='flow'){
       cFraw=parseFloat(g('st_cF').value)||0;
+      if(unitSys==='imperial') cFraw=cFraw/2.20462;
     } else {
-      cToVal=v('st_cTo');
+      cToVal=getTempVal('st_cTo');
     }
 
     const payload = {
-      calcType:'shellTube', unitSys,
+      calcType:'shellTube', unitSys:'metric',
       hFlKey, cFlKey, hPop, cPop,
       hTi, hTo, cTi, hF: hFraw, hFunit,
       coldMode, cF: cFraw, cTo: cToVal,
-      OD: v('st_od'), tw: v('st_tw'), L: v('st_len'),
+      OD: getDimMm('st_od'), tw: getDimMm('st_tw'), L: getLenM('st_len'),
       pitch: v('st_pitch'),
       Rfo: parseFloat(g('st_foulS').value)||0.0002,
       Rfi: parseFloat(g('st_foulT').value)||0.0002,
@@ -3862,8 +4169,8 @@ document.getElementById('stForm').addEventListener('submit', async function(e){
       bsp: parseFloat(g('st_bsp').value)||0.50,
       velMode: (g('st_velMode')||{value:'target'}).value,
       targetVel: parseFloat(g('st_targetVel').value)||1.5,
-      pdAllowShell: parseFloat(g('st_pdAllowShell').value)||0.70,
-      pdAllowTube: parseFloat(g('st_pdAllowTube').value)||1.00,
+      pdAllowShell: getPresVal('st_pdAllowShell'),
+      pdAllowTube: getPresVal('st_pdAllowTube'),
       pitchLayout: (g('st_pitchlayout')||{value:'triangular'}).value,
       numTubesFixed: parseInt(g('st_numTubesFixed')||{value:'0'}).value||0,
     };
@@ -3871,7 +4178,11 @@ document.getElementById('stForm').addEventListener('submit', async function(e){
     if (r.error) return showErr('st', r.error);
     lastResults.st = r;
     // Update computed cold outlet/flow in form
-    if(coldMode==='flow' && g('st_cTo')) g('st_cTo').value = tDisp(r.cTo).toFixed(3);
+    if(coldMode==='flow' && g('st_cTo')) {
+      const tUnit = g('st_cTo_usel')?.value || 'c';
+      const dispVal = tUnit==='f' ? r.cTo*9/5+32 : tUnit==='k' ? r.cTo+273.15 : r.cTo;
+      g('st_cTo').value = dispVal.toFixed(2);
+    }
     else if(coldMode==='temp' && g('st_cF')) g('st_cF').value = r.cF.toFixed(1);
     showRes('st', renderSTResults(r, r.warns||[]));
   } catch(err) { showErr('st', err.message); }
@@ -3883,28 +4194,31 @@ document.getElementById('plForm').addEventListener('submit', async function(e){
   startCalc('pl');
   try {
     const hFlKey=g('pl_hFl').value, cFlKey=g('pl_cFl').value;
-    const hPop=parseFloat((g('pl_hPop')||{value:'1.01325'}).value)||1.01325;
-    const cPop=parseFloat((g('pl_cPop')||{value:'1.01325'}).value)||1.01325;
-    const hTi=v('pl_hTi'), hTo=v('pl_hTo'), cTi=v('pl_cTi');
+    const hTi=getTempVal('pl_hTi'), hTo=getTempVal('pl_hTo'), cTi=getTempVal('pl_cTi');
+    const hPop=getPresVal('pl_hPop'), cPop=getPresVal('pl_cPop');
     const hF=parseFloat(g('pl_hF').value)||0;
     const plColdMode=g('pl_coldMode').value;
     let cToVal=0, cFval=0;
-    if(plColdMode==='temp') cToVal=v('pl_cTo');
-    else { cFval=parseFloat(g('pl_cF').value)||0; }
+    if(plColdMode==='temp') cToVal=getTempVal('pl_cTo');
+    else { cFval=parseFloat(g('pl_cF').value)||0; if(unitSys==='imperial') cFval/=2.20462; }
     const payload = {
-      calcType:'plate', unitSys, hFlKey, cFlKey, hPop, cPop,
+      calcType:'plate', unitSys:'metric', hFlKey, cFlKey, hPop, cPop,
       hTi, hTo, cTi, hF, coldMode:plColdMode, cTo:cToVal, cF:cFval,
       th: v('pl_th'), angle: v('pl_angle'), gap: v('pl_gap'),
       pw: v('pl_width'), plen: v('pl_plen'), phi: parseFloat((g('pl_phi')||{value:'1.17'}).value)||1.17,
       mat: g('pl_mat').value,
       foul: parseFloat((g('pl_foul')||{value:'0.0002'}).value)||0.0002,
-      pdAllowH: parseFloat((g('pl_pdH')||{value:'1.5'}).value)||1.5,
-      pdAllowC: parseFloat((g('pl_pdC')||{value:'1.5'}).value)||1.5,
+      pdAllowH: getPresVal('pl_pdH'),
+      pdAllowC: getPresVal('pl_pdC'),
     };
     const r = await callAPI(payload);
     if (r.error) return showErr('pl', r.error);
     lastResults.pl = r;
-    if(plColdMode==='flow' && g('pl_cTo_disp')) g('pl_cTo_disp').value = tDisp(r.cTo).toFixed(2);
+    if(plColdMode==='flow' && g('pl_cTo_disp')) {
+      const tUnit = g('pl_cTo_usel')?.value || 'c';
+      const dispVal = tUnit==='f' ? r.cTo*9/5+32 : tUnit==='k' ? r.cTo+273.15 : r.cTo;
+      g('pl_cTo_disp').value = dispVal.toFixed(2);
+    }
     showRes('pl', renderPlateResults(r));
   } catch(err) { showErr('pl', err.message); }
 });
@@ -3914,11 +4228,12 @@ document.getElementById('acForm').addEventListener('submit', async function(e){
   e.preventDefault(); if(_apiPending) return; hideErr('ac');
   startCalc('ac');
   try {
-    const Ti=v('ac_Ti'), To=v('ac_To');
-    const F_=parseFloat(g('ac_F').value)||0;
+    const Ti=getTempVal('ac_Ti'), To=getTempVal('ac_To');
+    let F_=parseFloat(g('ac_F').value)||0;
+    if(unitSys==='imperial') F_=F_/2.20462;
     const payload = {
-      calcType:'airCooled', unitSys, flKey: g('ac_Fl').value,
-      Ti, To, F: F_, Tamb: v('ac_amb'), dTa: v('ac_dTa'),
+      calcType:'airCooled', unitSys:'metric', flKey: g('ac_Fl').value,
+      Ti, To, F: F_, Tamb: getTempVal('ac_amb'), dTa: v('ac_dTa'),
       rows: v('ac_rows'), bayW: v('ac_bayW'),
       fmat: g('ac_fmat').value, fpm: v('ac_fpm'),
       fanType: g('ac_fan').value
@@ -3936,22 +4251,21 @@ document.getElementById('dpForm').addEventListener('submit', async function(e){
   startCalc('dp');
   try {
     const hFlKey=g('dp_hFl').value, cFlKey=g('dp_cFl').value;
-    const hPop=parseFloat((g('dp_hPop')||{value:'1.01325'}).value)||1.01325;
-    const cPop=parseFloat((g('dp_cPop')||{value:'1.01325'}).value)||1.01325;
-    const hTi=v('dp_hTi'), hTo=v('dp_hTo'), cTi=v('dp_cTi');
+    const hTi=getTempVal('dp_hTi'), hTo=getTempVal('dp_hTo'), cTi=getTempVal('dp_cTi');
+    const hPop=getPresVal('dp_hPop'), cPop=getPresVal('dp_cPop');
     const hF=parseFloat(g('dp_hF').value)||0;
     const dpColdMode=g('dp_coldMode').value;
     let cFval=0, cToVal=0;
-    if(dpColdMode==='flow'){cFval=parseFloat(g('dp_cF').value)||0;}
-    else cToVal=v('dp_cTo');
+    if(dpColdMode==='flow'){cFval=parseFloat(g('dp_cF').value)||0;if(unitSys==='imperial')cFval/=2.20462;}
+    else cToVal=getTempVal('dp_cTo');
     const payload = {
-      calcType:'doublePipe', unitSys, hFlKey, cFlKey, hPop, cPop,
+      calcType:'doublePipe', unitSys:'metric', hFlKey, cFlKey, hPop, cPop,
       hTi, hTo, cTi, hF, coldMode:dpColdMode, cF:cFval, cTo:cToVal,
-      iOD: v('dp_iOD'), iTW: v('dp_iW'), oID: v('dp_oID'),
-      L: v('dp_hplen'), nHairpins: 1,
+      iOD: getDimMm('dp_iOD'), iTW: getDimMm('dp_iW'), oID: v('dp_oID'),
+      L: getLenM('dp_hplen'), nHairpins: 1,
       arr: g('dp_arr').value, mat: g('dp_mat').value,
       foul: parseFloat((g('dp_foul')||{value:'0.0002'}).value)||0.0002,
-      pdAllow: parseFloat((g('dp_pdH')||{value:'1.0'}).value)||1.0,
+      pdAllow: getPresVal('dp_pdH'),
     };
     const r = await callAPI(payload);
     if (r.error) return showErr('dp', r.error);
@@ -3965,14 +4279,14 @@ document.getElementById('ffForm').addEventListener('submit', async function(e){
   e.preventDefault(); if(_apiPending) return; hideErr('ff');
   startCalc('ff');
   try {
-    const tTi=v('ff_tTi'), tTo=v('ff_tTo');
-    const aTamb=v('ff_aTamb'), aTout=v('ff_aTout');
+    const tTi=getTempVal('ff_tTi'), tTo=getTempVal('ff_tTo');
+    const aTamb=getTempVal('ff_aTamb'), aTout=getTempVal('ff_aTout');
     const payload = {
-      calcType:'finFan', unitSys,
+      calcType:'finFan', unitSys:'metric',
       tFlKey: g('ff_tFl').value,
       tTi, tTo, tF_kgh: parseFloat(g('ff_tF').value)||0,
       tFoul: parseFloat(g('ff_tFoul').value)||2.9e-4,
-      tPdAllow: parseFloat(g('ff_tPdAllow').value)||0.6,
+      tPdAllow: getPresVal('ff_tPdAllow'),
       htSF: parseFloat(g('ff_htSF').value)||1.0,
       aTamb, aTout, aPop: parseFloat(g('ff_aPop').value)||1.01325,
       aFoul: parseFloat(g('ff_aFoul').value)||1.8e-4,
@@ -4000,9 +4314,9 @@ document.getElementById('lmForm').addEventListener('submit', async function(e){
   e.preventDefault(); if(_apiPending) return; hideErr('lm');
   try {
     const payload = {
-      calcType:'lmtdNtu', unitSys,
-      hTi:v('lm_hTi'), hTo:v('lm_hTo'),
-      cTi:v('lm_cTi'), cTo:v('lm_cTo'),
+      calcType:'lmtdNtu', unitSys:'metric',
+      hTi:getTempVal('lm_hTi'), hTo:getTempVal('lm_hTo'),
+      cTi:getTempVal('lm_cTi'), cTo:getTempVal('lm_cTo'),
       Ch: v('lm_Ch')||null, Cc: v('lm_Cc')||null,
       UA: v('lm_UA')||null, arr: g('lm_arr').value
     };
