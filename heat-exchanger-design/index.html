@@ -2910,9 +2910,9 @@ ${st?`
     <tr><td class="lbl">Fluid</td><td>—</td><td>${st.hFluid.name}</td></tr>
     <tr><td class="lbl">T Inlet / Outlet</td><td>${T}</td><td>${tDisp(st.hTi).toFixed(2)} / ${tDisp(st.hTo).toFixed(2)}</td></tr>
     <tr><td class="lbl">ΔT (Hot)</td><td>${T}</td><td>${(st.hTi-st.hTo).toFixed(2)}</td></tr>
-    <tr><td class="lbl">Flow Rate</td><td>kg/h</td><td>${st.hF!=null?st.hF.toFixed(1):'—'}</td></tr>
+    <tr><td class="lbl">Flow Rate</td><td>kg/h</td><td>${st.hFluidDB?.name?st.hFluidDB.name:'—'}</td></tr>
     <tr><td class="lbl">Heat Duty Qh</td><td>${H}</td><td>${convQ(st.Qh).toFixed(3)}</td></tr>
-    <tr><td class="lbl">Film HTC h_shell</td><td>W/m²K</td><td>${st.hShell!=null?st.hShell.toFixed(0):'—'}</td></tr>
+    <tr><td class="lbl">Film HTC h_shell</td><td>W/m²K</td><td>${st.bdCorr?.hShell!=null?st.bdCorr.hShell.toFixed(0):'—'}</td></tr>
     <tr><td class="lbl">Velocity (cross-flow)</td><td>m/s</td><td>${st.shellVel!=null?st.shellVel.toFixed(3):'—'}</td></tr>
     <tr><td class="lbl">Pressure Drop (calc)</td><td>${Pu}</td>
       <td class="${(st.shellDP||0)>(st.pdAllowShell||0.7)?'hi-err':'hi-ok'}">${convP(st.shellDP||0).toFixed(4)} ${(st.shellDP||0)>(st.pdAllowShell||0.7)?'✗ EXCEEDS':'✓ OK'}</td></tr>
@@ -2929,9 +2929,9 @@ ${st?`
     <tr><td class="lbl">Fluid</td><td>—</td><td>${st.cFluid.name}</td></tr>
     <tr><td class="lbl">T Inlet / Outlet</td><td>${T}</td><td>${tDisp(st.cTi).toFixed(2)} / ${tDisp(st.cTo).toFixed(2)}</td></tr>
     <tr><td class="lbl">ΔT (Cold)</td><td>${T}</td><td>${(st.cTo-st.cTi).toFixed(2)}</td></tr>
-    <tr><td class="lbl">Flow Rate</td><td>kg/h</td><td>${st.cF!=null?st.cF.toFixed(1):'—'}</td></tr>
+    <tr><td class="lbl">Flow Rate</td><td>kg/h</td><td>${st.cFluidDB?.name?st.cFluidDB.name:'—'}</td></tr>
     <tr><td class="lbl">Heat Duty Qc</td><td>${H}</td><td>${convQ(st.Qc).toFixed(3)}</td></tr>
-    <tr><td class="lbl">Film HTC h_tube</td><td>W/m²K</td><td>${st.hTube!=null?st.hTube.toFixed(0):'—'}</td></tr>
+    <tr><td class="lbl">Film HTC h_tube</td><td>W/m²K</td><td>${st.bdCorr?.hTube!=null?st.bdCorr.hTube.toFixed(0):'—'}</td></tr>
     <tr><td class="lbl">Velocity (in-tube)</td><td>m/s</td><td>${st.tubeVel!=null?st.tubeVel.toFixed(3):'—'}</td></tr>
     <tr><td class="lbl">Pressure Drop (calc)</td><td>${Pu}</td>
       <td class="${(st.tubeDp||0)>(st.pdAllowTube||1.0)?'hi-err':'hi-ok'}">${convP(st.tubeDp||0).toFixed(4)} ${(st.tubeDp||0)>(st.pdAllowTube||1.0)?'✗ EXCEEDS':'✓ OK'}</td></tr>
@@ -2969,7 +2969,7 @@ ${st?`
       <td class="lbl">Shell ID (est.)</td><td>mm</td><td>${st.shellID!=null?(st.shellID*1000).toFixed(0):'—'}</td>
     </tr>
     <tr>
-      <td class="lbl">Tube OD / ID</td><td>mm</td><td>${st.tubeOD!=null?(st.tubeOD*1000).toFixed(2):'—'} / ${st.tubeID!=null?(st.tubeID*1000).toFixed(2):'—'}</td>
+      <td class="lbl">Tube OD / ID</td><td>mm</td><td>${st.OD!=null?(st.OD*1000).toFixed(2):'—'} / ${st.Di!=null?(st.Di*1000).toFixed(2):'—'}</td>
       <td class="lbl">Number of Passes</td><td>—</td><td>${st.nPasses!=null?st.nPasses:'—'}</td>
     </tr>
     <tr>
@@ -2985,30 +2985,18 @@ ${st?`
       <td>Jc=${st.bdCorr.Jc.toFixed(3)} · Jl=${st.bdCorr.Jl.toFixed(3)} · Jb=${st.bdCorr.Jb.toFixed(3)} · Jr=${st.bdCorr.Jr.toFixed(3)} · Js=${st.bdCorr.Js!=null?st.bdCorr.Js.toFixed(3):'1.000'}</td>
       <td class="lbl">J_total</td><td>—</td><td><b>${st.bdCorr.Jtotal.toFixed(4)}</b></td>
     </tr>`:''}
-    ${st.hShell&&st.hTube?`<tr>
-      <td class="lbl">Shell-side Re</td><td>—</td><td>${st.ReShell!=null?st.ReShell.toFixed(0):'—'}</td>
-      <td class="lbl">Tube-side Re</td><td>—</td><td>${st.ReTube!=null?st.ReTube.toFixed(0):'—'}</td>
+    ${st.bdCorr?.hShell&&st.bdCorr?.hTube?`<tr>
+      <td class="lbl">Shell-side Re</td><td>—</td><td>${st.shellRe!=null?st.shellRe.toFixed(0):'—'}</td>
+      <td class="lbl">Tube-side Re</td><td>—</td><td>${st.bdCorr?.Re_tube!=null?st.bdCorr.Re_tube.toFixed(0):'—'}</td>
     </tr>`:''}
   </tbody>
 </table>
 
 
 ${(()=>{
-  if(!st.hShell||!st.hTube) return '';
-  const hS=st.hShell||100, hT=st.hTube||100, kw=st.kTube||16, tw=st.twall||0.002;
-  const OD=st.tubeOD||0.0254, ID=st.tubeID||0.0214;
-  const foul_s=st.Rfo!=null?st.Rfo:(st.foulFactor||0.0004)/2;
-  const foul_t=st.Rfi!=null?st.Rfi:(st.foulFactor||0.0004)/2;
-  const R_shell=1/hS, R_tube=1/hT*(OD/ID), R_wall=(OD/2)*Math.log(OD/ID)/kw;
-  const R_foul=foul_s + foul_t*(OD/ID);  // shell-side + tube-side referred to outer area
-  const Rt=R_shell+R_tube+R_wall+R_foul;
-  const pct=x=>Rt>0?(x/Rt*100).toFixed(1):'0.0';
-  const segs=[
-    {label:'Shell film',pct:parseFloat(pct(R_shell)),color:'#e8500a'},
-    {label:'Tube film', pct:parseFloat(pct(R_tube)), color:'#0055c8'},
-    {label:'Fouling',   pct:parseFloat(pct(R_foul)), color:'#c07800'},
-    {label:'Wall metal',pct:parseFloat(pct(R_wall)), color:'#6b7899'},
-  ];
+  if(!st.resistanceBreakdown||st.resistanceBreakdown.length===0) return '';
+  const segs=st.resistanceBreakdown;
+  const Rt_val=segs.reduce((s,x)=>s+x.pct,0);
   return `<div style="margin-bottom:8px">
   <div class="mini-sec">🔬 Thermal Resistance Distribution</div>
   <div style="display:flex;align-items:flex-start;gap:12px">
@@ -3016,11 +3004,8 @@ ${(()=>{
       <table>
         <thead><tr><th>Component</th><th>R (m²K/W)</th><th>%</th></tr></thead>
         <tbody>
-          <tr><td class="lbl">Shell-side film</td><td>${R_shell.toExponential(3)}</td><td class="${parseFloat(pct(R_shell))>60?'hi-warn':''}">${pct(R_shell)}%</td></tr>
-          <tr><td class="lbl">Tube-side film</td><td>${R_tube.toExponential(3)}</td><td>${pct(R_tube)}%</td></tr>
-          <tr><td class="lbl">Fouling (both)</td><td>${R_foul.toExponential(3)}</td><td>${pct(R_foul)}%</td></tr>
-          <tr><td class="lbl">Tube wall</td><td>${R_wall.toExponential(3)}</td><td>${pct(R_wall)}%</td></tr>
-          <tr style="background:#eef4ff"><td class="lbl"><b>Total → U</b></td><td>${Rt.toExponential(3)}</td><td><b>100%</b></td></tr>
+          ${segs.map(s=>`<tr><td class="lbl">${s.label}</td><td>—</td><td class="${s.pct>60?'hi-warn':''}">${s.pct.toFixed(1)}%</td></tr>`).join('')}
+          <tr style="background:#eef4ff"><td class="lbl"><b>Total → U</b></td><td>—</td><td><b>100%</b></td></tr>
         </tbody>
       </table>
     </div>
@@ -3030,11 +3015,11 @@ ${(()=>{
 })()}
 
 <div class="div-strip">
-  <div class="div-item">Status: <span>${st.stTxt||'—'}</span></div>
+  <div class="div-item">Status: <span>${st.st||'—'}</span></div>
   <span class="div-sep">|</span>
-  <div class="div-item">Flow Arrangement: <span>${st.arr||'—'}</span></div>
+  <div class="div-item">Flow Arrangement: <span>${st.lmtdArr||'—'}</span></div>
   <span class="div-sep">|</span>
-  <div class="div-item">HX Type: <span>${st.hxType||'—'}</span></div>
+  <div class="div-item">HX Type: <span>${st.tema||'—'}</span></div>
   <span class="div-sep">|</span>
   <div class="div-item">Balance Error: <span>${st.balErr!=null?st.balErr.toFixed(2)+'%':'—'}</span></div>
 </div>
@@ -3046,10 +3031,10 @@ ${pl?`
 <div class="kpi-strip">
   <div class="kpi r"><div class="kl">Heat Duty</div><div class="kv">${convQ(pl.Q).toFixed(1)}<span class="ku"> ${H}</span></div></div>
   <div class="kpi b"><div class="kl">LMTD×F</div><div class="kv">${pl.FLMTD.toFixed(2)}<span class="ku"> ${T}</span></div></div>
-  <div class="kpi t"><div class="kl">Area Req.</div><div class="kv">${convA(pl.area).toFixed(2)}<span class="ku"> ${Au}</span></div></div>
+  <div class="kpi t"><div class="kl">Area Req.</div><div class="kv">${convA(pl.A_req).toFixed(2)}<span class="ku"> ${Au}</span></div></div>
   <div class="kpi g"><div class="kl">U Overall</div><div class="kv">${pl.U!=null?convU(pl.U).toFixed(0):'—'}<span class="ku"> ${Uu}</span></div></div>
   <div class="kpi ${pl.eff>0.65?'ok':'warn'}"><div class="kl">Effectiveness ε</div><div class="kv">${pl.eff!=null?(pl.eff*100).toFixed(1):'—'}<span class="ku"> %</span></div></div>
-  <div class="kpi b"><div class="kl">No. Plates</div><div class="kv">${pl.numPlates||'—'}</div></div>
+  <div class="kpi b"><div class="kl">No. Plates</div><div class="kv">${pl.nPlates||'—'}</div></div>
 </div>
 
 <div class="panel-pair">
@@ -3065,7 +3050,7 @@ ${pl?`
     <tr><td class="lbl">Pressure Drop</td><td>${Pu}</td>
       <td class="${(pl.dpH||0)>(pl.pdAllowH||1.5)?'hi-err':'hi-ok'}">${pl.dpH!=null?convP(pl.dpH).toFixed(4):'—'}</td></tr>
     <tr><td class="lbl">Allow. ΔP</td><td>${Pu}</td><td>${convP(pl.pdAllowH||1.5).toFixed(3)}</td></tr>
-    <tr><td class="lbl">Film h (hot)</td><td>W/m²K</td><td>${pl.hh!=null?pl.hh.toFixed(0):'—'}</td></tr>
+    <tr><td class="lbl">Film h (hot)</td><td>W/m²K</td><td>${pl.hH!=null?pl.hH.toFixed(0):'—'}</td></tr>
     <tr><td class="lbl">Re (hot)</td><td>—</td><td>${pl.Reh!=null?pl.Reh.toFixed(0):'—'}</td></tr>
   </tbody>
 </table>
@@ -3082,7 +3067,7 @@ ${pl?`
     <tr><td class="lbl">Pressure Drop</td><td>${Pu}</td>
       <td class="${(pl.dpC||0)>(pl.pdAllowC||1.5)?'hi-err':'hi-ok'}">${pl.dpC!=null?convP(pl.dpC).toFixed(4):'—'}</td></tr>
     <tr><td class="lbl">Allow. ΔP</td><td>${Pu}</td><td>${convP(pl.pdAllowC||1.5).toFixed(3)}</td></tr>
-    <tr><td class="lbl">Film h (cold)</td><td>W/m²K</td><td>${pl.hc!=null?pl.hc.toFixed(0):'—'}</td></tr>
+    <tr><td class="lbl">Film h (cold)</td><td>W/m²K</td><td>${pl.hC!=null?pl.hC.toFixed(0):'—'}</td></tr>
     <tr><td class="lbl">Re (cold)</td><td>—</td><td>${pl.Rec!=null?pl.Rec.toFixed(0):'—'}</td></tr>
   </tbody>
 </table>
@@ -3106,8 +3091,8 @@ ${pl?`
       <td class="lbl">Material</td><td>—</td><td>${pl.matName||'—'}</td>
     </tr>
     <tr>
-      <td class="lbl">Number of plates</td><td>—</td><td><b>${pl.numPlates||'—'}</b></td>
-      <td class="lbl">Required area</td><td>${Au}</td><td>${pl.area!=null?convA(pl.area).toFixed(3):'—'}</td>
+      <td class="lbl">Number of plates</td><td>—</td><td><b>${pl.nPlates||'—'}</b></td>
+      <td class="lbl">Required area</td><td>${Au}</td><td>${pl.A_req!=null?convA(pl.A_req).toFixed(3):'—'}</td>
     </tr>
     <tr>
       <td class="lbl">Fouling factor</td><td>m²K/W</td><td>${pl.foul!=null?pl.foul.toExponential(2):'—'}</td>
@@ -3126,7 +3111,7 @@ ${pl?`
 </table>
 
 <div class="div-strip">
-  <div class="div-item">Status: <span>${pl.stTxt||'—'}</span></div>
+  <div class="div-item">Status: <span>${pl.st||'—'}</span></div>
   <span class="div-sep">|</span>
   <div class="div-item">Close Approach ΔT: <span>${pl.minApproachDT!=null?pl.minApproachDT.toFixed(2):(Math.min(pl.hTi-pl.cTo, pl.hTo-pl.cTi)).toFixed(2)} ${T}</span></div>
   <span class="div-sep">|</span>
