@@ -532,6 +532,25 @@ function getTsatF(P_psia) {
       return t[i][1] + frac*(t[i+1][1]-t[i][1]);
     }
   }
+  // Steam specific volume vg [ft³/lb] vs P [psia] — NIST saturated steam
+const VG_TABLE = [
+  [14.696,26.80],[20,20.09],[40,10.50],[60,7.176],[80,5.472],
+  [100,4.432],[150,3.015],[200,2.289],[300,1.543],[400,1.162],
+  [500,0.928],[700,0.655],[1000,0.446],[1500,0.277],[2000,0.188],
+  [2500,0.131],[3000,0.086],
+];
+function getVgSteam(P_psia) {
+  const t = VG_TABLE;
+  if (P_psia <= t[0][0]) return t[0][1];
+  if (P_psia >= t[t.length-1][0]) return t[t.length-1][1];
+  for (let i=0; i<t.length-1; i++) {
+    if (t[i][0] <= P_psia && P_psia <= t[i+1][0]) {
+      const frac = Math.log(P_psia/t[i][0]) / Math.log(t[i+1][0]/t[i][0]);
+      return t[i][1] + frac*(t[i+1][1]-t[i][1]);
+    }
+  }
+  return t[t.length-1][1];
+}
   return t[t.length-1][1];
 }
 function controlValve_handler(req, res) {
@@ -568,7 +587,17 @@ function controlValve_handler(req, res) {
     const steamFluid = d.steamFluid || '';
     const charType   = d.charType  || 'equal_pct'; // valve characteristic for open% calc
     const R_trim     = Math.max(10, Math.min(200, parseFloat(d.R_trim) || 50)); // rangeability
-
+      // Valve NPS for Fp piping geometry factor (IEC 60534-2-1 §4.1)
+    // If not supplied → Fp = 1.0 (no correction)
+    const d_valve_raw = d.d_valve ? parseFloat(d.d_valve) : null;
+    const d_valve_in  = d_valve_raw ? (m ? d_valve_raw/25.4 : d_valve_raw) : null;
+    // Q_min for turndown check
+    const Q_min_raw   = d.Q_min ? parseFloat(d.Q_min) : null;
+// ── SG temperature correction warning ────────────────────────────────────
+    if (isL && T_F > 176 && SG > 0.940 && SG < 1.050)
+      warns.push({ cls:'warn-amber',
+        txt:`⚠ Process temperature ${m?T.toFixed(0)+'°C':T_F.toFixed(0)+'°F'} > 80°C: verify SG is corrected for process temperature. Using ambient SG can cause Cv errors up to 5%.` });
+      
     // ── VALIDATION ────────────────────────────────────────────────────────────
     const warns = [];
     let hasError = false;
@@ -646,7 +675,21 @@ function controlValve_handler(req, res) {
         FR = Math.min(Math.max(FR, 0.1), 1.0);
         Cv = Cv / FR;
       }
-
+// ── Fp PIPING GEOMETRY FACTOR — IEC 60534-2-1 §4.1 Eq.2 ──────────────
+      let Fp = 1.0;
+      if (d_valve_in && d_valve_in < D_in * 0.99) {
+        const beta  = d_valve_in / D_in;
+        const beta2 = beta * beta;
+        const K1    = 0.5 * Math.pow(1 - beta2, 2);
+        const K2    = 1.0 * Math.pow(1 - beta2, 2);
+        const sumK  = K1 + K2;
+        Fp = 1.0 / Math.sqrt(1.0 + (sumK * Cv * Cv) / (890.0 * Math.pow(d_valve_in, 4)));
+        Fp = Math.min(1.0, Math.max(0.5, Fp));
+        Cv = Cv / Fp;
+        if (Fp < 0.99) warns.push({ cls:'warn-amber',
+          txt:`⚠ Fp piping correction: Fp=${Fp.toFixed(3)}, Cv increased by ${((1/Fp-1)*100).toFixed(1)}% for ${m?(d_valve_raw.toFixed(0)+' mm valve'):(d_valve_in.toFixed(3)+'" valve')} in ${m?((D_in*25.4).toFixed(0)+' mm pipe'):(D_in.toFixed(3)+'" pipe')} (IEC 60534-2-1 §4.1).` });
+      }
+      
       vel = Qc * 0.002228 / (A_in2 / 144.0);
 
       const sigma = (P1a - Pva) / Math.max(dP, 0.0001);
@@ -678,7 +721,19 @@ function controlValve_handler(req, res) {
       dPmax        = x_crit * P1a;
 
       Cv = Qc * Math.sqrt(MW * TR * Z) / (1360.0 * P1a * Y * Math.sqrt(Math.max(x_lim, 0.0001)));
-
+// ── Fp PIPING GEOMETRY FACTOR for Gas ───────────────────────────────────
+      let Fp_g = 1.0;
+      if (d_valve_in && d_valve_in < D_in * 0.99) {
+        const beta_g  = d_valve_in / D_in;
+        const beta2_g = beta_g * beta_g;
+        const sumK_g  = 0.5*Math.pow(1-beta2_g,2) + 1.0*Math.pow(1-beta2_g,2);
+        Fp_g = 1.0 / Math.sqrt(1.0 + (sumK_g * Cv * Cv) / (890.0 * Math.pow(d_valve_in, 4)));
+        Fp_g = Math.min(1.0, Math.max(0.5, Fp_g));
+        Cv   = Cv / Fp_g;
+        if (Fp_g < 0.99) warns.push({ cls:'warn-amber',
+          txt:`⚠ Fp piping correction (gas): Fp=${Fp_g.toFixed(3)}, Cv +${((1/Fp_g-1)*100).toFixed(1)}% (IEC 60534-2-1 §4.1).` });
+      }
+      
       const Q_cfs = Qc * (14.696 / Math.max(P2a,14.696)) * (TR / 519.67) / 3600.0;
       vel = Q_cfs / (A_in2 / 144.0);
 
@@ -710,8 +765,12 @@ function controlValve_handler(req, res) {
         Cv = W / (2.1 * Math.sqrt(Math.max(dPeff_s * (P1a + P2a), 0.0001)));
       }
 
-      const Z_steam = Math.max(0.7, 1.0 - 0.0022 * P2a / 100);
-      const v_spec = (85.76 * TR * Z_steam) / (P2a * 144.0);
+    // Steam specific volume: NIST table for sat, superheat T-ratio correction
+      const vg_sat     = getVgSteam(Math.max(P2a, 14.696));
+      const Tsat_out   = getTsatF(Math.max(P2a, 14.696));
+      const T_act_R    = isSup ? Math.max(T_F, Tsat_out) + 459.67 : Tsat_out + 459.67;
+      const T_sat_R    = Tsat_out + 459.67;
+      const v_spec     = vg_sat * (T_act_R / T_sat_R);
       vel = W * v_spec / (3600.0 * A_in2 / 144.0);
 
       flowState = x_ratio >= 1 ? '🔴 Choked Steam' : '🟢 Steam Flow OK';
@@ -762,7 +821,23 @@ function controlValve_handler(req, res) {
     if (openPct_rec > 100) {
       warns.push({ cls:'warn-red', txt:`⚠️ Cv ${fmtN(Cv)} exceeds rated Cv of ${sizes.rec.s} (${sizes.rec.Cv_rated}). Select: ${sizes.larger.s}.` });
     }
-
+// ── TURNDOWN / Q_MIN CHECK ───────────────────────────────────────────────
+    let Cv_min = null, turndown = null, turndownOk = null;
+    if (Q_min_raw && Q_min_raw > 0 && Q_min_raw < Q) {
+      const Qc_min = Qc * (Q_min_raw / Q);
+      if (isL)       Cv_min = (Qc_min * Math.sqrt(SG / Math.max(dPeff, 0.0001))) / (FR||1);
+      else if (isG)  Cv_min = Qc_min * Math.sqrt(SG * TR * Z) / (1360.0 * P1a * (Y||0.9) * Math.sqrt(Math.max(dPeff||dP*0.5, 0.0001)));
+      else           Cv_min = Qc_min / (2.1 * Math.sqrt(Math.max(dPeff||dP*0.5, 0.0001) * (P1a + P2a)));
+      turndown   = Cv / Math.max(Cv_min, 0.0001);
+      turndownOk = turndown <= R_trim;
+      if (!turndownOk)
+        warns.push({ cls:'warn-amber',
+          txt:`⚠ Turndown ${turndown.toFixed(1)}:1 exceeds valve rangeability R=${R_trim}. Consider larger trim or split-range control.` });
+      else if (Cv_min < sizes.rec.Cv_rated * 0.03)
+        warns.push({ cls:'warn-amber',
+          txt:`⚠ Cv at minimum flow (${fmtN(Cv_min)}) is < 3% of rated Cv — poor low-flow controllability. Consider characterised trim.` });
+    }
+      
     // ── DISPLAY LABELS (all formatting done server side) ──────────────────────
     const pu       = m ? 'bar' : 'psi';
     const dp2label = v => v == null ? '—' : (m ? (v / 14.5038).toFixed(3) : v.toFixed(2)) + ' ' + pu;
@@ -796,7 +871,12 @@ function controlValve_handler(req, res) {
       flLabel:         FL.toFixed(3) + (isG ? ' (xT)' : ' (FL)'),
       pipeLabel:       m ? (D_in * 25.4).toFixed(1) + ' mm' : D_in.toFixed(3) + ' in',
         });
-
+Fp:              (typeof Fp!=='undefined'&&Fp<1.0)?+Fp.toFixed(4):(typeof Fp_g!=='undefined'&&Fp_g<1.0)?+Fp_g.toFixed(4):1.0,
+      FpLabel:         (typeof Fp!=='undefined'&&Fp<1.0)?Fp.toFixed(3):(typeof Fp_g!=='undefined'&&Fp_g<1.0)?Fp_g.toFixed(3):'1.000',
+      Cv_min:          Cv_min!=null ? fmtN(Cv_min) : null,
+      turndown:        turndown!=null ? +turndown.toFixed(1) : null,
+      turndownOk,
+      
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
