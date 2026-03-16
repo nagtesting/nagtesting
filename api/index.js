@@ -7326,7 +7326,6 @@ function calc3P(p) {
   const svcFactor = parseFloat(p.svcFactor);
 const platePack = p.platePack === true || p.platePack === 'true';
   const ppCredit  = platePack ? 0.60 : 1.0;
-  
   if ([Qg,Qo,Qw,rhog,rhoo,rhow,tro,trw,LD,K].some(x => !isFinite(x)) || Qg<=0 || Qo<=0 || Qw<=0)
     return { error: 'Fill all fields with positive values.' };
   if (rhog >= rhoo || rhog >= rhow)
