@@ -683,6 +683,15 @@ footer{text-align:center;padding:1.4rem;font-size:.78rem;color:var(--muted);
           <div class="iw" title="Min. height reserved for interface level control (m)">
           <input type="number" id="p3-icm" value="0.15" step="0.05" min="0.05"><select><option>m</option></select></div></div>
       </div>
+      <div class="fr2">
+        <div class="fg"><label>Plate Pack / Coalescer Credit</label>
+          <select class="field" id="p3-platePack">
+            <option value="false">No plate pack — standard sizing</option>
+            <option value="true">Plate pack fitted — 40% tr credit (API 12J §6.4.4)</option>
+          </select></div>
+        <div class="fg"><label style="color:var(--muted)">Note</label>
+          <div class="help-text" style="font-size:.72rem">Credit valid only when coalescing plates cover full liquid cross-section. Confirm with vendor.</div></div>
+      </div>
     </div>
   </div>
 
@@ -692,7 +701,7 @@ footer{text-align:center;padding:1.4rem;font-size:.78rem;color:var(--muted);
       <div class="formula-box">
         Stokes: Vs = dp²×(ρw−ρo)×g / (18×µ) &nbsp;|&nbsp; H_settle = Vs × t_dwell<br>
         Water boot = H_water + boot_allowance + interface_control_margin<br>
-        D governed by max(D_liq_retention, D_gas_velocity)
+        D governed by max(D_liq_retention, D_gas_velocity) &nbsp;|&nbsp; Plate pack: tr × 0.60 (40% credit per API 12J §6.4.4)
       </div>
       <div class="btn-row">
         <button class="calc-btn" onclick="calc3P(this)">▶ Size 3-Phase Sep.</button>
@@ -718,7 +727,7 @@ footer{text-align:center;padding:1.4rem;font-size:.78rem;color:var(--muted);
     <div class="stl">
       <div class="tool-icon">⚗</div>
       <div><h2>Pressure Vessel Shell Thickness</h2>
-      <p>ASME Sec. VIII Div. 1 — Shell, heads, MAWP | UG-37 nozzle reinforcement notice | MDMT check</p></div>
+      <p>ASME Sec. VIII Div. 1 — Shell · Heads · MAWP · Volume · Weight · UG-37 Nozzles · Sec.II Stress Table</p></div>
     </div>
     <div class="unit-toggle" id="ut-pv">
       <button class="unit-btn active" onclick="setUnit('pv','SI',this)">SI</button>
@@ -774,6 +783,52 @@ footer{text-align:center;padding:1.4rem;font-size:.78rem;color:var(--muted);
             <option value="detailed">Detailed (engineer review required)</option>
           </select></div>
       </div>
+      <div class="fr3">
+        <div class="fg"><label>Seam–Seam Length (for volume &amp; weight)</label>
+          <div class="iw"><input type="number" id="pv-L" placeholder="e.g. 3000" step="any" min="0">
+          <select id="pv-Lu"><option value="mm">mm</option><option value="m">m</option><option value="in">inch</option></select></div></div>
+        <div class="fg"><label>Material — ASME Sec.II Lookup</label>
+          <select class="field" id="pv-matKey" onchange="syncPvMaterial()">
+            <option value="">Manual S entry</option>
+            <option value="SA516_70">SA-516 Gr 70 — CS (138 MPa)</option>
+            <option value="SA516_60">SA-516 Gr 60 — CS (118 MPa)</option>
+            <option value="SA515_70">SA-515 Gr 70 — CS HT (138 MPa)</option>
+            <option value="SA387_11">SA-387 Gr 11 Cl 2 — Cr-Mo (155 MPa)</option>
+            <option value="SA387_22">SA-387 Gr 22 Cl 2 — Cr-Mo (138 MPa)</option>
+            <option value="SA240_304L">SA-240 Tp 304L — SS (115 MPa)</option>
+            <option value="SA240_316L">SA-240 Tp 316L — SS (115 MPa)</option>
+            <option value="SA240_317L">SA-240 Tp 317L — SS (115 MPa)</option>
+            <option value="SA240_2205">SA-240 S31803 — Duplex 2205 (172 MPa)</option>
+            <option value="SA333_6">SA-333 Gr 6 — LTCS (138 MPa, MDMT −45°C)</option>
+            <option value="SA537_1">SA-537 Cl 1 — HSLA (155 MPa)</option>
+          </select></div>
+        <div class="fg"><label>Steel Density (weight calc)</label>
+          <div class="iw"><input type="number" id="pv-rhoSteel" value="7850" step="10" min="7000" max="8100">
+          <select><option>kg/m³</option></select></div></div>
+      </div>
+      <div class="section-box" style="margin-top:.6rem;border-color:var(--accent2)">
+        <div class="section-head" style="background:linear-gradient(135deg,#e0f4e8,#eaf7ee)"><div class="shd" style="background:var(--accent2)"></div><span style="color:var(--accent2)">UG-37 Nozzle Reinforcement — up to 4 nozzles (optional)</span></div>
+        <div class="section-body" style="padding:.7rem">
+          <div style="font-size:.73rem;color:var(--muted);font-family:var(--mono);margin-bottom:.5rem">Enter nozzle bore (ID) and wall thickness. API calculates area replacement per ASME UG-37.</div>
+          <div class="fr4" style="gap:.4rem">
+            <div class="fg"><label>N1 Tag</label><div class="iw"><input type="text" id="pv-nz1-id" placeholder="e.g. N1"></div></div>
+            <div class="fg"><label>N1 Bore (mm)</label><div class="iw"><input type="number" id="pv-nz1-d" placeholder="e.g. 150" step="1" min="10"></div></div>
+            <div class="fg"><label>N1 Wall (mm)</label><div class="iw"><input type="number" id="pv-nz1-t" placeholder="e.g. 9.5" step="0.1" min="0"></div></div>
+            <div class="fg"><label>N2 Tag</label><div class="iw"><input type="text" id="pv-nz2-id" placeholder="e.g. N2"></div></div>
+          </div>
+          <div class="fr4" style="gap:.4rem;margin-top:.4rem">
+            <div class="fg"><label>N2 Bore (mm)</label><div class="iw"><input type="number" id="pv-nz2-d" placeholder="optional" step="1" min="10"></div></div>
+            <div class="fg"><label>N2 Wall (mm)</label><div class="iw"><input type="number" id="pv-nz2-t" placeholder="optional" step="0.1" min="0"></div></div>
+            <div class="fg"><label>N3 Bore (mm)</label><div class="iw"><input type="number" id="pv-nz3-d" placeholder="optional" step="1" min="10"></div></div>
+            <div class="fg"><label>N3 Wall (mm)</label><div class="iw"><input type="number" id="pv-nz3-t" placeholder="optional" step="0.1" min="0"></div></div>
+          </div>
+          <div class="fr4" style="gap:.4rem;margin-top:.4rem">
+            <div class="fg"><label>N4 Bore (mm)</label><div class="iw"><input type="number" id="pv-nz4-d" placeholder="optional" step="1" min="10"></div></div>
+            <div class="fg"><label>N4 Wall (mm)</label><div class="iw"><input type="number" id="pv-nz4-t" placeholder="optional" step="0.1" min="0"></div></div>
+            <div class="fg"></div><div class="fg"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -782,8 +837,8 @@ footer{text-align:center;padding:1.4rem;font-size:.78rem;color:var(--muted);
     <div class="section-body">
       <div class="formula-box">
         Shell [UG-27]: t = P×R/(S×E−0.6×P)+CA &nbsp;|&nbsp; MAWP = S×E×t_nom/(R+0.6×t_nom)<br>
-        Ellips. [UG-32(d)]: t = P×D/(2×S×E−0.2×P)+CA &nbsp;|&nbsp; Hemi. [UG-32(f)]: t = P×R/(2×S×E−0.2×P)+CA<br>
-        Conical [UG-32(g)]: t = P×D/(2cosα×(S×E−0.6×P))+CA &nbsp;|&nbsp; Hydrotest ≈ 1.3×MAWP (ASME Div.1)
+        V_ellips = π/24×D³ &nbsp;|&nbsp; V_hemi = π/12×D³ &nbsp;|&nbsp; W = π×D×L×t_nom×ρ_steel<br>
+        UG-37: A_req = d×t_req×F &nbsp;|&nbsp; A_avail = A_shell_excess + A_nozzle_wall
       </div>
       <div class="btn-row">
         <button class="calc-btn" onclick="calcPV(this)">▶ Calculate Thickness</button>
@@ -1850,6 +1905,7 @@ function calc3P(btn) {
     LD: gv('p3-ld'), K: gv('p3-K'),
     surge: gv('p3-surge'), dp_um: gv('p3-dp'), mu_cP: gv('p3-mu'),
     boot: gv('p3-boot'), icm: gv('p3-icm'),
+    platePack: gs('p3-platePack'),
     svcFactor: gs('p3-svc')
   };
   callAPI('3ph', params, 'p3-result', 'p3-badge', 'p3-err', 'p3-warn', btn);
@@ -1858,24 +1914,52 @@ function calc3P(btn) {
 // ══════════════════════════════════════════════════════════════════════
 // CALC 4: PRESSURE VESSEL THICKNESS
 // ══════════════════════════════════════════════════════════════════════
-// syncE() REMOVED — joint efficiency E is now resolved server-side from
-// the category string (body.cat). API owns JOINT_EFF_MAP. See api/index.js.
+// syncPvMaterial — auto-fills S when ASME material selected
+function syncPvMaterial() {
+  const matKey = gs('pv-matKey');
+  const sEl = document.getElementById('pv-S');
+  const AMBIENT_S = {
+    'SA516_70':138,'SA516_60':118,'SA515_70':138,'SA387_11':155,'SA387_22':138,
+    'SA240_304L':115,'SA240_316L':115,'SA240_317L':115,'SA240_2205':172,
+    'SA333_6':138,'SA537_1':155
+  };
+  if (matKey && sEl) {
+    sEl.value = AMBIENT_S[matKey] || '';
+    sEl.placeholder = 'Auto from ASME Sec.II table';
+  }
+}
 
 // pvUnit tracks current unit mode for Imperial result display
 let pvUnit = 'SI';
 
 function calcPV(btn) {
+  // Collect nozzles — only include if bore is entered
+  const nozzles = [];
+  [[1,'pv-nz1-id','pv-nz1-d','pv-nz1-t'],
+   [2,'pv-nz2-id','pv-nz2-d','pv-nz2-t'],
+   [3,'pv-nz3-id','pv-nz3-d','pv-nz3-t'],
+   [4,'pv-nz4-id','pv-nz4-d','pv-nz4-t']]
+  .forEach(([n, idF, dF, tF]) => {
+    const d = gv(dF);
+    if (isFinite(d) && d > 0) {
+      nozzles.push({ id: gs(idF) || `N${n}`, d, d_u:'mm', t: gv(tF)||0, t_u:'mm' });
+    }
+  });
+
   const params = {
-    type: 'pv',                          // required: tells sanitiseVesselInputs which case to run
+    type: 'pv',
     P: gv('pv-P'), P_u: gs('pv-Pu'),
     D: gv('pv-D'), D_u: gs('pv-Du'),
     S: gv('pv-S'), S_u: gs('pv-Su'),
-    // E is intentionally NOT sent — API resolves it from cat via JOINT_EFF_MAP
     CA: gv('pv-CA'), CA_u: gs('pv-CAu'),
     head: gs('pv-head'), minT: gs('pv-minT'),
     T: gv('pv-T'), T_u: gs('pv-Tu'),
-    cat: gs('pv-Ecat'),                  // send category string; API maps it to correct E
-    unitMode: pvUnit                     // 'SI' or 'Imp' — tells API which units to return
+    cat: gs('pv-Ecat'),
+    L: gv('pv-L'), L_u: gs('pv-Lu'),
+    matKey: gs('pv-matKey'),
+    rho_steel: gv('pv-rhoSteel') || 7850,
+    nozzles,
+    unitMode: pvUnit
   };
   callAPI('pv', params, 'pv-result', 'pv-badge', 'pv-err', 'pv-warn', btn);
 }
