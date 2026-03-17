@@ -2938,6 +2938,39 @@ function renderSTResults(r, warns=[]) {
 
   ${warnHtml}
 
+  ${r.convergence ? `
+  <div class="note" style="margin-top:12px;background:var(--blue-lt);border-color:rgba(0,85,200,.18);border-left-color:var(--blue)">
+    <div class="note-title" style="color:var(--blue)">🔁 U Convergence — Temperature-Dependent Fluid Properties</div>
+    <div class="note-body">
+      <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:8px">
+        <span>Seed U: <strong>${r.convergence.U_seed} W/m²K</strong></span>
+        <span>→ Converged U: <strong>${r.convergence.U_final} W/m²K</strong></span>
+        <span>Iterations: <strong>${r.convergence.iterations}</strong></span>
+        <span>Final deviation: <strong style="color:${r.convergence.converged?'var(--ok)':'var(--warn)'}">${r.convergence.deviation_pct}%</strong></span>
+        <span style="font-weight:700;color:${r.convergence.converged?'var(--ok)':'var(--warn)'}">${r.convergence.converged?'✓ Converged':'⚠ Not fully converged'}</span>
+        ${r.convergence.twophase_lmtd?`<span style="color:var(--blue);font-weight:700">🌡️ Two-phase LMTD (F = 1.0)</span>`:''}
+      </div>
+      <div style="overflow-x:auto">
+        <table class="dtbl" style="font-size:.72rem">
+          <thead><tr><th>Iter</th><th>U Assumed (W/m²K)</th><th>U Actual (W/m²K)</th><th>Deviation %</th></tr></thead>
+          <tbody>
+            ${r.convergence.history.map(h=>`<tr>
+              <td>${h.iter}</td>
+              <td style="font-family:var(--mono)">${h.U_assumed.toFixed(1)}</td>
+              <td style="font-family:var(--mono);font-weight:700">${h.U_actual.toFixed(1)}</td>
+              <td style="color:${h.deviation_pct<1?'var(--ok)':h.deviation_pct<5?'var(--warn)':'var(--err)'};font-weight:700">${h.deviation_pct.toFixed(3)}%</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:.75rem;margin-top:6px;color:var(--t3)">
+        Fluid properties re-evaluated at bulk mean temperatures each iteration using temperature-dependent data tables.
+        Viscosity correction (Sieder-Tate): (μ_bulk/μ_wall)^0.14 applied to shell-side and tube-side HTCs.
+        ${r.convergence.twophase_lmtd?'Two-phase LMTD uses isothermal-side correction (F=1.0 — no cross-flow penalty for condensing/evaporating service).' : ''}
+      </div>
+    </div>
+  </div>` : ''}
+
   <div class="note" style="margin-top:12px">
     <div class="note-title">📋 TEMA Design Checklist</div>
     <div class="note-body"><ul>
@@ -3098,33 +3131,44 @@ tr:hover td{background:#eef4ff}
 .ftr{position:fixed;bottom:0;left:10mm;right:10mm;border-top:0.5px solid #dde2ef;
      padding-top:4px;display:flex;justify-content:space-between;font-size:6.5pt;color:#999;font-weight:600}
 
-/* ── Resistance bar ── */
-.res-bar{display:flex;height:12px;border-radius:3px;overflow:hidden;margin:4px 0}
-.res-seg{height:100%;transition:width .3s}
-.res-legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
-.res-leg-item{display:flex;align-items:center;gap:3px;font-size:6.5pt;font-weight:600;color:#2d3a4a}
-.res-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+/* ── Page-top centered watermark ── */
+.page-brand{
+  text-align:center;padding:5px 0 7px;border-bottom:2px solid #e8500a;
+  margin-bottom:10px;
+}
+.page-brand-main{
+  font-size:16pt;font-weight:900;letter-spacing:-0.5px;
+  background:linear-gradient(135deg,#e8500a,#0055c8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.page-brand-sub{font-size:7.5pt;color:#555;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+.page-brand-tagline{font-size:6.5pt;color:#888;margin-top:1px}
 
-/* ── Compact two-panel ── */
-.panel-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.mini-sec{font-size:7pt;font-weight:800;text-transform:uppercase;letter-spacing:.8px;
-          color:#0055c8;border-bottom:1px solid #c0d4f8;padding-bottom:2px;margin:6px 0 4px}
-.mini-sec.red{color:#e8500a;border-bottom-color:#f0cfc0}
-.mini-sec.teal{color:#008f76;border-bottom-color:#a0ded5}
-.mini-sec.gold{color:#b36000;border-bottom-color:#e8cc80}
+/* ── Running header on every page via CSS ── */
+@page {
+  size:A4;
+  margin:18mm 10mm 14mm 10mm;
+  @top-center {
+    content:"multicalci.com — HeatXpert Pro Professional Heat Exchanger Datasheet";
+    font-size:7pt;color:#aaa;font-family:'IBM Plex Sans',sans-serif;
+  }
+}
 </style></head>
 <body>
 
+<!-- ══ PROMINENT PAGE 1 BRAND HEADER — multicalci.com centered at top ══ -->
+<div class="page-brand">
+  <div class="page-brand-main">multicalci.com</div>
+  <div class="page-brand-sub">HeatXpert Pro — Professional Heat Exchanger Design &amp; Analysis</div>
+  <div class="page-brand-tagline">Free Engineering Calculators for Process Engineers · Shell &amp; Tube · Plate · Air Cooled · Fin-Fan · Double Pipe</div>
+</div>
 
 <div class="rpt-hdr">
   <div>
     <div class="brand">🔥 HeatXpert Pro</div>
-    <div class="brand-sub">Professional Heat Exchanger Calculation Datasheet</div>
-    <div style="margin-top:5px;display:flex;align-items:center;gap:6px">
-      <span style="font-size:9pt;font-weight:800;color:#0055c8;letter-spacing:-.2px">multicalci.com</span>
-      <span style="font-size:7pt;color:#888">|</span>
-      <span style="font-size:7.5pt;color:#555;font-weight:600">Free Engineering Calculators for Process Engineers</span>
-    </div>
+    <div class="brand-sub">Engineering Calculation Datasheet</div>
+    <div style="margin-top:4px;font-size:8pt;font-weight:700;color:#0055c8">multicalci.com/heat-exchanger-design/</div>
   </div>
   <div class="meta">
     <span class="doc-no">REV A — PRELIMINARY</span><br>
@@ -3139,7 +3183,10 @@ ${!hasAny?`<div class="no-res">⚠ No calculations found. Please run at least on
 
 
 ${st?`
-<div class="sec">⚙ Shell &amp; Tube Heat Exchanger — Calculation Results</div>
+<div class="sec">⚙ Shell &amp; Tube Heat Exchanger — Calculation Results
+  ${st.convergence?`<span style="font-size:6pt;font-weight:600;margin-left:8px;padding:1px 6px;border-radius:8px;background:${st.convergence.converged?'rgba(27,122,62,.12)':'rgba(192,32,26,.1)'};color:${st.convergence.converged?'#1b7a3e':'#c0201a'}">U ${st.convergence.converged?'✓ Converged':'⚠ Not converged'} · ${st.convergence.iterations} iter · ${st.convergence.deviation_pct}% dev</span>`:''}
+  ${st.convergence?.twophase_lmtd?`<span style="font-size:6pt;font-weight:600;margin-left:4px;padding:1px 6px;border-radius:8px;background:rgba(0,85,200,.1);color:#0055c8">Two-phase LMTD · F=1.0</span>`:''}
+</div>
 <div class="kpi-strip">
   <div class="kpi r"><div class="kl">Heat Duty</div><div class="kv">${convQ(st.Q).toFixed(1)}<span class="ku"> ${H}</span></div></div>
   <div class="kpi b"><div class="kl">LMTD×F</div><div class="kv">${st.FLMTD.toFixed(2)}<span class="ku"> ${T}</span></div></div>
@@ -3270,12 +3317,57 @@ ${(()=>{
   <div class="div-item">HX Type: <span>${st.tema||'—'}</span></div>
   <span class="div-sep">|</span>
   <div class="div-item">Balance Error: <span>${st.balErr!=null?st.balErr.toFixed(2)+'%':'—'}</span></div>
+  ${st.convergence?`<span class="div-sep">|</span>
+  <div class="div-item">U Convergence: <span style="color:${st.convergence.converged?'#1b7a3e':'#c0201a'}">${st.convergence.converged?'✓':'⚠'} ${st.convergence.iterations} iter / ${st.convergence.deviation_pct}% dev</span></div>`:''}
+  ${st.convergence?.twophase_lmtd?`<span class="div-sep">|</span><div class="div-item">LMTD Mode: <span style="color:#0055c8">Two-phase (F=1.0)</span></div>`:''}
 </div>
+
+${(()=>{
+  if(!st.convergence) return '';
+  const cv=st.convergence;
+  return `<div style="margin-top:6px;page-break-inside:avoid">
+  <div class="mini-sec" style="color:#6b21d4;border-bottom-color:#dab8fa">🔁 U Convergence Iteration Log — Temperature-Dependent Fluid Properties</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <table>
+      <thead><tr><th>Iter</th><th>U Assumed (W/m²K)</th><th>U Actual (W/m²K)</th><th>Dev %</th></tr></thead>
+      <tbody>
+        ${cv.history.slice(0,8).map(r=>`<tr>
+          <td>${r.iter}</td>
+          <td>${r.U_assumed.toFixed(1)}</td>
+          <td>${r.U_actual.toFixed(1)}</td>
+          <td class="${r.deviation_pct<1?'hi-ok':r.deviation_pct<5?'':'hi-warn'}">${r.deviation_pct.toFixed(3)}%</td>
+        </tr>`).join('')}
+        ${cv.history.length>8?`<tr><td colspan="4" style="text-align:center;color:#888;font-size:6.5pt">... ${cv.history.length-8} more iterations</td></tr>`:''}
+      </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td class="lbl">Seed U (literature)</td><td>${cv.U_seed} W/m²K</td></tr>
+        <tr><td class="lbl">Final U (converged)</td><td><b>${cv.U_final} W/m²K</b></td></tr>
+        <tr><td class="lbl">Total iterations</td><td>${cv.iterations}</td></tr>
+        <tr><td class="lbl">Final deviation</td><td class="${cv.converged?'hi-ok':'hi-warn'}">${cv.deviation_pct}%</td></tr>
+        <tr><td class="lbl">Convergence status</td><td class="${cv.converged?'hi-ok':'hi-warn'}">${cv.converged?'✓ Converged (<0.5%)':'⚠ Not converged'}</td></tr>
+        <tr><td class="lbl">Fluid props method</td><td>T-dependent (getFluidAtT)</td></tr>
+        <tr><td class="lbl">Viscosity correction</td><td>Sieder-Tate (μ/μ_w)^0.14</td></tr>
+        <tr><td class="lbl">LMTD method</td><td>${cv.twophase_lmtd?'Two-phase isothermal (F=1.0)':'Standard F-correction'}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  </div>`;
+})()}
 `:''}
 
 
 ${pl?`
-<div class="sec ${st?'pg ':''}teal">🔲 Plate Heat Exchanger — Calculation Results</div>
+<div class="sec ${st?'pg ':''}teal">
+  <span style="flex:1">🔲 Plate Heat Exchanger — Calculation Results</span>
+</div>
+<!-- page brand repeat -->
+${st?`<div style="text-align:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e8500a20">
+  <span style="font-size:11pt;font-weight:900;background:linear-gradient(135deg,#e8500a,#0055c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">multicalci.com</span>
+  <span style="font-size:6.5pt;color:#aaa;margin-left:8px">HeatXpert Pro · Heat Exchanger Design Datasheet</span>
+</div>`:''}
 <div class="kpi-strip">
   <div class="kpi r"><div class="kl">Heat Duty</div><div class="kv">${convQ(pl.Q).toFixed(1)}<span class="ku"> ${H}</span></div></div>
   <div class="kpi b"><div class="kl">LMTD×F</div><div class="kv">${pl.FLMTD.toFixed(2)}<span class="ku"> ${T}</span></div></div>
@@ -3370,6 +3462,7 @@ ${pl?`
 
 ${ac?`
 <div class="sec ${(st||pl)?'pg ':''}">💨 Air Cooled Heat Exchanger — Calculation Results</div>
+${(st||pl)?`<div style="text-align:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e8500a20"><span style="font-size:11pt;font-weight:900;background:linear-gradient(135deg,#e8500a,#0055c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">multicalci.com</span><span style="font-size:6.5pt;color:'#aaa';margin-left:8px">HeatXpert Pro · Heat Exchanger Design Datasheet</span></div>`:''}
 <div class="kpi-strip">
   <div class="kpi r"><div class="kl">Heat Duty</div><div class="kv">${convQ(ac.Q).toFixed(1)}<span class="ku"> ${H}</span></div></div>
   <div class="kpi b"><div class="kl">LMTD</div><div class="kv">${ac.FLMTD!=null?ac.FLMTD.toFixed(2):'—'}<span class="ku"> ${T}</span></div></div>
@@ -3398,6 +3491,7 @@ ${ac?`
 
 ${ff?`
 <div class="sec ${(st||pl||ac)?'pg ':''}blue">🌬️ Fin-Fan Air Cooled HX — Engineering Datasheet (API 661)</div>
+${(st||pl)?`<div style="text-align:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e8500a20"><span style="font-size:11pt;font-weight:900;background:linear-gradient(135deg,#e8500a,#0055c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">multicalci.com</span><span style="font-size:6.5pt;color:'#aaa';margin-left:8px">HeatXpert Pro · Heat Exchanger Design Datasheet</span></div>`:''}
 
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;background:#f0f9f7;border:0.5px solid #a0ded5;border-radius:4px;padding:6px 10px">
@@ -3578,6 +3672,7 @@ ${(()=>{
 
 ${dp?`
 <div class="sec ${(st||pl||ac||ff)?'pg ':''}blue">↔️ Double Pipe (Hairpin) HX — Calculation Results</div>
+${(st||pl)?`<div style="text-align:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e8500a20"><span style="font-size:11pt;font-weight:900;background:linear-gradient(135deg,#e8500a,#0055c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">multicalci.com</span><span style="font-size:6.5pt;color:'#aaa';margin-left:8px">HeatXpert Pro · Heat Exchanger Design Datasheet</span></div>`:''}
 <div class="kpi-strip">
   <div class="kpi r"><div class="kl">Heat Duty</div><div class="kv">${convQ(dp.Q).toFixed(1)}<span class="ku"> ${H}</span></div></div>
   <div class="kpi b"><div class="kl">LMTD×F</div><div class="kv">${dp.FLMTD.toFixed(2)}<span class="ku"> ${T}</span></div></div>
@@ -3664,6 +3759,7 @@ ${dp?`
 
 ${lm?`
 <div class="sec ${(st||pl||ac||ff||dp)?'pg ':''}teal">📐 LMTD &amp; NTU Calculator — Results</div>
+${(st||pl)?`<div style="text-align:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e8500a20"><span style="font-size:11pt;font-weight:900;background:linear-gradient(135deg,#e8500a,#0055c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">multicalci.com</span><span style="font-size:6.5pt;color:'#aaa';margin-left:8px">HeatXpert Pro · Heat Exchanger Design Datasheet</span></div>`:''}
 <div class="kpi-strip">
   <div class="kpi r"><div class="kl">ΔT₁</div><div class="kv">${lm.dT1.toFixed(3)}<span class="ku"> ${T}</span></div></div>
   <div class="kpi b"><div class="kl">ΔT₂</div><div class="kv">${lm.dT2.toFixed(3)}<span class="ku"> ${T}</span></div></div>
