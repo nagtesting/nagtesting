@@ -2807,6 +2807,216 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 <script>
 /* HeatXpert Pro — API-backed client | All calcs server-side via /api/heatxpert */
 const GAS_RHO_THRESHOLD = 50;
+// ── Sub-render helpers (eliminates deep template nesting) ────────────────────
+
+function renderBlockDiagram(r) {
+  var shellID_mm = (r.shellID * 1000).toFixed(0);
+  var OD_mm      = (r.OD * 1000).toFixed(1);
+  var Di_mm      = (r.Di * 1000).toFixed(1);
+  var L_m        = r.L.toFixed(2);
+  var pitch_mm   = (r.OD * 1000 * (r.pitchRatio || 1.25)).toFixed(1);
+  var bspRatio   = r.bsp || 0.5;
+  var bsp_mm     = (bspRatio * r.shellID * 1000).toFixed(0);
+  var nBaffles   = r.bdCorr && r.bdCorr.nBaffles != null ? r.bdCorr.nBaffles : Math.max(1, Math.round(r.L / Math.max(bspRatio * r.shellID, 0.01) - 1));
+  var area_req   = convA(r.area).toFixed(2);
+  var area_prov  = convA(r.area_provided || r.area).toFixed(2);
+  var overS      = (r.overSurf || 0).toFixed(1);
+  var Au = aU(), T = tU(), Pu = pU();
+  var velOk = r.tubeVel >= (r.targetVel || 1.5) * 0.9;
+  var dpSOk = r.shellDP <= r.pdAllowShell;
+  var dpTOk = r.tubeDp  <= r.pdAllowTube;
+  var velCol = r.tubeVel < 0.5 ? '#c0201a' : r.tubeVel < (r.targetVel||1.5)*0.8 ? '#b35a00' : '#1b7a3e';
+  var nB = Math.min(Math.max(nBaffles, 0), 7);
+  var blines = '';
+  for (var bi = 0; bi < nB; bi++) {
+    var bx = Math.round(90 + 520 * (bi+1) / (nB+1));
+    var ty = bi % 2 === 0 ? 115 : 90;
+    var by = bi % 2 === 0 ? 220 : 195;
+    blines += '<line x1="'+bx+'" y1="'+ty+'" x2="'+bx+'" y2="'+by+'" stroke="#888780" stroke-width="2.5" opacity=".6"/>';
+  }
+  return '<div class="sec-hd" style="margin-top:14px;color:var(--t1)">📐 Exchanger Block Diagram — Dimensions &amp; Flow</div>'
+    +'<div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;padding:14px;overflow-x:auto">'
+    +'<svg viewBox="0 0 780 345" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:780px;font-family:\'Space Grotesk\',system-ui,sans-serif">'
+    +'<defs>'
+    +'<marker id="sarr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>'
+    +'<marker id="sdim" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><line x1="5" y1="1" x2="5" y2="9" stroke="context-stroke" stroke-width="1.5"/></marker>'
+    +'</defs>'
+    // Shell
+    +'<rect x="90" y="90" width="520" height="130" rx="6" fill="none" stroke="#3a4560" stroke-width="2"/>'
+    +'<ellipse cx="90" cy="155" rx="14" ry="65" fill="#f5f7fb" stroke="#3a4560" stroke-width="2"/>'
+    +'<ellipse cx="610" cy="155" rx="14" ry="65" fill="#f5f7fb" stroke="#3a4560" stroke-width="2"/>'
+    // Tubes
+    +'<line x1="90" y1="133" x2="610" y2="133" stroke="#0055c8" stroke-width="1.5" stroke-dasharray="4 3" opacity=".5"/>'
+    +'<line x1="90" y1="155" x2="610" y2="155" stroke="#0055c8" stroke-width="2" stroke-dasharray="4 3" opacity=".7"/>'
+    +'<line x1="90" y1="177" x2="610" y2="177" stroke="#0055c8" stroke-width="1.5" stroke-dasharray="4 3" opacity=".5"/>'
+    +'<text x="350" y="148" text-anchor="middle" fill="#0055c8" font-size="9" font-weight="600">'+r.numTubes+' tubes ('+r.nTubesPerPass+'/pass \u00d7 '+r.nPasses+' passes) \u2014 OD='+OD_mm+'/ID='+Di_mm+' mm</text>'
+    // Baffles
+    +blines
+    +'<text x="350" y="235" text-anchor="middle" fill="#5f5e5a" font-size="9">'+nBaffles+' baffles \u2014 spacing \u2248 '+bsp_mm+' mm \u2014 pitch='+pitch_mm+' mm</text>'
+    // Hot IN nozzle
+    +'<rect x="180" y="64" width="32" height="28" rx="3" fill="#fff3ee" stroke="#e8500a" stroke-width="1.5"/>'
+    +'<text x="196" y="56" text-anchor="middle" fill="#e8500a" font-size="9" font-weight="700">HOT IN</text>'
+    +'<text x="196" y="46" text-anchor="middle" fill="#e8500a" font-size="8">'+tDisp(r.hTi).toFixed(1)+' '+T+'</text>'
+    +'<line x1="196" y1="64" x2="196" y2="90" stroke="#e8500a" stroke-width="1.5" marker-end="url(#sarr)"/>'
+    // Hot OUT nozzle
+    +'<rect x="430" y="218" width="32" height="28" rx="3" fill="#fff3ee" stroke="#c03d00" stroke-width="1.5"/>'
+    +'<text x="446" y="261" text-anchor="middle" fill="#c03d00" font-size="9" font-weight="700">HOT OUT</text>'
+    +'<text x="446" y="272" text-anchor="middle" fill="#c03d00" font-size="8">'+tDisp(r.hTo).toFixed(1)+' '+T+'</text>'
+    +'<line x1="446" y1="246" x2="446" y2="220" stroke="#c03d00" stroke-width="1.5" marker-end="url(#sarr)"/>'
+    // Cold IN nozzle
+    +'<rect x="52" y="137" width="28" height="36" rx="3" fill="#eef4ff" stroke="#0055c8" stroke-width="1.5"/>'
+    +'<text x="30" y="149" text-anchor="end" fill="#0055c8" font-size="9" font-weight="700">COLD IN</text>'
+    +'<text x="30" y="161" text-anchor="end" fill="#0055c8" font-size="8">'+tDisp(r.cTi).toFixed(1)+' '+T+'</text>'
+    +'<line x1="80" y1="155" x2="90" y2="155" stroke="#0055c8" stroke-width="2" marker-end="url(#sarr)"/>'
+    // Cold OUT nozzle
+    +'<rect x="620" y="137" width="28" height="36" rx="3" fill="#eef4ff" stroke="#008f76" stroke-width="1.5"/>'
+    +'<text x="756" y="149" text-anchor="end" fill="#008f76" font-size="9" font-weight="700">COLD OUT</text>'
+    +'<text x="756" y="161" text-anchor="end" fill="#008f76" font-size="8">'+tDisp(r.cTo).toFixed(1)+' '+T+'</text>'
+    +'<line x1="620" y1="155" x2="610" y2="155" stroke="#008f76" stroke-width="2" marker-start="url(#sarr)"/>'
+    // Tube length dimension line
+    +'<line x1="90" y1="278" x2="610" y2="278" stroke="#444" stroke-width="1" marker-start="url(#sdim)" marker-end="url(#sdim)"/>'
+    +'<line x1="90" y1="266" x2="90" y2="290" stroke="#444" stroke-width="0.8"/>'
+    +'<line x1="610" y1="266" x2="610" y2="290" stroke="#444" stroke-width="0.8"/>'
+    +'<text x="350" y="300" text-anchor="middle" fill="#0c1322" font-size="12" font-weight="700">L = '+L_m+' m  (tube length)</text>'
+    // Shell ID dimension line
+    +'<line x1="42" y1="90" x2="42" y2="220" stroke="#444" stroke-width="1" marker-start="url(#sdim)" marker-end="url(#sdim)"/>'
+    +'<line x1="30" y1="90" x2="55" y2="90" stroke="#444" stroke-width="0.8"/>'
+    +'<line x1="30" y1="220" x2="55" y2="220" stroke="#444" stroke-width="0.8"/>'
+    +'<text x="24" y="162" text-anchor="middle" fill="#0c1322" font-size="10" font-weight="700" transform="rotate(-90,24,162)">ID = '+shellID_mm+' mm</text>'
+    // Status badges
+    +'<rect x="90" y="312" width="158" height="22" rx="4" fill="'+(velOk?'#e6f7f4':'#fff3ee')+'" stroke="'+(velOk?'#008f76':'#e8500a')+'" stroke-width="1"/>'
+    +'<text x="169" y="327" text-anchor="middle" fill="'+velCol+'" font-size="9.5" font-weight="700">v = '+r.tubeVel.toFixed(3)+' m/s '+(velOk?'✓':'⚠')+' (target '+(r.targetVel||1.5)+' m/s)</text>'
+    +'<rect x="258" y="312" width="148" height="22" rx="4" fill="'+(dpSOk?'#e6f7f4':'#fff3ee')+'" stroke="'+(dpSOk?'#008f76':'#e8500a')+'" stroke-width="1"/>'
+    +'<text x="332" y="327" text-anchor="middle" fill="'+(dpSOk?'#1b7a3e':'#c0201a')+'" font-size="9.5" font-weight="700">Shell \u0394P '+convP(r.shellDP).toFixed(3)+' '+Pu+' '+(dpSOk?'✓':'✗')+'</text>'
+    +'<rect x="416" y="312" width="148" height="22" rx="4" fill="'+(dpTOk?'#e6f7f4':'#fff3ee')+'" stroke="'+(dpTOk?'#008f76':'#e8500a')+'" stroke-width="1"/>'
+    +'<text x="490" y="327" text-anchor="middle" fill="'+(dpTOk?'#1b7a3e':'#c0201a')+'" font-size="9.5" font-weight="700">Tube \u0394P '+convP(r.tubeDp).toFixed(3)+' '+Pu+' '+(dpTOk?'✓':'✗')+'</text>'
+    +'<rect x="574" y="312" width="116" height="22" rx="4" fill="'+(parseFloat(overS)>=0?'#e6f7f4':'#fff3ee')+'" stroke="'+(parseFloat(overS)>=0?'#008f76':'#e8500a')+'" stroke-width="1"/>'
+    +'<text x="632" y="327" text-anchor="middle" fill="'+(parseFloat(overS)>=0?'#1b7a3e':'#c0201a')+'" font-size="9.5" font-weight="700">Oversurface '+overS+'%</text>'
+    // Area label
+    +'<text x="350" y="20" text-anchor="middle" fill="#3a4560" font-size="10" font-weight="700">A req='+area_req+' '+Au+' | A prov='+area_prov+' '+Au+' | TEMA '+(r.tema||'C')+'</text>'
+    +'</svg></div>';
+}
+
+function renderConvergence(r) {
+  if (!r.convergence) return '';
+  var cv = r.convergence;
+  var rows = cv.history.map(function(h) {
+    var col = h.deviation_pct < 1 ? 'var(--ok)' : h.deviation_pct < 5 ? 'var(--warn)' : 'var(--err)';
+    return '<tr><td>'+h.iter+'</td><td style="font-family:var(--mono)">'+h.U_assumed.toFixed(1)+'</td><td style="font-family:var(--mono);font-weight:700">'+h.U_actual.toFixed(1)+'</td><td style="color:'+col+';font-weight:700">'+h.deviation_pct.toFixed(3)+'%</td></tr>';
+  }).join('');
+  var tpNote  = cv.twophase_lmtd ? 'Two-phase LMTD uses isothermal-side correction (F=1.0 — no cross-flow penalty).' : '';
+  var tpSpan  = cv.twophase_lmtd ? '<span style="color:var(--blue);font-weight:700">🌡️ Two-phase LMTD (F=1.0)</span>' : '';
+  var okCol   = cv.converged ? 'var(--ok)' : 'var(--warn)';
+  return '<div class="note" style="margin-top:12px;background:var(--blue-lt);border-color:rgba(0,85,200,.18);border-left-color:var(--blue)">'
+    +'<div class="note-title" style="color:var(--blue)">🔁 U Convergence — Temperature-Dependent Fluid Properties</div>'
+    +'<div class="note-body"><div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:8px">'
+    +'<span>Seed U: <strong>'+cv.U_seed+' W/m²K</strong></span>'
+    +'<span>→ Converged U: <strong>'+cv.U_final+' W/m²K</strong></span>'
+    +'<span>Iterations: <strong>'+cv.iterations+'</strong></span>'
+    +'<span>Final deviation: <strong style="color:'+okCol+'">'+cv.deviation_pct+'%</strong></span>'
+    +'<span style="font-weight:700;color:'+okCol+'">'+(cv.converged?'✓ Converged':'⚠ Not fully converged')+'</span>'
+    +tpSpan+'</div>'
+    +'<div style="overflow-x:auto"><table class="dtbl" style="font-size:.72rem">'
+    +'<thead><tr><th>Iter</th><th>U Assumed (W/m²K)</th><th>U Actual (W/m²K)</th><th>Deviation %</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table></div>'
+    +'<div style="font-size:.75rem;margin-top:6px;color:var(--t3)">Fluid properties re-evaluated at bulk mean temperatures each iteration. Viscosity correction (Sieder-Tate): (μ_bulk/μ_wall)^0.14. '+tpNote+'</div>'
+    +'</div></div>';
+}
+
+function renderDesignAdvisor(r) {
+  if (!r.designAdvisor) return '';
+  var da = r.designAdvisor, lv = da.levers;
+  function card(col, label, headline, detailHtml, noteHtml, badgeHtml, btn) {
+    return '<div style="background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:12px;border-top:3px solid '+col+';display:flex;flex-direction:column;gap:6px">'
+      +'<div style="font-size:.70rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:'+col+'">'+label+'</div>'
+      +'<div style="font-family:var(--mono);font-size:1.15rem;font-weight:700;color:var(--t1)">'+headline+'</div>'
+      +detailHtml+noteHtml+badgeHtml+btn+'</div>';
+  }
+  var cards = '';
+  if (lv.A_increase_length) {
+    var a = lv.A_increase_length, vc = a.partial?'var(--warn)':'var(--ok)';
+    cards += card('var(--red)','Lever A — Longer tube (TEMA standard)','L = '+a.L_required_m+' m',
+      '<div style="font-size:.78rem;color:var(--t2)">'+a.numTubes+' tubes ('+a.nTubesPerPass+'/pass) &middot; vel=<strong style="color:'+vc+'">'+a.velocity+' m/s</strong> &middot; Shell ID&asymp;'+a.shellID_mm+' mm</div>',
+      '<div style="font-size:.75rem;color:var(--t3)">'+a.note+'</div>',
+      a.partial?'<div style="font-size:.70rem;color:var(--warn)">⚠ Max TEMA length — combine with B or D</div>':'<div style="font-size:.70rem;color:var(--warn)">⚠ Needs bay space</div>',
+      '<button onclick="applyAdvisorLever(\'A\','+a.L_required_m+',null,null,null)" style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:var(--red);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">↗ Apply — L = '+a.L_required_m+' m</button>');
+  }
+  if (lv.B_more_passes) {
+    var b = lv.B_more_passes;
+    cards += card('var(--blue)','Lever B — More tube passes',b.passes+' passes',
+      '<div style="font-size:.78rem;color:var(--t2)">'+b.numTubes+' tubes ('+b.nTubesPerPass+'/pass) &middot; vel=<strong style="color:var(--ok)">'+b.velocity+' m/s</strong> &middot; Shell ID&asymp;'+b.shellID_mm+' mm</div>',
+      '<div style="font-size:.75rem;color:var(--t3)">'+b.note+'</div>',
+      '<div style="font-size:.70rem;color:var(--ok)">✓ Same tube length — no extra bay space</div>',
+      '<button onclick="applyAdvisorLever(\'B\',null,'+b.passes+',null,'+b.numTubes+')" style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:var(--blue);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">↗ Apply — '+b.passes+' passes</button>');
+  }
+  if (lv.C_more_shells) {
+    var c = lv.C_more_shells;
+    cards += card('var(--teal)','Lever C — Shells in series',c.shells+' \u00d7 shells',
+      '<div style="font-size:.78rem;color:var(--t2)">'+c.tubesPerShell+' tubes/shell ('+c.nTubesPerPass+'/pass) &middot; vel=<strong style="color:var(--ok)">'+c.velocity+' m/s</strong> &middot; Shell ID&asymp;'+c.shellID_mm+' mm each</div>',
+      '<div style="font-size:.75rem;color:var(--t3)">'+c.note+'</div>',
+      '<div style="font-size:.70rem;color:var(--warn)">⚠ Higher capital cost</div>',
+      '<button onclick="applyAdvisorLever(\'C\',null,null,'+c.shells+','+c.tubesPerShell+')" style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:var(--teal);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">↗ Apply — '+c.shells+' shells</button>');
+  }
+  if (lv.D_smaller_OD) {
+    var d = lv.D_smaller_OD;
+    cards += card('#7c3aed','Lever D — Reduce tube OD (TEMA standard)','OD = '+d.OD_mm+' mm',
+      '<div style="font-size:.78rem;color:var(--t2)">ID='+d.Di_mm+' mm &middot; '+d.numTubes+' tubes ('+d.nTubesPerPass+'/pass) &middot; vel=<strong style="color:var(--ok)">'+d.velocity+' m/s</strong> &middot; Shell ID&asymp;'+d.shellID_mm+' mm</div>',
+      '<div style="font-size:.75rem;color:var(--t3)">'+d.note+'</div>',
+      '<div style="font-size:.70rem;color:var(--ok)">✓ Same length · Confirm cleaning access</div>',
+      '<button onclick="applyAdvisorLever(\'D\',null,null,null,'+d.numTubes+','+d.OD_mm+','+d.tw_mm+')" style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:#7c3aed;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">↗ Apply — OD '+d.OD_mm+' mm</button>');
+  }
+  if (lv.E_combined) {
+    var e = lv.E_combined;
+    cards += card('var(--gold)','Lever E — Combined: length + passes','L='+e.L_required_m+' m · '+e.passes+' passes',
+      '<div style="font-size:.78rem;color:var(--t2)">'+e.numTubes+' tubes ('+e.nTubesPerPass+'/pass) &middot; vel=<strong style="color:var(--ok)">'+e.velocity+' m/s</strong> &middot; Shell ID&asymp;'+e.shellID_mm+' mm</div>',
+      '<div style="font-size:.75rem;color:var(--t3)">'+e.note+'</div>',
+      '<div style="font-size:.70rem;color:var(--warn)">⚠ Use when single lever is insufficient</div>',
+      '<button onclick="applyAdvisorLever(\'E\','+e.L_required_m+','+e.passes+',null,'+e.numTubes+')" style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:var(--gold);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">↗ Apply — L='+e.L_required_m+' m, '+e.passes+'p</button>');
+  }
+  return '<div class="note" style="margin-top:12px;background:linear-gradient(135deg,#f0f9f7,#eef4ff);border:1px solid rgba(0,85,200,.18);border-left:4px solid var(--blue);border-radius:10px;padding:14px 18px">'
+    +'<div class="note-title" style="color:var(--blue);font-size:.95rem;margin-bottom:10px">🔧 Design Advisor — Fix Low Tube Velocity</div>'
+    +'<div class="note-body">'
+    +'<div style="margin-bottom:12px;padding:10px 12px;background:rgba(192,120,0,.08);border-radius:6px;border-left:3px solid var(--warn);font-size:.83rem;line-height:1.5">⚠ '+da.problem+'</div>'
+    +'<div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t2);margin-bottom:10px">Choose an engineering lever — all lengths are TEMA standard — click Apply to recalculate:</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">'+cards+'</div>'
+    +'</div></div>';
+}
+
+function renderTemaShell(r) {
+  if (!r.temaShell) return '';
+  var ts = r.temaShell;
+  return '<div class="note" style="margin-top:10px;background:var(--surf2);border:1px solid var(--bdr);border-left:4px solid var(--teal);border-radius:10px;padding:10px 14px">'
+    +'<div style="font-size:.78rem;font-weight:700;color:var(--teal);margin-bottom:4px">🏗 TEMA Shell Sizing (Table D-5)</div>'
+    +'<div style="font-size:.78rem;color:var(--t2);display:flex;flex-wrap:wrap;gap:16px">'
+    +'<span>Calculated min ID: <strong>'+ts.D_min_mm+' mm</strong></span>'
+    +'<span>\u2192 TEMA standard: <strong style="color:var(--teal)">'+ts.D_std_mm+' mm</strong>'+(ts.isStandard?'':' <span style="color:var(--err)">⚠ exceeds standard table</span>')+'</span>'
+    +(ts.prevSize_mm?'<span style="color:var(--t3)">Previous size: '+ts.prevSize_mm+' mm</span>':'')
+    +'<span style="color:var(--t3)">Shell \u0394P method: <strong>'+(r.shellDP_method||'bell-delaware')+'</strong></span>'
+    +'</div></div>';
+}
+
+function renderSpaceConstraints(r) {
+  if (!r.spaceConstraints) return '';
+  var sc = r.spaceConstraints;
+  if (!sc.L_max_applied && !sc.shell_OD_max_mm) return '';
+  return '<div class="note" style="margin-top:10px;background:var(--gold-lt);border:1px solid rgba(192,120,0,.25);border-left:4px solid var(--gold);border-radius:10px;padding:10px 14px">'
+    +'<div style="font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:4px">📐 Space Constraints Active</div>'
+    +'<div style="font-size:.78rem;color:var(--t2);display:flex;flex-wrap:wrap;gap:16px">'
+    +(sc.L_max_applied?'<span>Max tube length: <strong>'+sc.L_max_applied+' m</strong>'+(sc.L_constrained?' <span style="color:var(--warn)">⚠ length-limited</span>':' ✓')+'</span>':'')
+    +(sc.shell_OD_max_mm?'<span>Max shell OD: <strong>'+sc.shell_OD_max_mm+' mm</strong></span>':'')
+    +'</div></div>';
+}
+
+function renderGeoOptimizer(r) {
+  if (!r.velocity_driven_by_area || r.tubeVel >= (r.targetVel||1.5)*0.85) return '';
+  return '<div class="note" style="margin-top:12px;background:linear-gradient(135deg,#eef4ff,#f0e8ff);border-color:rgba(124,58,237,.2);border-left-color:#7c3aed">'
+    +'<div class="note-title" style="color:#7c3aed">📐 Space-Constrained Geometry Optimizer</div>'
+    +'<div class="note-body"><p style="margin-bottom:8px">Tube length is <strong>'+r.L.toFixed(1)+' m</strong> but velocity target <strong>'+r.targetVel+' m/s</strong> cannot be met. The optimizer searches all TEMA OD × pass × shell combinations.</p>'
+    +'<button onclick="runGeoOptimizer('+r.area.toFixed(4)+','+(r.cF/3600).toFixed(4)+','+r.L.toFixed(2)+','+r.cFluid.rho.toFixed(1)+','+(r.targetVel||1.5)+')" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-family:var(--sans);font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(124,58,237,.3)">🔍 Find Space-Constrained Solutions</button>'
+    +'<div id="geo-optimizer-results" style="margin-top:10px"></div>'
+    +'</div></div>';
+}
+
 function renderSTResults(r, warns=[]) {
   const Q=convQ(r.Q),qH=convQ(r.Qh),qC=convQ(r.Qc);
   const A=convA(r.area),U=convU(r.U);
@@ -2959,167 +3169,17 @@ function renderSTResults(r, warns=[]) {
     <div class="balance-item">Tube Geometry<span>ID=${(r.Di*1000).toFixed(1)} / OD=${(r.OD*1000).toFixed(1)} mm</span></div>
   </div>
 
-  ${warnHtml}
+    ${warnHtml}
 
-  ${r.convergence ? `
-  <div class="note" style="margin-top:12px;background:var(--blue-lt);border-color:rgba(0,85,200,.18);border-left-color:var(--blue)">
-    <div class="note-title" style="color:var(--blue)">🔁 U Convergence — Temperature-Dependent Fluid Properties</div>
-    <div class="note-body">
-      <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:8px">
-        <span>Seed U: <strong>${r.convergence.U_seed} W/m²K</strong></span>
-        <span>→ Converged U: <strong>${r.convergence.U_final} W/m²K</strong></span>
-        <span>Iterations: <strong>${r.convergence.iterations}</strong></span>
-        <span>Final deviation: <strong style="color:${r.convergence.converged?'var(--ok)':'var(--warn)'}">${r.convergence.deviation_pct}%</strong></span>
-        <span style="font-weight:700;color:${r.convergence.converged?'var(--ok)':'var(--warn)'}">${r.convergence.converged?'✓ Converged':'⚠ Not fully converged'}</span>
-        ${r.convergence.twophase_lmtd?`<span style="color:var(--blue);font-weight:700">🌡️ Two-phase LMTD (F = 1.0)</span>`:''}
-      </div>
-      <div style="overflow-x:auto">
-        <table class="dtbl" style="font-size:.72rem">
-          <thead><tr><th>Iter</th><th>U Assumed (W/m²K)</th><th>U Actual (W/m²K)</th><th>Deviation %</th></tr></thead>
-          <tbody>
-            ${r.convergence.history.map(h=>`<tr>
-              <td>${h.iter}</td>
-              <td style="font-family:var(--mono)">${h.U_assumed.toFixed(1)}</td>
-              <td style="font-family:var(--mono);font-weight:700">${h.U_actual.toFixed(1)}</td>
-              <td style="color:${h.deviation_pct<1?'var(--ok)':h.deviation_pct<5?'var(--warn)':'var(--err)'};font-weight:700">${h.deviation_pct.toFixed(3)}%</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-      <div style="font-size:.75rem;margin-top:6px;color:var(--t3)">
-        Fluid properties re-evaluated at bulk mean temperatures each iteration using temperature-dependent data tables.
-        Viscosity correction (Sieder-Tate): (μ_bulk/μ_wall)^0.14 applied to shell-side and tube-side HTCs.
-        ${r.convergence.twophase_lmtd?'Two-phase LMTD uses isothermal-side correction (F=1.0 — no cross-flow penalty for condensing/evaporating service).' : ''}
-      </div>
-    </div>
-  </div>` : ''}
+  ${renderBlockDiagram(r)}
 
+  ${renderConvergence(r)}
 
-  ${r.designAdvisor ? `
-  <div class="note" style="margin-top:12px;background:linear-gradient(135deg,#f0f9f7,#eef4ff);border:1px solid rgba(0,85,200,.18);border-left:4px solid var(--blue);border-radius:10px;padding:14px 18px">
-    <div class="note-title" style="color:var(--blue);font-size:.95rem;margin-bottom:10px">🔧 Design Advisor — Fix Low Tube Velocity</div>
-    <div class="note-body">
-      <div style="margin-bottom:12px;padding:10px 12px;background:rgba(192,120,0,.08);border-radius:6px;border-left:3px solid var(--warn);font-size:.83rem;line-height:1.5">
-        ⚠ ${r.designAdvisor.problem}
-      </div>
-      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t2);margin-bottom:10px">
-        Choose an engineering lever — all lengths are TEMA standard — click Apply to recalculate:
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">
+  ${renderDesignAdvisor(r)}
 
-        ${r.designAdvisor.levers.A_increase_length ? `
-        <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:12px;border-top:3px solid var(--red);display:flex;flex-direction:column;gap:6px">
-          <div style="font-size:.70rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--red)">Lever A — Longer tube (TEMA standard)</div>
-          <div style="font-family:var(--mono);font-size:1.15rem;font-weight:700;color:var(--t1)">L = ${r.designAdvisor.levers.A_increase_length.L_required_m} m</div>
-          <div style="font-size:.78rem;color:var(--t2)">
-            ${r.designAdvisor.levers.A_increase_length.numTubes} tubes (${r.designAdvisor.levers.A_increase_length.nTubesPerPass}/pass)
-            &nbsp;· vel = <strong style="color:${r.designAdvisor.levers.A_increase_length.partial?'var(--warn)':'var(--ok)'}">${r.designAdvisor.levers.A_increase_length.velocity} m/s</strong>
-            &nbsp;· Shell ID ≈ ${r.designAdvisor.levers.A_increase_length.shellID_mm} mm
-          </div>
-          <div style="font-size:.75rem;color:var(--t3)">${r.designAdvisor.levers.A_increase_length.note}</div>
-          ${r.designAdvisor.levers.A_increase_length.partial
-            ? `<div style="font-size:.70rem;color:var(--warn)">⚠ Max TEMA length — combine with Lever B or D for full target</div>`
-            : `<div style="font-size:.70rem;color:var(--warn)">⚠ Needs horizontal/vertical bay space</div>`}
-          <button onclick="applyAdvisorLever('A',${r.designAdvisor.levers.A_increase_length.L_required_m},null,null,null)"
-            style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:var(--red);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">
-            ↗ Apply — set L = ${r.designAdvisor.levers.A_increase_length.L_required_m} m
-          </button>
-        </div>` : ''}
+  ${renderTemaShell(r)}
 
-        ${r.designAdvisor.levers.B_more_passes ? `
-        <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:12px;border-top:3px solid var(--blue);display:flex;flex-direction:column;gap:6px">
-          <div style="font-size:.70rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--blue)">Lever B — More tube passes</div>
-          <div style="font-family:var(--mono);font-size:1.15rem;font-weight:700;color:var(--t1)">${r.designAdvisor.levers.B_more_passes.passes} passes</div>
-          <div style="font-size:.78rem;color:var(--t2)">
-            ${r.designAdvisor.levers.B_more_passes.numTubes} tubes (${r.designAdvisor.levers.B_more_passes.nTubesPerPass}/pass)
-            &nbsp;· vel = <strong style="color:var(--ok)">${r.designAdvisor.levers.B_more_passes.velocity} m/s</strong>
-            &nbsp;· Shell ID ≈ ${r.designAdvisor.levers.B_more_passes.shellID_mm} mm
-          </div>
-          <div style="font-size:.75rem;color:var(--t3)">${r.designAdvisor.levers.B_more_passes.note}</div>
-          <div style="font-size:.70rem;color:var(--ok)">✓ Same tube length — no extra bay space needed</div>
-          <button onclick="applyAdvisorLever('B',null,${r.designAdvisor.levers.B_more_passes.passes},null,${r.designAdvisor.levers.B_more_passes.numTubes})"
-            style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:var(--blue);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">
-            ↗ Apply — ${r.designAdvisor.levers.B_more_passes.passes} passes, ${r.designAdvisor.levers.B_more_passes.numTubes} tubes
-          </button>
-        </div>` : ''}
-
-        ${r.designAdvisor.levers.C_more_shells ? `
-        <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:12px;border-top:3px solid var(--teal);display:flex;flex-direction:column;gap:6px">
-          <div style="font-size:.70rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--teal)">Lever C — Shells in series</div>
-          <div style="font-family:var(--mono);font-size:1.15rem;font-weight:700;color:var(--t1)">${r.designAdvisor.levers.C_more_shells.shells} × shells</div>
-          <div style="font-size:.78rem;color:var(--t2)">
-            ${r.designAdvisor.levers.C_more_shells.tubesPerShell} tubes/shell (${r.designAdvisor.levers.C_more_shells.nTubesPerPass}/pass)
-            &nbsp;· vel = <strong style="color:var(--ok)">${r.designAdvisor.levers.C_more_shells.velocity} m/s</strong>
-            &nbsp;· Shell ID ≈ ${r.designAdvisor.levers.C_more_shells.shellID_mm} mm each
-          </div>
-          <div style="font-size:.75rem;color:var(--t3)">${r.designAdvisor.levers.C_more_shells.note}</div>
-          <div style="font-size:.70rem;color:var(--warn)">⚠ Higher capital cost — series piping required</div>
-          <button onclick="applyAdvisorLever('C',null,null,${r.designAdvisor.levers.C_more_shells.shells},${r.designAdvisor.levers.C_more_shells.tubesPerShell})"
-            style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:var(--teal);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">
-            ↗ Apply — ${r.designAdvisor.levers.C_more_shells.shells} shells in series
-          </button>
-        </div>` : ''}
-
-        ${r.designAdvisor.levers.D_smaller_OD ? `
-        <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:12px;border-top:3px solid #7c3aed;display:flex;flex-direction:column;gap:6px">
-          <div style="font-size:.70rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#7c3aed">Lever D — Reduce tube OD (TEMA standard)</div>
-          <div style="font-family:var(--mono);font-size:1.15rem;font-weight:700;color:var(--t1)">OD = ${r.designAdvisor.levers.D_smaller_OD.OD_mm} mm</div>
-          <div style="font-size:.78rem;color:var(--t2)">
-            ID = ${r.designAdvisor.levers.D_smaller_OD.Di_mm} mm
-            &nbsp;· ${r.designAdvisor.levers.D_smaller_OD.numTubes} tubes (${r.designAdvisor.levers.D_smaller_OD.nTubesPerPass}/pass)
-            &nbsp;· vel = <strong style="color:var(--ok)">${r.designAdvisor.levers.D_smaller_OD.velocity} m/s</strong>
-            &nbsp;· Shell ID ≈ ${r.designAdvisor.levers.D_smaller_OD.shellID_mm} mm
-          </div>
-          <div style="font-size:.75rem;color:var(--t3)">${r.designAdvisor.levers.D_smaller_OD.note}</div>
-          <div style="font-size:.70rem;color:var(--ok)">✓ Same tube length · Confirm cleaning access for smaller bore</div>
-          <button onclick="applyAdvisorLever('D',null,null,null,${r.designAdvisor.levers.D_smaller_OD.numTubes},${r.designAdvisor.levers.D_smaller_OD.OD_mm},${r.designAdvisor.levers.D_smaller_OD.tw_mm})"
-            style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:#7c3aed;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">
-            ↗ Apply — OD ${r.designAdvisor.levers.D_smaller_OD.OD_mm} mm, ${r.designAdvisor.levers.D_smaller_OD.numTubes} tubes
-          </button>
-        </div>` : ''}
-
-        ${r.designAdvisor.levers.E_combined ? `
-        <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:12px;border-top:3px solid var(--gold);display:flex;flex-direction:column;gap:6px">
-          <div style="font-size:.70rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gold)">Lever E — Combined: length + passes</div>
-          <div style="font-family:var(--mono);font-size:1.15rem;font-weight:700;color:var(--t1)">L=${r.designAdvisor.levers.E_combined.L_required_m} m · ${r.designAdvisor.levers.E_combined.passes} passes</div>
-          <div style="font-size:.78rem;color:var(--t2)">
-            ${r.designAdvisor.levers.E_combined.numTubes} tubes (${r.designAdvisor.levers.E_combined.nTubesPerPass}/pass)
-            &nbsp;· vel = <strong style="color:var(--ok)">${r.designAdvisor.levers.E_combined.velocity} m/s</strong>
-            &nbsp;· Shell ID ≈ ${r.designAdvisor.levers.E_combined.shellID_mm} mm
-          </div>
-          <div style="font-size:.75rem;color:var(--t3)">${r.designAdvisor.levers.E_combined.note}</div>
-          <div style="font-size:.70rem;color:var(--warn)">⚠ Use when no single lever alone achieves target</div>
-          <button onclick="applyAdvisorLever('E',${r.designAdvisor.levers.E_combined.L_required_m},${r.designAdvisor.levers.E_combined.passes},null,${r.designAdvisor.levers.E_combined.numTubes})"
-            style="margin-top:auto;padding:6px 14px;border:none;border-radius:6px;background:var(--gold);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">
-            ↗ Apply — L=${r.designAdvisor.levers.E_combined.L_required_m} m, ${r.designAdvisor.levers.E_combined.passes} passes
-          </button>
-        </div>` : ''}
-
-      </div>
-    </div>
-  </div>` : ''}
-
-  ${r.temaShell ? `
-  <div class="note" style="margin-top:10px;background:var(--surf2);border:1px solid var(--bdr);border-left:4px solid var(--teal);border-radius:10px;padding:10px 14px">
-    <div style="font-size:.78rem;font-weight:700;color:var(--teal);margin-bottom:4px">🏗 TEMA Shell Sizing (Table D-5)</div>
-    <div style="font-size:.78rem;color:var(--t2);display:flex;flex-wrap:wrap;gap:16px">
-      <span>Calculated min ID: <strong>${r.temaShell.D_min_mm} mm</strong></span>
-      <span>→ TEMA standard: <strong style="color:var(--teal)">${r.temaShell.D_std_mm} mm</strong>
-        ${!r.temaShell.isStandard ? '<span style="color:var(--err)"> ⚠ exceeds standard table</span>' : ''}
-      </span>
-      ${r.temaShell.prevSize_mm ? `<span style="color:var(--t3)">Previous size: ${r.temaShell.prevSize_mm} mm (insufficient)</span>` : ''}
-      <span style="color:var(--t3)">Shell ΔP method: <strong>${r.shellDP_method || 'bell-delaware'}</strong></span>
-    </div>
-  </div>` : ''}
-
-  ${r.spaceConstraints && (r.spaceConstraints.L_max_applied || r.spaceConstraints.shell_OD_max_mm) ? `
-  <div class="note" style="margin-top:10px;background:var(--gold-lt);border:1px solid rgba(192,120,0,.25);border-left:4px solid var(--gold);border-radius:10px;padding:10px 14px">
-    <div style="font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:4px">📐 Space Constraints Active</div>
-    <div style="font-size:.78rem;color:var(--t2);display:flex;flex-wrap:wrap;gap:16px">
-      ${r.spaceConstraints.L_max_applied ? `<span>Max tube length enforced: <strong>${r.spaceConstraints.L_max_applied} m</strong>${r.spaceConstraints.L_constrained ? ' <span style="color:var(--warn)">⚠ design was length-limited</span>' : ' ✓'}</span>` : ''}
-      ${r.spaceConstraints.shell_OD_max_mm ? `<span>Max shell OD limit: <strong>${r.spaceConstraints.shell_OD_max_mm} mm</strong></span>` : ''}
-    </div>
-  </div>` : ''}
+  ${renderSpaceConstraints(r)}
 
   <div class="note" style="margin-top:12px">
     <div class="note-title">📋 TEMA Design Checklist</div>
@@ -3132,25 +3192,10 @@ function renderSTResults(r, warns=[]) {
     </ul></div>
   </div>
 
-  ${(r.velocity_driven_by_area && r.tubeVel < (r.targetVel||1.5)*0.85) ? `
-  <div class="note" style="margin-top:12px;background:linear-gradient(135deg,#eef4ff,#f0e8ff);border-color:rgba(124,58,237,.2);border-left-color:#7c3aed">
-    <div class="note-title" style="color:#7c3aed">📐 Space-Constrained Geometry Optimizer</div>
-    <div class="note-body">
-      <p style="margin-bottom:8px">
-        Tube length is <strong>${r.L.toFixed(1)} m</strong> (space-limited) but velocity target
-        <strong>${r.targetVel} m/s</strong> cannot be met at this length with current OD and pass count.
-        The optimizer searches all standard TEMA tube OD × pass × shell combinations.
-      </p>
-      <button
-        onclick="runGeoOptimizer(${r.area.toFixed(4)}, ${(r.cF/3600).toFixed(4)}, ${r.L.toFixed(2)}, ${r.cFluid.rho.toFixed(1)}, ${r.targetVel||1.5})"
-        style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-family:var(--sans);font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(124,58,237,.3)">
-        🔍 Find Space-Constrained Solutions
-      </button>
-      <div id="geo-optimizer-results" style="margin-top:10px"></div>
-    </div>
-  </div>` : ''}
+  ${renderGeoOptimizer(r)}
   `;
 }
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    PLATE HX CALCULATION — Full heat balance, T/P/Z corrections, Gnielinski
@@ -3407,6 +3452,68 @@ ${st?`
 </div>
 
 
+<div class="mini-sec">📐 Exchanger Block Diagram</div>
+<svg viewBox="0 0 680 230" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:680px;font-family:'IBM Plex Sans',sans-serif;margin-bottom:8px">
+  <defs>
+    <marker id="arrd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
+    </marker>
+    <marker id="dimd" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <line x1="5" y1="1" x2="5" y2="9" stroke="context-stroke" stroke-width="1.5"/>
+    </marker>
+  </defs>
+  <!-- Shell -->
+  <rect x="70" y="55" width="440" height="100" rx="5" fill="none" stroke="#3a4560" stroke-width="1.8"/>
+  <ellipse cx="70"  cy="105" rx="12" ry="50" fill="#f5f7fb" stroke="#3a4560" stroke-width="1.8"/>
+  <ellipse cx="510" cy="105" rx="12" ry="50" fill="#f5f7fb" stroke="#3a4560" stroke-width="1.8"/>
+  <!-- Tubes -->
+  <line x1="70"  y1="88"  x2="510" y2="88"  stroke="#0055c8" stroke-width="1.2" stroke-dasharray="5 3" opacity=".6"/>
+  <line x1="70"  y1="105" x2="510" y2="105" stroke="#0055c8" stroke-width="1.8" stroke-dasharray="5 3" opacity=".8"/>
+  <line x1="70"  y1="122" x2="510" y2="122" stroke="#0055c8" stroke-width="1.2" stroke-dasharray="5 3" opacity=".6"/>
+  <text x="290" y="100" text-anchor="middle" fill="#0055c8" font-size="7.5" font-weight="600">${st.numTubes} tubes · ${st.nTubesPerPass}/pass × ${st.nPasses} passes · OD ${st.OD?(st.OD*1000).toFixed(1):'?'} / ID ${st.Di?(st.Di*1000).toFixed(1):'?'} mm</text>
+  <!-- Baffles -->
+  ${Array.from({length:Math.min(st.bdCorr?.nBaffles??4,6)},(_,i)=>{
+    const x=70+(440*(i+1)/(Math.min(st.bdCorr?.nBaffles??4,6)+1));
+    const t=i%2===0?70:55; const b=i%2===0?155:140;
+    return `<line x1="${x.toFixed(0)}" y1="${t}" x2="${x.toFixed(0)}" y2="${b}" stroke="#888" stroke-width="2" opacity=".55"/>`;
+  }).join('')}
+  <!-- Hot nozzles -->
+  <rect x="130" y="35" width="28" height="22" rx="2" fill="#fff3ee" stroke="#e8500a" stroke-width="1.2"/>
+  <text x="144" y="29" text-anchor="middle" fill="#e8500a" font-size="7.5" font-weight="700">HOT IN ${tDisp(st.hTi).toFixed(1)}${tU()}</text>
+  <line x1="144" y1="35" x2="144" y2="55" stroke="#e8500a" stroke-width="1.2" marker-end="url(#arrd)"/>
+  <rect x="370" y="155" width="28" height="22" rx="2" fill="#fff3ee" stroke="#c03d00" stroke-width="1.2"/>
+  <text x="384" y="192" text-anchor="middle" fill="#c03d00" font-size="7.5" font-weight="700">HOT OUT ${tDisp(st.hTo).toFixed(1)}${tU()}</text>
+  <line x1="384" y1="177" x2="384" y2="155" stroke="#c03d00" stroke-width="1.2" marker-end="url(#arrd)"/>
+  <!-- Cold nozzles -->
+  <rect x="34" y="88" width="26" height="34" rx="2" fill="#eef4ff" stroke="#0055c8" stroke-width="1.2"/>
+  <text x="20" y="98" text-anchor="end" fill="#0055c8" font-size="7.5" font-weight="700">COLD IN</text>
+  <text x="20" y="108" text-anchor="end" fill="#0055c8" font-size="7.5">${tDisp(st.cTi).toFixed(1)}${tU()}</text>
+  <line x1="60" y1="105" x2="70" y2="105" stroke="#0055c8" stroke-width="1.5" marker-end="url(#arrd)"/>
+  <rect x="522" y="88" width="26" height="34" rx="2" fill="#eef4ff" stroke="#008f76" stroke-width="1.2"/>
+  <text x="660" y="98" text-anchor="end" fill="#008f76" font-size="7.5" font-weight="700">COLD OUT</text>
+  <text x="660" y="108" text-anchor="end" fill="#008f76" font-size="7.5">${tDisp(st.cTo).toFixed(1)}${tU()}</text>
+  <line x1="522" y1="105" x2="510" y2="105" stroke="#008f76" stroke-width="1.5" marker-start="url(#arrd)"/>
+  <!-- Tube length dimension -->
+  <line x1="70" y1="183" x2="510" y2="183" stroke="#444" stroke-width="0.8" marker-start="url(#dimd)" marker-end="url(#dimd)"/>
+  <line x1="70" y1="174" x2="70" y2="192" stroke="#444" stroke-width="0.7"/>
+  <line x1="510" y1="174" x2="510" y2="192" stroke="#444" stroke-width="0.7"/>
+  <text x="290" y="196" text-anchor="middle" fill="#0c1322" font-size="9" font-weight="700">L = ${st.L!=null?st.L.toFixed(2):'?'} m</text>
+  <!-- Shell ID dimension -->
+  <line x1="28" y1="55" x2="28" y2="155" stroke="#444" stroke-width="0.8" marker-start="url(#dimd)" marker-end="url(#dimd)"/>
+  <line x1="18" y1="55" x2="38" y2="55" stroke="#444" stroke-width="0.7"/>
+  <line x1="18" y1="155" x2="38" y2="155" stroke="#444" stroke-width="0.7"/>
+  <text x="14" y="108" text-anchor="middle" fill="#0c1322" font-size="8" font-weight="700" transform="rotate(-90,14,108)">ID=${st.shellID?(st.shellID*1000).toFixed(0):'?'} mm</text>
+  <!-- Status strip -->
+  <rect x="70"  y="207" width="125" height="16" rx="3" fill="${st.tubeVel>=(st.targetVel||1.5)*0.9?'#e6f7f4':'#fff3ee'}" stroke="${st.tubeVel>=(st.targetVel||1.5)*0.9?'#008f76':'#e8500a'}" stroke-width="0.8"/>
+  <text x="133" y="219" text-anchor="middle" fill="${st.tubeVel>=(st.targetVel||1.5)*0.9?'#1b7a3e':'#c0201a'}" font-size="7.5" font-weight="700">v=${st.tubeVel!=null?st.tubeVel.toFixed(3):'?'} m/s ${st.tubeVel>=(st.targetVel||1.5)*0.9?'✓':'⚠'}</text>
+  <rect x="205" y="207" width="125" height="16" rx="3" fill="${(st.shellDP||0)<=(st.pdAllowShell||0.7)?'#e6f7f4':'#fff3ee'}" stroke="${(st.shellDP||0)<=(st.pdAllowShell||0.7)?'#008f76':'#e8500a'}" stroke-width="0.8"/>
+  <text x="268" y="219" text-anchor="middle" fill="${(st.shellDP||0)<=(st.pdAllowShell||0.7)?'#1b7a3e':'#c0201a'}" font-size="7.5" font-weight="700">ΔP_s=${convP(st.shellDP||0).toFixed(3)} ${pU()} ${(st.shellDP||0)<=(st.pdAllowShell||0.7)?'✓':'✗'}</text>
+  <rect x="340" y="207" width="125" height="16" rx="3" fill="${(st.tubeDp||0)<=(st.pdAllowTube||1.0)?'#e6f7f4':'#fff3ee'}" stroke="${(st.tubeDp||0)<=(st.pdAllowTube||1.0)?'#008f76':'#e8500a'}" stroke-width="0.8"/>
+  <text x="403" y="219" text-anchor="middle" fill="${(st.tubeDp||0)<=(st.pdAllowTube||1.0)?'#1b7a3e':'#c0201a'}" font-size="7.5" font-weight="700">ΔP_t=${convP(st.tubeDp||0).toFixed(3)} ${pU()} ${(st.tubeDp||0)<=(st.pdAllowTube||1.0)?'✓':'✗'}</text>
+  <rect x="475" y="207" width="105" height="16" rx="3" fill="${(st.overSurf||0)>=0?'#e6f7f4':'#fff3ee'}" stroke="${(st.overSurf||0)>=0?'#008f76':'#e8500a'}" stroke-width="0.8"/>
+  <text x="528" y="219" text-anchor="middle" fill="${(st.overSurf||0)>=0?'#1b7a3e':'#c0201a'}" font-size="7.5" font-weight="700">OS=${(st.overSurf||0).toFixed(1)}% ${(st.overSurf||0)>=0?'✓':'✗'}</text>
+</svg>
+
 <div class="mini-sec">⚡ Exchanger Performance &amp; Geometry</div>
 <table>
   <thead><tr><th>Parameter</th><th>Unit</th><th>Value</th><th>Parameter</th><th>Unit</th><th>Value</th></tr></thead>
@@ -3431,6 +3538,10 @@ ${st?`
     <tr>
       <td class="lbl">Number of Tubes</td><td>—</td><td>${st.numTubes!=null?st.numTubes:'—'}</td>
       <td class="lbl">Shell ID (est.)</td><td>mm</td><td>${st.shellID!=null?(st.shellID*1000).toFixed(0):'—'}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Tube Length</td><td>m</td><td><b>${st.L!=null?st.L.toFixed(2):'—'}</b></td>
+      <td class="lbl">Tubes per Pass</td><td>—</td><td>${st.nTubesPerPass!=null?st.nTubesPerPass:'—'}</td>
     </tr>
     <tr>
       <td class="lbl">Tube OD / ID</td><td>mm</td><td>${st.OD!=null?(st.OD*1000).toFixed(2):'—'} / ${st.Di!=null?(st.Di*1000).toFixed(2):'—'}</td>
