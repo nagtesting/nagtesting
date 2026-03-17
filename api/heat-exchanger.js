@@ -463,23 +463,11 @@ function calcBellDelaware(fluid, massFlowKgS, shellID_m, OD_m, pitch_ratio, bcut
   const jh = a*Math.pow(Math.max(Re_s,1), b-1);
   const Nu_s = jh*Re_s*Math.pow(Pr_s,0.333);
   const h_ideal = Nu_s*k/OD_m;
-  // Baffle cut correction (unchanged — Jc formula is correct per Bell-Delaware)
-  const Jc = Math.max(0.52, Math.min(1.15, 0.55 + 0.72*(bcut_frac - 0.15)));
-  // ── FIX 4: Improved Jl and Jb using Sm-based area ratios (Taborek method) ─
-  // Previous code used a simplified ratio that gave ±10–15% error on shell HTC.
-  // Now Jl uses the ratio of leakage area to crossflow area Sm,
-  // and Jb uses the bypass lane area fraction — both per HEDH methodology.
-  const clearance_stb = 0.0004 + {R:0.0000,C:0.0002,B:0.0004}[tema] || 0.0002; // shell-tube clearance m
-  const clearance_bsh = {R:0.0003,C:0.0005,B:0.0007}[tema] || 0.0005;          // baffle-shell clearance m
-  // Area of leakage streams (tube-baffle + shell-baffle) relative to Sm
-  const A_stb = nTubes * Math.PI * OD_m * clearance_stb;   // tube-baffle leakage area
-  const A_bsh = Math.PI * shellID_m * clearance_bsh;        // baffle-shell leakage area
-  const r_lm  = Math.min((A_stb + A_bsh) / Math.max(Sm, 1e-6), 0.8);
-  const Jl = Math.max(0.60, 1 - 0.44 * r_lm - 2.2 * r_lm * r_lm);
-  // Bypass correction: fraction of Sm occupied by bypass lanes
-  // (gap between bundle and shell, typically 2–5% of Sm for TEMA C)
-  const bypass_frac = {R:0.02, C:0.05, B:0.08}[tema] || 0.05;
-  const Jb = Math.max(0.65, 1 - 0.35 * bypass_frac * (1 - bsp_ratio + 1) );
+  // Bell-Delaware correction factors
+  const Jc = 0.55 + 0.72*(bcut_frac - 0.15);
+  const clearance_tema = {R:0.0003,C:0.0005,B:0.0007}[tema]||0.0005;
+ const Jl = Math.max(0.70, 1 - 0.6*clearance_tema/Math.max(bsp,0.001));
+  const Jb = Math.max(0.70, 1 - 0.3*(1-bsp_ratio));
   const Jr = Re_s<100 ? Math.max(0.4, 0.8-0.003*Re_s) : 1.0;
   const Js = 1.0;
   const Jtotal = Math.max(0.30, Jc*Jl*Jb*Jr*Js);
@@ -503,62 +491,6 @@ function calcPressDropTube(fluid, massFlowKgS, Di_m, L_m, nPasses) {
   const dP_returns = 1.5*Math.max(nPasses-1,0)*dyn;
   const dP_nozzle = 2.0*dyn;
   return Math.max((dP_friction+dP_entry_exit+dP_returns+dP_nozzle)/1e5, 0);
-}
-
-// ─── BELL-DELAWARE 4-TERM SHELL-SIDE PRESSURE DROP ───────────────────────────
-// Replaces single Euler-number formula. Implements:
-//   ΔP_total = (ΔP_crossflow + ΔP_window) × Nb_effective + ΔP_end_zones
-// with bypass correction Rb and leakage correction Rl (per Taborek / HEDH method)
-// Error vs single-Eu formula: reduces from ±30–40% to ±10–15%
-function calcBellDelawareDP(fluid, massFlowKgS, shellID_m, OD_m, pitch_ratio, bcut_frac, bsp_ratio, L_m, nTubes, bdHtcResult) {
-  const {rho, mu: mu_mPas} = fluid;
-  const mu = mu_mPas * 1e-3;
-  const PT = pitch_ratio * OD_m;
-  const bsp = bsp_ratio * shellID_m;                      // baffle spacing (m)
-  const nBaffles = bdHtcResult ? bdHtcResult.nBaffles : Math.max(1, Math.round(L_m / Math.max(bsp, 0.001) - 1));
-  const Sm = bsp_ratio * shellID_m * (PT - OD_m) / PT;    // crossflow area (m²)
-
-  // ── Crossflow ΔP per baffle space ────────────────────────────────────────
-  const G_s  = massFlowKgS / Math.max(Sm, 1e-6);
-  const Re_s = G_s * OD_m / mu;
-  // Friction factor from Kern / Bell (condensed form)
-  let f_s;
-  if (Re_s < 10)      f_s = 14.0  * Math.pow(Re_s, -0.20);
-  else if (Re_s < 100) f_s = 7.0   * Math.pow(Re_s, -0.20);
-  else if (Re_s < 1e3) f_s = 0.72  * Math.pow(Re_s, -0.05);
-  else if (Re_s < 1e4) f_s = 0.35  * Math.pow(Re_s,  0.00);
-  else                  f_s = 0.20  * Math.pow(Re_s, -0.02);
-
-  const dP_cf_one = f_s * nTubes * G_s * G_s / (2 * rho);   // Pa per baffle gap
-
-  // ── Window zone ΔP ─── (approximate: 0.4 × dyn pressure × nTubes_window)
-  // Window fraction from baffle cut area ratio (simplified Tinker approach)
-  const theta_bc = 2 * Math.acos(1 - 2 * bcut_frac);        // rad (baffle cut chord angle)
-  const A_window = (shellID_m * shellID_m / 4) * (theta_bc - Math.sin(theta_bc));
-  const A_tubes_window = nTubes * bcut_frac * Math.PI * OD_m * OD_m / 4;
-  const A_w_free = Math.max(A_window - A_tubes_window, 0.001);
-  const G_w = massFlowKgS / A_w_free;
-  const dP_win_one = (2 + 0.6 * Math.round(nTubes * bcut_frac)) * G_w * G_w / (2 * rho);
-
-  // ── Bell-Delaware bypass correction Rb ────────────────────────────────────
-  // Rb accounts for bundle-to-shell bypass lanes (similar to Jb for HTC)
-  const Rb = Math.max(0.60, 1 - 0.3 * (1 - bsp_ratio));
-
-  // ── Bell-Delaware leakage correction Rl ──────────────────────────────────
-  // Rl accounts for shell-baffle and tube-baffle clearances reducing effective ΔP
-  const Rl = Math.max(0.40, 1 - 0.5 * (1 - bsp_ratio) * bcut_frac);
-
-  // ── Central baffle region ΔP ─────────────────────────────────────────────
-  const dP_central = (dP_cf_one + dP_win_one) * nBaffles * Rb * Rl;
-
-  // ── End-zone correction (inlet/outlet baffles have larger spacing) ────────
-  // Typically first and last baffle spacing is 1.2–1.5× central spacing.
-  // Use factor 1.3 as typical design; ΔP scales as (spacing_ratio)^2.
-  const end_zone_factor = 1.3;
-  const dP_end = 2 * dP_cf_one * (end_zone_factor * end_zone_factor) * Rb;
-
-  const dP_total_Pa = dP_central + dP_end;
-  return Math.max(dP_total_Pa / 1e5, 0);  // bar
 }
 
 // ─── INPUT VALIDATION HELPER ──────────────────────────────────────────────────
@@ -662,12 +594,6 @@ function calcShellTube(b) {
   if (hTi<=cTi) throw new Error('Hot inlet must be above cold inlet');
 
   const OD=requireFinite(b.OD,'OD')/1000, tw=requireFinite(b.tw,'tw')/1000, L=requireFinite(b.L,'L');
-  // ── FIX 5: Space constraints as hard inputs ───────────────────────────────
-  // L_max and shell_OD_max now ENFORCE plant space limits before geometry is
-  // fixed. Previously these were advisory only (post-hoc advisor).
-  const L_max       = parseFloat(b.L_max)        || Infinity;   // m — max allowed tube length
-  const shell_OD_max= parseFloat(b.shell_OD_max) || Infinity;   // mm — max allowed shell OD
-  const L_effective = Math.min(L, L_max);                        // enforce length constraint
   const pitch=parseFloat(b.pitch)||1.25;
   const Rfo=Math.max(parseFloat(b.Rfo)||0.0002,0), Rfi=Math.max(parseFloat(b.Rfi)||0.0002,0);
   const arr=b.arr||'counter', kw=KMAT[b.mat]||16;
@@ -689,33 +615,7 @@ function calcShellTube(b) {
   const pdAllowTube=parseFloat(b.pdAllowTube)||1.00;
   const pitchLayout=b.pitchLayout||'triangular';
   const bundleAreaFactor=pitchLayout==='triangular'?0.866:1.0;
-  // ── FIX 1: TEMA Table D-5 discrete shell ID steps (mm) ──────────────────
-  // Continuous formula gave ±15% error vs actual available shell sizes.
-  // Now we: (a) compute the theoretical minimum ID, (b) round UP to next
-  // standard TEMA size, and (c) return both so the UI can warn between sizes.
-  const TEMA_SHELL_IDS_MM = [
-    152, 203, 254, 305, 337, 387, 438, 489, 540, 591,
-    635, 686, 737, 787, 838, 889, 940, 991, 1067, 1143,
-    1219, 1295, 1372, 1448, 1524
-  ];
-  function estimateShellID(n) {
-    const bA  = n * pitchLen * pitchLen * bundleAreaFactor;
-    const D_min = Math.sqrt(4 * bA / Math.PI) * 1.10;  // theoretical min (m)
-    const D_min_mm = D_min * 1000;
-    // Find next standard TEMA size ≥ theoretical minimum
-    const standard = TEMA_SHELL_IDS_MM.find(d => d >= D_min_mm);
-    const D_std_mm  = standard || (D_min_mm * 1.05); // fallback if > largest table entry
-    return D_std_mm / 1000;  // return in metres
-  }
-  function estimateShellID_detail(n) {
-    const bA      = n * pitchLen * pitchLen * bundleAreaFactor;
-    const D_min   = Math.sqrt(4 * bA / Math.PI) * 1.10;
-    const D_min_mm = D_min * 1000;
-    const standard = TEMA_SHELL_IDS_MM.find(d => d >= D_min_mm);
-    const D_std_mm  = standard || (D_min_mm * 1.05);
-    const prev = TEMA_SHELL_IDS_MM.filter(d => d < D_min_mm).slice(-1)[0] || null;
-    return { D_min_mm: +D_min_mm.toFixed(1), D_std_mm, prevSize_mm: prev, isStandard: !!standard };
-  }
+  function estimateShellID(n){const bA=n*pitchLen*pitchLen*bundleAreaFactor;return Math.sqrt(4*bA/Math.PI)*1.15;}
 
   // ── Step 0: Initial temperature-dependent fluid props ──
   let hTmean=(hTi+hTo)/2;
@@ -744,12 +644,12 @@ function calcShellTube(b) {
     numTubes=Math.max(1,parseInt(b.numTubesFixed)||0);
     if (!numTubes) throw new Error('Fixed-tube mode: enter number of tubes');
     nTubesPerPass=Math.max(1,Math.round(numTubes/nPasses));
-    shellID=estimateShellID(numTubes); L_eff=L_effective;
+    shellID=estimateShellID(numTubes); L_eff=L;
   } else {
     // velocity-target: set initial tube count from velocity — geometry is now FIXED
     const nTPP=Math.max(1,Math.ceil(massC/(cFluid.rho*A_tube*targetVel)));
     nTubesPerPass=nTPP; numTubes=nTPP*nPasses;
-    shellID=estimateShellID(numTubes); L_eff=L_effective;
+    shellID=estimateShellID(numTubes); L_eff=L;
   }
   // Snapshot geometry — these do NOT change inside the convergence loop
   const numTubes_geo=numTubes, nTubesPerPass_geo=nTubesPerPass, shellID_geo=shellID;
@@ -792,18 +692,6 @@ function calcShellTube(b) {
     const cFluid_wall = fluidAtConditions(cFlKey, Twall_tube,  cPop);
     const phi_h = Math.pow(Math.max(hFluid.mu / Math.max(hFluid_wall.mu, 0.001), 0.1), 0.14);
     const phi_c = Math.pow(Math.max(cFluid.mu / Math.max(cFluid_wall.mu, 0.001), 0.1), 0.14);
-
-    // ── FIX 3: Recalculate cTo INSIDE the convergence loop ────────────────
-    // Previous code estimated cTo with a bootstrapped cp before the loop and
-    // never updated it — causing 2–4°C errors for heavy fluids (glycol, oils).
-    // Now cTo is recomputed each iteration with the current cFluid.cp value,
-    // so the heat balance and fluid properties converge together.
-    const Qhot_iter = massH * hFluid.cp * (hTi - hTo);   // kW (cp in kJ/kgK)
-    if (coldMode === 'flow') {
-      cTo = cTi + Qhot_iter / (massC * cFluid.cp);
-      cTmean = (cTi + cTo) / 2;
-    }
-    // (coldMode==='temp': cTo is fixed by user; cF was set before the loop)
 
     // ── Step 2: Shell-side HTC (Bell-Delaware) — fixed geometry ──
     // FIX BUG 2: use snapshot geometry, NOT re-calculated from velocity
@@ -911,30 +799,13 @@ function calcShellTube(b) {
   // Recalculate tube velocity with FINAL tube count
   const tubeVel = massC / (nTubesPerPass_final * cFluid.rho * A_tube);
   const tubeDp = calcPressDropTube(cFluid, massC / nTubesPerPass_final, Di, L_eff, nPasses);
-  // ── FIX 2: Full 4-term Bell-Delaware shell-side ΔP ───────────────────────
-  // Replaces the single Euler-number approximation (±30-40% error) with the
-  // correct four components: crossflow, window, end-zone, bypass correction.
-  const shellDP = calcBellDelawareDP(hFluid, massH, shellID_final, OD, pitch, bcut_frac, bsp_ratio, L_eff, numTubes_final, bdRes);
+  const Re_s_dp = bdRes.shellRe;
+  const Eu = Re_s_dp < 300 ? 2.0 : Re_s_dp < 1000 ? 1.2 : 0.8;
+  const shellDP = Eu * bdRes.nBaffles * hFluid.rho * bdRes.shellVel * bdRes.shellVel / 2 / 1e5;
 
   const warns = [];
   if (area_enforcement_note) warns.push('⚠ ' + area_enforcement_note);
   if (!converged) warns.push(`U convergence not fully achieved after ${iterCount} iterations — final deviation ${U_deviation_pct.toFixed(2)}%`);
-
-  // ── FIX 5b: Shell OD max enforcement warning ─────────────────────────────
-  const shellID_detail = estimateShellID_detail(numTubes_final);
-  const shellOD_approx_mm = shellID_detail.D_std_mm + 2 * ({R:12,C:16,B:20}[tema]||16); // typical wall + flange
-  if (isFinite(shell_OD_max) && shellOD_approx_mm > shell_OD_max) {
-    warns.push(
-      `Shell OD ≈ ${shellOD_approx_mm.toFixed(0)} mm exceeds your ${shell_OD_max} mm space limit. ` +
-      `Use Design Advisor (Lever B/C/D) to find configurations that fit within the available bay width.`
-    );
-  }
-  if (!shellID_detail.isStandard) {
-    warns.push(`Shell ID ${shellID_detail.D_min_mm.toFixed(0)} mm exceeds largest TEMA standard shell (1524 mm). Verify with vessel manufacturer.`);
-  } else if (shellID_detail.prevSize_mm) {
-    const gap = shellID_detail.D_std_mm - shellID_detail.D_min_mm;
-    if (gap > 50) warns.push(`Shell ID rounded UP from calculated ${shellID_detail.D_min_mm.toFixed(0)} mm to TEMA standard ${shellID_detail.D_std_mm} mm — ${gap.toFixed(0)} mm headroom available.`);
-  }
 
   // Intelligent velocity diagnostics
   if (tubeVel < 0.5) {
@@ -968,92 +839,191 @@ function calcShellTube(b) {
   const resistanceBreakdown = calcResistanceBreakdown(hShell, hTube, Rfo, Rfi, Rwall, OD / Di);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // DESIGN ADVISOR: when area forces tube count above velocity target,
-  // compute ALL available levers so engineer can choose the right fix
-  // for their constraint (fixed length, fixed shell size, etc.)
+  // DESIGN ADVISOR — complete rewrite
+  //
+  // Root problem: area requirement forces more tubes than velocity needs.
+  // Result: too many tubes-per-pass → low velocity.
+  //
+  // Every lever is evaluated properly:
+  //   A — Try each TEMA standard length in turn. At each length, recompute
+  //       required tube count AND resulting velocity. Stop at the shortest
+  //       standard length where velocity ≥ target. Never use a proportional
+  //       formula (which gave absurd 28m suggestions).
+  //   B — More passes: iterate np = current+2 … 8. For each, compute nTPP
+  //       from area requirement (not from current tube count) and check vel.
+  //   C — Shells in series: split area, solve each shell independently.
+  //   D — Smaller TEMA OD: for each standard smaller OD, solve properly.
+  //   E — Combined: best standard length + increased passes together.
+  //       Useful when a single lever is marginal.
   // ═══════════════════════════════════════════════════════════════════════════
   let designAdvisor = null;
 
   if (velMode !== 'fixedtubes' && numTubes_final > numTubes_geo && tubeVel < targetVel * 0.9) {
-    const pitchLen_adv = pitch * OD;
-    const bundleFactor_adv = bundleAreaFactor;
 
-    // LEVER A: Increase tube length (original suggestion)
-    const L_for_target = +(L_eff * targetVel / Math.max(tubeVel, 0.01)).toFixed(1);
+    // Standard TEMA tube lengths (m) — sorted ascending
+    const TEMA_LENGTHS = [1.83, 2.44, 3.05, 3.66, 4.27, 4.88, 6.10];
+    const VEL_THRESHOLD = targetVel * 0.90; // accept 90% of target as "achieved"
 
-    // LEVER B: Increase tube passes — more passes → fewer tubes/pass → higher velocity
-    // Find minimum passes to hit target velocity with current tube count
-    let passAdvice = null;
+    // Helper: given a tube OD/Di/tw/passes/length, find minimum tube count
+    // for required area, then compute actual tube-side velocity.
+    function solveConfig(od_m, di_m, np, L_try) {
+      const A_per_tube = Math.PI * od_m * L_try;
+      const A_cross    = Math.PI * di_m * di_m / 4;
+      const nTubes_req = Math.ceil(area / A_per_tube / np) * np; // round to pass multiple
+      if (nTubes_req < 1 || nTubes_req > 2000) return null;
+      const nTPP       = nTubes_req / np;
+      const vel        = massC / (nTPP * cFluid.rho * A_cross);
+      return { nTubes: nTubes_req, nTPP: +nTPP.toFixed(0), velocity: +vel.toFixed(3),
+               shellID_mm: +(estimateShellID(nTubes_req) * 1000).toFixed(0) };
+    }
+
+    // ── LEVER A: Shortest TEMA standard length that achieves target velocity ──
+    // This correctly accounts for the circular dependency:
+    // longer L → fewer tubes needed → fewer tubes/pass → higher velocity.
+    let leverA = null;
+    for (const L_try of TEMA_LENGTHS) {
+      if (L_try <= L_eff * 1.05) continue; // only lengths meaningfully longer than current
+      const cfg = solveConfig(OD, Di, nPasses, L_try);
+      if (!cfg) continue;
+      if (cfg.velocity >= VEL_THRESHOLD) {
+        leverA = {
+          L_required_m: L_try,
+          numTubes:     cfg.nTubes,
+          nTubesPerPass: cfg.nTPP,
+          velocity:     cfg.velocity,
+          shellID_mm:   cfg.shellID_mm,
+          note: `Standard TEMA length. Fewer tubes needed at longer L → higher velocity.`
+        };
+        break; // shortest standard length that works
+      }
+    }
+    // If no standard length works (very high duty), report the next TEMA step up with its velocity
+    if (!leverA) {
+      const bestL = TEMA_LENGTHS[TEMA_LENGTHS.length - 1];
+      const cfg = solveConfig(OD, Di, nPasses, bestL);
+      if (cfg) {
+        leverA = {
+          L_required_m: bestL,
+          numTubes:     cfg.nTubes,
+          nTubesPerPass: cfg.nTPP,
+          velocity:     cfg.velocity,
+          shellID_mm:   cfg.shellID_mm,
+          note: `Maximum standard TEMA length. Velocity ${cfg.velocity} m/s is the best achievable at this OD and pass count — combine with Lever B or D.`,
+          partial: true
+        };
+      }
+    }
+
+    // ── LEVER B: Increase tube passes at current length ────────────────────
+    // Correctly re-solves required tube count for each pass count.
+    let leverB = null;
     for (let np = nPasses + 2; np <= 8; np += 2) {
-      const nTPP_adv = Math.ceil(numTubes_final / np);
-      const vel_adv = massC / (nTPP_adv * cFluid.rho * A_tube);
-      if (vel_adv >= targetVel * 0.85) {
-        const numTubes_adv = nTPP_adv * np;
-        passAdvice = {
-          passes: np,
-          tubes: numTubes_adv,
-          tubesPerPass: nTPP_adv,
-          velocity: +vel_adv.toFixed(3),
-          shellID_mm: +(estimateShellID(numTubes_adv) * 1000).toFixed(0)
+      const cfg = solveConfig(OD, Di, np, L_eff);
+      if (!cfg) continue;
+      if (cfg.velocity >= VEL_THRESHOLD) {
+        leverB = {
+          passes:       np,
+          numTubes:     cfg.nTubes,
+          nTubesPerPass: cfg.nTPP,
+          velocity:     cfg.velocity,
+          shellID_mm:   cfg.shellID_mm,
+          note: `Same tube length. More passes → fewer tubes per pass → higher velocity. No extra bay space needed.`
         };
         break;
       }
     }
 
-    // LEVER C: Multiple shells in series — splits area across shells
-    let shellAdvice = null;
+    // ── LEVER C: Multiple shells in series ─────────────────────────────────
+    let leverC = null;
     for (let ns = 2; ns <= 4; ns++) {
-      const A_per_shell = area / ns;
-      const nTubes_per_shell = Math.ceil(A_per_shell / (Math.PI * OD * L_eff) / nPasses) * nPasses;
-      const nTPP_adv = nTubes_per_shell / nPasses;
-      const vel_adv = massC / (nTPP_adv * cFluid.rho * A_tube);
-      if (vel_adv >= targetVel * 0.85) {
-        shellAdvice = {
-          shells: ns,
+      const area_per_shell = area / ns;
+      // Override area for the per-shell solve
+      const A_per_tube = Math.PI * OD * L_eff;
+      const nTubes_per_shell = Math.ceil(area_per_shell / A_per_tube / nPasses) * nPasses;
+      if (nTubes_per_shell < 1 || nTubes_per_shell > 2000) continue;
+      const nTPP = nTubes_per_shell / nPasses;
+      const vel  = massC / (nTPP * cFluid.rho * A_tube);
+      if (vel >= VEL_THRESHOLD) {
+        leverC = {
+          shells:        ns,
           tubesPerShell: nTubes_per_shell,
-          tubesPerPass: nTPP_adv,
-          velocity: +vel_adv.toFixed(3),
-          shellID_mm: +(estimateShellID(nTubes_per_shell) * 1000).toFixed(0)
+          nTubesPerPass: +nTPP.toFixed(0),
+          velocity:      +vel.toFixed(3),
+          shellID_mm:    +(estimateShellID(nTubes_per_shell) * 1000).toFixed(0),
+          note: `Each shell handles ${(100/ns).toFixed(0)}% of total duty. Series arrangement maintains temperature driving force.`
         };
         break;
       }
     }
 
-    // LEVER D: Reduce tube OD — smaller tubes → more tubes for same area → smaller cross-section → higher velocity
-    // Standard TEMA OD sizes to try
-    let odAdvice = null;
-    const OD_try = [0.01905, 0.01588, 0.0127, 0.01016]; // 3/4", 5/8", 1/2", 3/8"
-    for (const od_try of OD_try) {
-      if (od_try >= OD) continue; // only smaller than current
-      const tw_try = Math.max(0.0012, od_try * 0.08); // min 1.2mm or 8% of OD
-      const Di_try = od_try - 2 * tw_try;
-      if (Di_try <= 0) continue;
-      const A_cross_try = Math.PI * Di_try * Di_try / 4;
-      const A_tube_try = Math.PI * od_try * L_eff;
-      const nTubes_try = Math.ceil(area / A_tube_try / nPasses) * nPasses;
-      const nTPP_try = nTubes_try / nPasses;
-      const vel_try = massC / (nTPP_try * cFluid.rho * A_cross_try);
-      if (vel_try >= targetVel * 0.85) {
-        odAdvice = {
-          OD_mm: +(od_try * 1000).toFixed(2),
-          Di_mm: +(Di_try * 1000).toFixed(2),
-          tw_mm: +(tw_try * 1000).toFixed(1),
-          tubes: nTubes_try,
-          tubesPerPass: nTPP_try,
-          velocity: +vel_try.toFixed(3),
-          shellID_mm: +(estimateShellID(nTubes_try) * 1000).toFixed(0)
+    // ── LEVER D: Reduce tube OD (TEMA standard sizes only) ────────────────
+    // Standard TEMA OD options smaller than current, in mm
+    const TEMA_OD_MM = [38.1, 31.75, 25.4, 19.05, 15.88, 12.7];
+    let leverD = null;
+    for (const od_mm of TEMA_OD_MM) {
+      const od_m  = od_mm / 1000;
+      if (od_m >= OD) continue; // only smaller ODs
+      // BWG/schedule wall: use 10% of OD as typical wall, min 1.2mm
+      const tw_m  = Math.max(0.0012, od_m * 0.10);
+      const di_m  = od_m - 2 * tw_m;
+      if (di_m <= 0.005) continue;
+      const cfg = solveConfig(od_m, di_m, nPasses, L_eff);
+      if (!cfg) continue;
+      if (cfg.velocity >= VEL_THRESHOLD) {
+        leverD = {
+          OD_mm:         od_mm,
+          Di_mm:         +(di_m * 1000).toFixed(1),
+          tw_mm:         +(tw_m * 1000).toFixed(1),
+          numTubes:      cfg.nTubes,
+          nTubesPerPass: cfg.nTPP,
+          velocity:      cfg.velocity,
+          shellID_mm:    cfg.shellID_mm,
+          note: `Smaller bore → smaller flow area per tube → higher velocity for same flow. Check fouling/cleaning access.`
         };
-        break; // first OD that works
+        break;
+      }
+    }
+
+    // ── LEVER E: Combined — best standard length + increased passes ────────
+    // Useful when neither A nor B alone achieves target but together they can.
+    let leverE = null;
+    if (!leverA || (leverA && leverA.partial)) {
+      outerLoop:
+      for (const L_try of TEMA_LENGTHS) {
+        if (L_try <= L_eff * 1.05) continue;
+        for (let np = nPasses + 2; np <= 8; np += 2) {
+          const cfg = solveConfig(OD, Di, np, L_try);
+          if (!cfg) continue;
+          if (cfg.velocity >= VEL_THRESHOLD) {
+            leverE = {
+              L_required_m:  L_try,
+              passes:        np,
+              numTubes:      cfg.nTubes,
+              nTubesPerPass: cfg.nTPP,
+              velocity:      cfg.velocity,
+              shellID_mm:    cfg.shellID_mm,
+              note: `Combined: standard length + extra passes. Use when a single lever is insufficient.`
+            };
+            break outerLoop;
+          }
+        }
       }
     }
 
     designAdvisor = {
-      problem: `Tube velocity ${tubeVel.toFixed(3)} m/s is below target ${targetVel} m/s because area requirement (${area.toFixed(1)} m²) forces ${numTubes_final} tubes at L=${L_eff.toFixed(1)} m.`,
+      problem: `Tube velocity ${tubeVel.toFixed(3)} m/s is below target ${targetVel} m/s. ` +
+               `Area requirement (${area.toFixed(1)} m²) forces ${numTubes_final} tubes at L=${L_eff.toFixed(1)} m, ` +
+               `giving ${nTubesPerPass_final} tubes/pass — too many for target velocity.`,
+      currentVelocity: +tubeVel.toFixed(3),
+      targetVelocity:  targetVel,
+      requiredArea_m2: +area.toFixed(2),
+      currentL_m:      L_eff,
       levers: {
-        A_increase_length: { description: 'Increase tube length', L_required_m: L_for_target, note: 'Maintains current OD and pass count' },
-        B_more_passes:  passAdvice  ? { description: 'Increase tube passes',  ...passAdvice,  note: 'Fewer tubes/pass → higher velocity. Same tube length.' } : null,
-        C_more_shells:  shellAdvice ? { description: 'Multiple shells in series', ...shellAdvice, note: 'Each shell sees lower duty. Most expensive option.' } : null,
-        D_smaller_OD:   odAdvice    ? { description: 'Reduce tube OD',        ...odAdvice,    note: 'Smaller bore → higher velocity. Check fouling/cleaning.' } : null,
+        A_increase_length: leverA,
+        B_more_passes:     leverB,
+        C_more_shells:     leverC,
+        D_smaller_OD:      leverD,
+        E_combined:        leverE,
       }
     };
   }
@@ -1062,11 +1032,10 @@ function calcShellTube(b) {
     hF, cF, Q, Qh, Qc, U, U_clean, area, area_provided, overSurf,
     lmtd, F, FLMTD, dT1, dT2, lmtdArr, shellMode,
     numTubes: numTubes_final, nTubesPerPass: nTubesPerPass_final,
-    numTubes_velocity: numTubes_geo,
+    numTubes_velocity: numTubes_geo,   // tubes needed for velocity target only
     nPasses, nShells, shellID: shellID_final, Di, OD, L: L_eff,
     tubeVel, targetVel, velMode,
     shellDP, tubeDp, pdAllowShell, pdAllowTube,
-    shellDP_method: 'bell-delaware-4term',   // tells UI which ΔP method was used
     bdCorr: { ...bdRes, hShell, hTube },
     NTU, eff, balErr, tema, pitchLayout, hTmean, cTmean,
     hTi, hTo, cTi, cTo, hPop, cPop,
@@ -1075,14 +1044,6 @@ function calcShellTube(b) {
     resistanceBreakdown, st, warns,
     designAdvisor,
     velocity_driven_by_area: numTubes_final > numTubes_geo,
-    // Space constraint info
-    spaceConstraints: {
-      L_max_applied:       isFinite(L_max) ? L_max : null,
-      shell_OD_max_mm:     isFinite(shell_OD_max) ? shell_OD_max : null,
-      L_constrained:       isFinite(L_max) && L > L_max,
-    },
-    // TEMA shell sizing detail
-    temaShell: shellID_detail,
     convergence: {
       converged,
       iterations: iterCount,
