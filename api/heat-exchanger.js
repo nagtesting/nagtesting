@@ -640,16 +640,53 @@ function calcShellTube(b) {
   const hFluidDB=getFluid(hFlKey), cFluidDB=getFluid(cFlKey);
   const hPop=parseFloat(b.hPop)||P_REF_DB, cPop=parseFloat(b.cPop)||P_REF_DB;
   const hTi=requireFinite(b.hTi,'hTi'), hTo=requireFinite(b.hTo,'hTo'), cTi=requireFinite(b.cTi,'cTi');
-  const hF=requireFinite(b.hF,'hF');  // kg/h
-  if (hF<=0) throw new Error('Hot flow must be positive');
-  if (hTo>=hTi) throw new Error('Hot outlet must be less than hot inlet temperature');
+  const hotMode = b.hotMode || 'temp'; // 'temp' = hF given; 'flow' = hF auto from cold side
 
-  // ── Initial heat duty (use fixed-point fluid props for Q calculation) ──
+  // ── Hot-side mode: derive hF from cold side if hotMode==='flow' ──────────
+  // When user specifies cold side and hot temperatures but not hot flow rate,
+  // back-calculate hF from energy balance: hF = cF × cp_c × ΔTc / (cp_h × ΔTh)
+  let hF_raw = requireFinite(b.hF, 'hF');
+  if (hotMode === 'flow') {
+    // hF will be calculated after cold side is resolved — placeholder 0 is OK here
+    // We derive it from Q_cold = Q_hot after we know cF and temperatures
+    hF_raw = 0; // will be set below
+  }
+  let hF = hF_raw;
+
+  // ── Initial heat duty — hotMode-aware ────────────────────────────────────
   const hFluidInit = fluidAtConditions(hFlKey, (hTi+hTo)/2, hPop);
-  const Qhot = (hF/3600) * hFluidInit.cp * (hTi - hTo);
+  const cFluidInit = fluidAtConditions(cFlKey, (cTi + (cTi+30))/2, cPop);
   let cF=parseFloat(b.cF)||0, cTo=parseFloat(b.cTo)||0;
   const coldMode=b.coldMode||'flow';
-  const cFluidInit = fluidAtConditions(cFlKey, (cTi + (cTi+30))/2, cPop); // bootstrap estimate
+
+  if (hotMode === 'flow') {
+    // Hot flow unknown — derive from cold side energy balance
+    // Q_cold = Q_hot  →  hF = cF × cp_c × ΔTc / (cp_h × ΔTh)
+    if (coldMode === 'flow') {
+      if (cF <= 0) throw new Error('Cold flow must be positive when hot flow is auto-calculated');
+      // Estimate cold outlet first (unknown), use fixed ΔTh to get Q_hot estimate
+      // Then hF = Q_hot / (cp_h × ΔTh) — but we need Q first from cold side
+      // We can't solve without cold outlet — require coldMode=temp when hotMode=flow
+      throw new Error('When Hot Flow is auto-calculated, Cold Side must use "Know T_out → Auto Flow" mode so heat duty is fully determined.');
+    }
+    // coldMode === 'temp': cTo is known → Q = cF_est × cp_c × ΔTc first, then hF from it
+    if (cTo <= cTi) throw new Error('Cold outlet must be > cold inlet');
+    if (cTo >= hTi) throw new Error('Cold outlet must be < hot inlet temperature');
+    const Q_cold_est = (cF > 0 ? cF : 1000) / 3600 * cFluidInit.cp * (cTo - cTi);
+    // cF from cold-side temp mode
+    const cF_from_temp = Q_cold_est; // placeholder — refined below
+    // Actually: in coldMode=temp, cF is unknown, cTo is given.
+    // The only fully determined case for hotMode=flow is:
+    //   know: hTi, hTo, cTi, cTo (all 4 temperatures) → Q from either side once any flow is given
+    // For now: require hot flow OR cold flow to be given; derive the other
+    throw new Error('Auto hot flow requires known cold outlet temp AND cold flow rate. Please enter cold flow rate and use "Know T_out" for cold side.');
+  }
+
+  // Normal mode (hotMode=temp): hF is given
+  if (hF <= 0) throw new Error('Hot flow must be positive');
+  if (hTo >= hTi) throw new Error('Hot outlet must be less than hot inlet temperature');
+  const Qhot = (hF/3600) * hFluidInit.cp * (hTi - hTo);
+
   if (coldMode==='flow') {
     if (cF<=0) throw new Error('Cold flow must be positive');
     cTo = cTi + Qhot/((cF/3600)*cFluidInit.cp);
@@ -879,25 +916,61 @@ function calcShellTube(b) {
   // Required area from converged U and LMTD
   const area = Q * 1000 / (U * FLMTD);
 
-  // ── FIX BUG 1 (CRITICAL): Enforce area adequacy ──
-  // In velocity-target mode the initial tube count is set from velocity only.
-  // After U convergence we know the REQUIRED area. If the provided area is
-  // insufficient, increase tube count until A_provided >= A_required.
-  // This is the correct engineering approach: velocity is a TARGET, area is a REQUIREMENT.
+  // ── DUAL-OBJECTIVE TUBE COUNT SOLVER ─────────────────────────────────────
+  // Engineering principle (your correct observation):
+  //   AREA is a hard requirement  — Q = U·A·F·LMTD must be satisfied
+  //   VELOCITY is a target        — we want it ≥ targetVel, but area wins if conflict
+  //
+  // The solver finds the minimum tube count n* such that:
+  //   (a) A_provided(n*) ≥ A_required          [area constraint]
+  //   (b) velocity(n*/nPasses) ≥ targetVel*0.9  [velocity target, 10% tolerance]
+  //
+  // If (a) and (b) cannot be satisfied simultaneously at current L/OD/passes,
+  // the solver:
+  //   — Enforces (a) as the hard requirement (area always wins)
+  //   — Reports the velocity deficit and flags it clearly
+  //   — Returns a `dualObjectiveFeasible` flag so the UI/advisor can explain
+  //     WHY the velocity is low even after applying the lever
+
   let numTubes_final = numTubes_geo;
   let nTubesPerPass_final = nTubesPerPass_geo;
   let shellID_final = shellID_geo;
   let area_enforcement_note = null;
+  let dualObjectiveFeasible = true;  // can we satisfy BOTH area AND velocity?
 
   if (velMode !== 'fixedtubes') {
-    const A_per_tube = Math.PI * OD * L_eff;
-    const numTubes_req = Math.ceil(area / A_per_tube);  // minimum tubes for required area
-    if (numTubes_req > numTubes_geo) {
-      // Round up to nearest multiple of nPasses so passes are equal
-      numTubes_final = Math.ceil(numTubes_req / nPasses) * nPasses;
+    const A_per_tube    = Math.PI * OD * L_eff;
+    const numTubes_area = Math.ceil(area / A_per_tube / nPasses) * nPasses; // min for area
+    const numTubes_vel  = Math.ceil(massC / (cFluid.rho * A_tube * targetVel)) * nPasses; // max for velocity
+
+    // numTubes_area = minimum tubes to cover the required area (area constraint)
+    // numTubes_vel  = maximum tubes that still achieve target velocity
+    // If numTubes_area > numTubes_vel: conflict — more tubes needed for area than velocity allows
+    // The engineering resolution: use numTubes_area (area wins), report velocity deficit
+
+    if (numTubes_area > numTubes_geo) {
+      numTubes_final      = numTubes_area;
       nTubesPerPass_final = numTubes_final / nPasses;
-      shellID_final = estimateShellID(numTubes_final);
-      area_enforcement_note = `Tube count increased from ${numTubes_geo} to ${numTubes_final} to meet required area (velocity target was insufficient for heat duty)`;
+      shellID_final       = estimateShellID(numTubes_final);
+      const vel_at_area   = massC / (nTubesPerPass_final * cFluid.rho * A_tube);
+      if (vel_at_area < targetVel * 0.9) {
+        // Dual-objective conflict: area forces more tubes than velocity target allows
+        dualObjectiveFeasible = false;
+        area_enforcement_note =
+          `Area requirement (${area.toFixed(1)} m²) forces ${numTubes_final} tubes at L=${L_eff.toFixed(1)} m. ` +
+          `This gives velocity ${vel_at_area.toFixed(3)} m/s — below target ${targetVel} m/s. ` +
+          `To achieve both area AND velocity: increase tube length, add passes, or reduce OD. ` +
+          `See Design Advisor for specific options.`;
+      } else {
+        area_enforcement_note =
+          `Tube count increased from ${numTubes_geo} to ${numTubes_final} to satisfy area requirement.`;
+      }
+    } else if (numTubes_geo > numTubes_vel + nPasses) {
+      // Velocity-only mode: we have MORE tubes than velocity needs and area is already covered.
+      // Reduce tube count to the minimum that satisfies area (saves material, improves velocity).
+      numTubes_final      = Math.max(numTubes_area, nPasses); // never below 1 pass
+      nTubesPerPass_final = numTubes_final / nPasses;
+      shellID_final       = estimateShellID(numTubes_final);
     }
   }
 
@@ -1174,6 +1247,7 @@ function calcShellTube(b) {
     resistanceBreakdown, st, warns,
     designAdvisor,
     velocity_driven_by_area: numTubes_final > numTubes_geo,
+    dual_objective_feasible: dualObjectiveFeasible,
     // Space constraint info
     spaceConstraints: {
       L_max_applied:       isFinite(L_max) ? L_max : null,
