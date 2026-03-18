@@ -77,24 +77,9 @@ const TSAT_TABLE = [
   [2500,668.1],[3000,695.4],
 ];
 function getTsatF(P_psia) {
+  // Returns saturation temperature [°F] for steam pressure [psia]
+  // Interpolates log-linearly on TSAT_TABLE (ASME Steam Tables)
   const t = TSAT_TABLE;
-  if (P_psia <= t[0][0]) return t[0][1];
-  if (P_psia >= t[t.length-1][0]) return t[t.length-1][1];
-  for (let i=0; i<t.length-1; i++) {
-    if (t[i][0] <= P_psia && P_psia <= t[i+1][0]) {
-      const frac = Math.log(P_psia/t[i][0]) / Math.log(t[i+1][0]/t[i][0]);
-      return t[i][1] + frac*(t[i+1][1]-t[i][1]);
-    }
-  }
-  // Steam specific volume vg [ft³/lb] vs P [psia] — NIST saturated steam
-const VG_TABLE = [
-  [14.696,26.80],[20,20.09],[40,10.50],[60,7.176],[80,5.472],
-  [100,4.432],[150,3.015],[200,2.289],[300,1.543],[400,1.162],
-  [500,0.928],[700,0.655],[1000,0.446],[1500,0.277],[2000,0.188],
-  [2500,0.131],[3000,0.086],
-];
-function getVgSteam(P_psia) {
-  const t = VG_TABLE;
   if (P_psia <= t[0][0]) return t[0][1];
   if (P_psia >= t[t.length-1][0]) return t[t.length-1][1];
   for (let i=0; i<t.length-1; i++) {
@@ -105,6 +90,27 @@ function getVgSteam(P_psia) {
   }
   return t[t.length-1][1];
 }
+
+// ── STEAM SPECIFIC VOLUME TABLE ───────────────────────────────────────────────
+// vg [ft³/lb] vs P [psia] — NIST saturated steam (log-linear interpolation)
+// FIX F-01: moved outside getTsatF() so getVgSteam() is accessible at module scope
+const VG_TABLE = [
+  [14.696,26.80],[20,20.09],[40,10.50],[60,7.176],[80,5.472],
+  [100,4.432],[150,3.015],[200,2.289],[300,1.543],[400,1.162],
+  [500,0.928],[700,0.655],[1000,0.446],[1500,0.277],[2000,0.188],
+  [2500,0.131],[3000,0.086],
+];
+function getVgSteam(P_psia) {
+  // Returns saturated vapour specific volume [ft³/lb] at P_psia
+  const t = VG_TABLE;
+  if (P_psia <= t[0][0]) return t[0][1];
+  if (P_psia >= t[t.length-1][0]) return t[t.length-1][1];
+  for (let i=0; i<t.length-1; i++) {
+    if (t[i][0] <= P_psia && P_psia <= t[i+1][0]) {
+      const frac = Math.log(P_psia/t[i][0]) / Math.log(t[i+1][0]/t[i][0]);
+      return t[i][1] + frac*(t[i+1][1]-t[i][1]);
+    }
+  }
   return t[t.length-1][1];
 }
 function controlValve_handler(req, res) {
@@ -158,14 +164,18 @@ function controlValve_handler(req, res) {
     if (Q <= 0)  { warns.push({ cls:'warn-red', txt:'❌ Flow rate must be greater than zero.' }); hasError=true; }
     if (isL && SG <= 0) { warns.push({ cls:'warn-red', txt:'❌ Specific gravity must be positive.' }); hasError=true; }
     if (isG && SG <= 0) { warns.push({ cls:'warn-red', txt:'❌ Molecular weight must be positive.' }); hasError=true; }
+    // FIX 4: Validate pipe diameter — D = 0 causes division-by-zero in velocity (returns Infinity)
+    if (D <= 0)  { warns.push({ cls:'warn-red', txt:'❌ Pipe internal diameter must be greater than zero.' }); hasError=true; }
     if (FL <= 0 || FL > 1) warns.push({ cls:'warn-amber', txt:'⚠ FL/xT should be between 0.1 and 1.0.' });
     if (Z <= 0  || Z > 1.5) warns.push({ cls:'warn-amber', txt:'⚠ Compressibility Z outside typical range (0.7–1.05).' });
 
-    // Gauge pressure warnings
-    if (!hasError && isL && !m && P1 < 14.5 && P1 > 0)
-      warns.push({ cls:'warn-amber', txt:`⚠ P₁ = ${P1} psi looks like gauge pressure. IEC 60534 requires ABSOLUTE pressure. Add 14.7 psia.` });
-    if (!hasError && m && P1 < 1.013 && P1 > 0 && isL)
-      warns.push({ cls:'warn-amber', txt:`⚠ P₁ = ${P1} bar looks like gauge pressure. IEC 60534 requires ABSOLUTE pressure (bara). Add 1.013 bar.` });
+    // FIX 5: Gauge pressure warnings — extended to all phases (was liquid-only before)
+    //   Gas and steam users entering gauge pressure produce silently wrong Cv results.
+    //   Thresholds: US < 14.5 psia likely gauge; SI < 1.013 bara likely gauge.
+    if (!hasError && !m && P1 < 14.5 && P1 > 0)
+      warns.push({ cls:'warn-amber', txt:`⚠ P₁ = ${P1} psi — looks like gauge pressure. IEC 60534 requires ABSOLUTE pressure. Add ~14.7 psia.` });
+    if (!hasError && m && P1 < 1.013 && P1 > 0)
+      warns.push({ cls:'warn-amber', txt:`⚠ P₁ = ${P1} bar — looks like gauge pressure. IEC 60534 requires ABSOLUTE pressure (bara). Add 1.013 bar.` });
     if (isL && Pv > 0 && Pv >= P1) {
       warns.push({ cls:'warn-red', txt:'❌ Vapour pressure Pv ≥ P₁: fluid already vaporised at inlet.' }); hasError=true;
     }
@@ -192,19 +202,65 @@ function controlValve_handler(req, res) {
     const Pc_psia = fluidPc ? fluidPc * 14.5038 : Pc_default;
 
     // ── FLOW CONVERSION to canonical units ────────────────────────────────────
+    // Target: Qc in GPM (liquid) or SCFH at 14.696 psia, 60°F (gas) or lb/h (steam)
+    //
+    // FIX F-02/F-03: Mass flow liquid — correct density formula
+    //   rho_lbgal = SG × 8.3454 lb/gal  (water at 60°F = 8.3454 lb/gal)
+    //   GPM = (lb/h) / (lb/gal × 60 min/h)
+    //
+    // FIX F-04: Gas Nm³/h → SCFH
+    //   Standard conditions differ: Normal = 0°C / 1 atm; Standard (ISA Cv) = 60°F / 14.696 psia
+    //   1 Nm³/h = 35.3147 ft³/h (volumetric @ STP)
+    //   Temperature correction: (519.67 R) / (273.15 K × 9/5 + 32 + 459.67 R)
+    //     = 519.67 / (459.67 + 32 + 273.15×1.8) = 519.67 / 491.67 = 1.05698
+    //   Pressure correction:  14.696 / 14.696 = 1.0 (both at 1 atm)
+    //   Exact factor: 35.3147 × (519.67/491.67) = 37.326 ... but normal is 0°C not 15°C
+    //   0°C / 1 atm → 60°F / 14.696 psia: factor = 35.3147 × 519.67/491.67 = 37.326
+    //   However Nm³ is defined at 0°C (273.15 K) not 15°C (288.15 K):
+    //   Correct factor = 35.3147 × (519.67 / (273.15*1.8+32+459.67))
+    //                  = 35.3147 × (519.67 / 491.67) = 37.326 SCFH per Nm³/h
+    //   Note: 37.33 in original was close but derived incorrectly; 37.326 is exact.
+    //
+    // FIX F-04 gas mass flow SCFH:
+    //   SCFH = lb/h × (379.5 ft³/lb-mol at 60°F/14.696 psia) / MW_g/mol
+    //   This is unchanged and was correct.
     let Qc = Q;
     if (isL) {
-      if      (flowType === 'vol')  { if (m) Qc = Q * 4.40287; }
-      else if (flowType === 'mass') {
-        const rho = SG * 8.3454;
-        Qc = m ? (Q * 2.20462) / (rho * 60) : Q / (rho * 60);
-      } else { if (m) Qc = Q * 4.40287; }
+      if (flowType === 'vol') {
+        // Vol flow: US → GPM already; SI → m³/h → GPM
+        Qc = m ? Q * 4.40287 : Q;           // m³/h × 4.40287 = GPM
+      } else if (flowType === 'mass') {
+        // FIX F-02/F-03: Mass flow → GPM
+        // lb/gal water at 60°F = 8.3454; rho_fluid = SG × 8.3454 lb/gal
+        const rho_lbgal = SG * 8.3454;      // lb/gal
+        if (m) {
+          // SI: kg/h → lb/h → GPM
+          const lbh = Q * 2.20462;           // kg/h → lb/h
+          Qc = lbh / (rho_lbgal * 60.0);    // lb/h ÷ (lb/gal × 60 min/h) = GPM
+        } else {
+          // US: lb/h → GPM
+          Qc = Q / (rho_lbgal * 60.0);      // lb/h ÷ (lb/gal × 60 min/h) = GPM
+        }
+      } else {
+        // nm3 tab selected for liquid — treat as volume flow (m³/h in SI, GPM in US)
+        Qc = m ? Q * 4.40287 : Q;
+      }
     } else if (isG) {
-      if      (flowType === 'vol')  { if (m) Qc = Q * 37.33; }
-      else if (flowType === 'mass') { const lbh = m ? Q * 2.20462 : Q; Qc = (lbh / SG) * 379.5; }
-      else { if (m) Qc = Q * 37.33; }
+      if (flowType === 'vol') {
+        // Vol flow: US → SCFH already; SI → Nm³/h → SCFH
+        // FIX F-04: correct Nm³/h (0°C,1 atm) → SCFH (60°F,14.696 psia) factor
+        Qc = m ? Q * 37.326 : Q;            // 37.326 = 35.3147 × 519.67/491.67
+      } else if (flowType === 'mass') {
+        // Mass flow → SCFH: lb/h × 379.5 ft³/lb-mol (at 60°F,14.696psia) / MW
+        const lbh = m ? Q * 2.20462 : Q;    // kg/h → lb/h if SI
+        Qc = (lbh / SG) * 379.5;            // SG = MW in g/mol for gases
+      } else {
+        // nm3 tab for gas — same as vol (Nm³/h)
+        Qc = m ? Q * 37.326 : Q;
+      }
     } else {
-      Qc = m ? Q * 2.20462 : Q; // steam → lb/h
+      // STEAM — target: lb/h
+      Qc = m ? Q * 2.20462 : Q;             // kg/h → lb/h if SI; lb/h already if US
     }
 
     // ── CORE IEC 60534-2-1 CALCULATIONS ──────────────────────────────────────
@@ -213,22 +269,40 @@ function controlValve_handler(req, res) {
 
     if (isL) {
       // LIQUID — IEC 60534-2-1 §5.1
-      const FF  = Math.max(0.5, Math.min(0.96, 0.96 - 0.28 * Math.sqrt(Math.max(Pva / Pc_psia, 0))));
+      // FIX F-05 + FIX 3: FF factor with correct physical floor
+      //   IEC 60534-2-1: FF = 0.96 − 0.28 × √(Pv/Pc)
+      //   Upper limit 0.96: when Pv → 0, FF → 0.96  (low-vapour-pressure liquid)
+      //   Physical lower limit 0.68: water at its own critical pressure (Pv = Pc)
+      //     FF = 0.96 − 0.28 × √(1.0) = 0.68
+      //   If Pv > Pc (user input error or supercritical fluid), formula yields FF < 0.68.
+      //   Clamping to 0.68 prevents negative dPmax and preserves physically meaningful result.
+      //   Original 0.5 floor was arbitrary; 0.68 is the true thermodynamic minimum.
+      const FF  = Math.max(0.68, Math.min(0.96, 0.96 - 0.28 * Math.sqrt(Math.max(Pva / Pc_psia, 0))));
       dPmax     = Math.max(FL * FL * (P1a - FF * Pva), 0.001);
       dPeff     = Math.min(dP, dPmax);
       Cv        = Qc * Math.sqrt(SG / Math.max(dPeff, 0.0001));
 
-      // Reynolds viscosity correction IEC 60534 §5.3
-      Rev = 76000 * Qc / (fluidVisc * Math.pow(FL, 1.5) * Math.sqrt(Math.max(Cv, 0.001)));
+      // FIX F-06: Iterative Reynolds viscosity correction per IEC 60534-2-3 Annex D
+      //   Rev must be computed with the corrected Cv, not the initial estimate.
+      //   2 iterations converge for all practical Rev values.
       FR  = 1.0;
-      if (Rev < 10000) {
-        if      (Rev < 10)    FR = 0.026 * Math.pow(Rev, 0.33);
-        else if (Rev < 100)   FR = 0.12  * Math.pow(Rev, 0.20);
-        else if (Rev < 1000)  FR = 0.34  * Math.pow(Rev, 0.10);
-        else                  FR = 0.70  * Math.pow(Rev / 10000, 0.04);
-        FR = Math.min(Math.max(FR, 0.1), 1.0);
-        Cv = Cv / FR;
+      let Cv_iter = Cv;
+      for (let iter = 0; iter < 3; iter++) {
+        Rev = 76000 * Qc / (fluidVisc * Math.pow(FL, 1.5) * Math.sqrt(Math.max(Cv_iter, 0.001)));
+        let FR_iter = 1.0;
+        if (Rev < 10000) {
+          if      (Rev < 10)    FR_iter = 0.026 * Math.pow(Rev, 0.33);
+          else if (Rev < 100)   FR_iter = 0.12  * Math.pow(Rev, 0.20);
+          else if (Rev < 1000)  FR_iter = 0.34  * Math.pow(Rev, 0.10);
+          else                  FR_iter = 0.70  * Math.pow(Rev / 10000, 0.04);
+          FR_iter = Math.min(Math.max(FR_iter, 0.1), 1.0);
+        }
+        const Cv_new = Cv / FR_iter;
+        if (Math.abs(Cv_new - Cv_iter) < Cv_iter * 0.001) { Cv_iter = Cv_new; FR = FR_iter; break; }
+        Cv_iter = Cv_new;
+        FR = FR_iter;
       }
+      Cv = Cv_iter;
 // ── Fp PIPING GEOMETRY FACTOR — IEC 60534-2-1 §4.1 Eq.2 ──────────────
       Fp = 1.0;
       if (d_valve_in && d_valve_in < D_in * 0.99) {
@@ -244,6 +318,8 @@ function controlValve_handler(req, res) {
           txt:`⚠ Fp piping correction: Fp=${Fp.toFixed(3)}, Cv increased by ${((1/Fp-1)*100).toFixed(1)}% for ${m?(d_valve_raw.toFixed(0)+' mm valve'):(d_valve_in.toFixed(3)+'" valve')} in ${m?((D_in*25.4).toFixed(0)+' mm pipe'):(D_in.toFixed(3)+'" pipe')} (IEC 60534-2-1 §4.1).` });
       }
       
+      // Liquid inlet velocity: GPM × 0.002228 ft³/s per GPM ÷ pipe area ft²
+      // 0.002228 = 1 gal/min in ft³/s; A_in2/144 converts in² → ft²
       vel = Qc * 0.002228 / (A_in2 / 144.0);
 
       const sigma = (P1a - Pva) / Math.max(dP, 0.0001);
@@ -264,7 +340,7 @@ function controlValve_handler(req, res) {
 
     } else if (isG) {
       // GAS — IEC 60534-2-1 §5.2
-      const MW     = SG;
+      const MW     = SG;    // SG for gases = molar mass in g/mol
       const xT     = FL;
       const x      = dP / Math.max(P1a, 0.0001);
       const Fk     = k / 1.4;
@@ -274,7 +350,14 @@ function controlValve_handler(req, res) {
       Y            = Math.max(1.0 - x_lim / (3.0 * Fk * xT), 0.667);
       dPmax        = x_crit * P1a;
 
-      Cv = Qc * Math.sqrt(MW * TR * Z) / (1360.0 * P1a * Y * Math.sqrt(Math.max(x_lim, 0.0001)));
+      // FIX 1: N₇ = 1360 requires G_g (specific gravity relative to air = MW/28.97),
+      //   NOT raw MW in g/mol. Using MW directly over-estimates Cv by √28.97 = 5.38×
+      //   for every gas at every condition.
+      //   Reference: ISA S75.01, Fisher Control Valve Handbook §4, IEC 60534-2-1 Table 1
+      //   Cv = Q × √(G_g × T × Z) / (1360 × P1 × Y × √x)
+      //   where G_g = MW_gas / MW_air = MW / 28.97  (dimensionless)
+      const Gg     = MW / 28.97;   // specific gravity relative to air
+      Cv = Qc * Math.sqrt(Gg * TR * Z) / (1360.0 * P1a * Y * Math.sqrt(Math.max(x_lim, 0.0001)));
 // ── Fp PIPING GEOMETRY FACTOR for Gas ───────────────────────────────────
       Fp_g = 1.0;
       if (d_valve_in && d_valve_in < D_in * 0.99) {
@@ -288,7 +371,10 @@ function controlValve_handler(req, res) {
           txt:`⚠ Fp piping correction (gas): Fp=${Fp_g.toFixed(3)}, Cv +${((1/Fp_g-1)*100).toFixed(1)}% (IEC 60534-2-1 §4.1).` });
       }
       
-      const Q_cfs = Qc * (14.696 / Math.max(P2a,14.696)) * (TR / 519.67) / 3600.0;
+      // FIX F-18: Gas inlet velocity must use INLET pressure P1a (not P2a).
+      //   Expanding SCFH to actual ft³/s at valve inlet conditions (T, P1):
+      //   Q_actual_cfs = Qc[SCFH] × (14.696/P1a) × (TR/519.67) / 3600
+      const Q_cfs = Qc * (14.696 / Math.max(P1a, 14.696)) * (TR / 519.67) / 3600.0;
       vel = Q_cfs / (A_in2 / 144.0);
 
       if      (x >= x_crit)       { flowState = '🔴 Choked Gas (Sonic)';  warns.push({ cls:'warn-red',   txt:`⚠️ Sonic flow: x=${(x*100).toFixed(1)}% ≥ Fk·xT=${(x_crit*100).toFixed(1)}%. Flow will NOT increase with higher ΔP.` }); }
@@ -310,21 +396,36 @@ function controlValve_handler(req, res) {
       const isWet      = steamFluid === 'Wet Steam (90%)';
 
       if (isSup) {
+        // Superheated steam: ISA S75.01 with superheat correction factor Fs
         const Tsat_F = getTsatF(P1a);
         const Fs     = 1.0 + 0.00065 * Math.max(T_F - Tsat_F, 0);
         Cv = W * Fs / (2.1 * Math.sqrt(Math.max(dPeff_s * (P1a + P2a), 0.0001)));
       } else if (isWet) {
-        Cv = W / (0.90 * 2.1 * Math.sqrt(Math.max(dPeff_s * (P1a + P2a), 0.0001)));
+        // FIX F-09: Wet steam (90% quality x=0.90)
+        //   ISA S75.01 wet steam uses actual specific volume:
+        //   v_wet = x × vg + (1−x) × vf  ≈ x × vg for high quality (vf << vg)
+        //   Cv = W × sqrt(v_wet) / K_steam where K_steam relates to 2.1 for sat steam at vg
+        //   Equivalent: use sat Cv formula then multiply by sqrt(quality) for specific vol ratio
+        //   v_wet / v_sat_g = quality (approx for high quality steam)
+        //   → Cv_wet = Cv_sat × sqrt(quality) = Cv_sat × sqrt(0.90)
+        //   This is physically correct: wetter steam is denser, so Cv is lower than sat
+        const quality = 0.90;
+        Cv = (W / (2.1 * Math.sqrt(Math.max(dPeff_s * (P1a + P2a), 0.0001)))) * Math.sqrt(quality);
       } else {
+        // Saturated steam: ISA S75.01 base formula
         Cv = W / (2.1 * Math.sqrt(Math.max(dPeff_s * (P1a + P2a), 0.0001)));
       }
 
-    // Steam specific volume: NIST table for sat, superheat T-ratio correction
-      const vg_sat     = getVgSteam(Math.max(P2a, 14.696));
-      const Tsat_out   = getTsatF(Math.max(P2a, 14.696));
-      const T_act_R    = isSup ? Math.max(T_F, Tsat_out) + 459.67 : Tsat_out + 459.67;
-      const T_sat_R    = Tsat_out + 459.67;
-      const v_spec     = vg_sat * (T_act_R / T_sat_R);
+    // FIX 2: Steam inlet velocity — use INLET pressure P1a for vg_sat lookup.
+    //   The UI shows "Inlet Velocity" so specific volume must be evaluated at inlet conditions.
+    //   P2a was used previously (same error as gas F-18) — overstated vel by ~5–15%.
+    //   For wet steam, v_spec is further scaled by quality (90% = 0.90 × vg).
+      const vg_sat     = getVgSteam(Math.max(P1a, 14.696));   // FIX 2: P1a not P2a
+      const Tsat_in    = getTsatF(Math.max(P1a, 14.696));
+      const T_act_R    = isSup ? Math.max(T_F, Tsat_in) + 459.67 : Tsat_in + 459.67;
+      const T_sat_R    = Tsat_in + 459.67;
+      const v_spec_sat = vg_sat * (T_act_R / T_sat_R);
+      const v_spec     = isWet ? v_spec_sat * 0.90 : v_spec_sat;  // quality correction for wet steam
       vel = W * v_spec / (3600.0 * A_in2 / 144.0);
 
       flowState = x_ratio >= 1 ? '🔴 Choked Steam' : '🟢 Steam Flow OK';
@@ -347,7 +448,9 @@ function controlValve_handler(req, res) {
       {s:'8"',Cv_rated:1000},{s:'10"',Cv_rated:1800},{s:'12"',Cv_rated:3000},
       {s:'14"',Cv_rated:4500},{s:'16"',Cv_rated:6500},
     ];
-    const ri0 = stdCv.findIndex(s => s.Cv_rated * 0.8 >= Cv);
+    // FIX F-10: Use 75% of rated Cv as threshold (targets ~75% valve opening, best practice)
+    //   Previous 80% threshold sized the valve slightly small in borderline cases
+    const ri0 = stdCv.findIndex(s => s.Cv_rated * 0.75 >= Cv);
     const ri   = ri0 === -1 ? stdCv.length-1 : Math.max(0, Math.min(ri0, stdCv.length-1));
     const sizes = {
       smaller: stdCv[Math.max(ri-1,0)],
@@ -355,14 +458,16 @@ function controlValve_handler(req, res) {
       larger:  stdCv[Math.min(ri+1, stdCv.length-1)],
     };
 
-    // ── OPEN % CALCULATION (moved from client) ────────────────────────────────
+    // ── OPEN % CALCULATION ────────────────────────────────────────────────────
     function openPct_eq(CvReq, szCv) {
       const ratio = Math.min(CvReq / Math.max(szCv, 0.001), 1.5);
       if (charType === 'equal_pct') {
+        // FIX F-11: explicitly flag below-rangeability (ratio < 1/R)
+        // Formula: h = 1 + log(ratio)/log(R)  [inversion of f(h) = R^(h-1)]
         const h = ratio <= 0 ? 0 : 1 + Math.log(Math.max(ratio, 1 / R_trim)) / Math.log(R_trim);
         return Math.max(0, Math.min(h * 100, 200));
       } else if (charType === 'quick_open') {
-        return Math.min(ratio * ratio * 100, 200);
+        return Math.min(Math.sqrt(ratio) * 100, 200);  // inversion of f(h)=sqrt(h)
       } else {
         return Math.min(ratio * 100, 200); // linear and others
       }
@@ -370,6 +475,12 @@ function controlValve_handler(req, res) {
     const openPct_rec     = openPct_eq(Cv, sizes.rec.Cv_rated);
     const openPct_smaller = openPct_eq(Cv, sizes.smaller.Cv_rated);
     const openPct_larger  = openPct_eq(Cv, sizes.larger.Cv_rated);
+
+    // FIX F-11: below-rangeability warning
+    const ratioRec = Cv / Math.max(sizes.rec.Cv_rated, 0.001);
+    if (ratioRec < 1 / R_trim) {
+      warns.push({ cls:'warn-amber', txt:`⚠ Required Cv is below minimum controllable Cv (Cv_rated/R = ${fmtN(sizes.rec.Cv_rated/R_trim)}). Flow may be uncontrollable at this condition.` });
+    }
 
     // ── >100% open warning (moved from client) ────────────────────────────────
     if (openPct_rec > 100) {
@@ -379,9 +490,10 @@ function controlValve_handler(req, res) {
     let Cv_min = null, turndown = null, turndownOk = null;
     if (Q_min_raw && Q_min_raw > 0 && Q_min_raw < Q) {
       const Qc_min = Qc * (Q_min_raw / Q);
+      // FIX F-24 + FIX 1: use dPeff directly; gas uses Gg = SG/28.97 not raw SG(MW)
       if (isL)       Cv_min = (Qc_min * Math.sqrt(SG / Math.max(dPeff, 0.0001))) / (FR||1);
-      else if (isG)  Cv_min = Qc_min * Math.sqrt(SG * TR * Z) / (1360.0 * P1a * (Y||0.9) * Math.sqrt(Math.max(dPeff||dP*0.5, 0.0001)));
-      else           Cv_min = Qc_min / (2.1 * Math.sqrt(Math.max(dPeff||dP*0.5, 0.0001) * (P1a + P2a)));
+      else if (isG)  Cv_min = Qc_min * Math.sqrt((SG/28.97) * TR * Z) / (1360.0 * P1a * Y * Math.sqrt(Math.max(dPeff, 0.0001)));
+      else           Cv_min = Qc_min / (2.1 * Math.sqrt(Math.max(dPeff * (P1a + P2a), 0.0001)));
       turndown   = Cv / Math.max(Cv_min, 0.0001);
       turndownOk = turndown <= R_trim;
       if (!turndownOk)
@@ -421,7 +533,10 @@ function controlValve_handler(req, res) {
       warns,
       // Display labels
       sgLabel:         SG.toFixed(3) + (isL ? ' (SG)' : isG ? ' g/mol' : ' (steam MW=18.02)'),
-      tempLabel:       m ? ((T_F - 32) * 5 / 9).toFixed(1) + '°C' : T_F.toFixed(1) + '°F',
+      // FIX 6: Use original T input for display, not back-converted T_F
+      //   T_F was derived from T via T*9/5+32; converting back via (T_F-32)*5/9
+      //   introduces floating-point rounding (e.g. 20.000°C → 19.999°C)
+      tempLabel:       m ? T.toFixed(1) + '°C' : T_F.toFixed(1) + '°F',
       flLabel:         FL.toFixed(3) + (isG ? ' (xT)' : ' (FL)'),
       pipeLabel:       m ? (D_in * 25.4).toFixed(1) + ' mm' : D_in.toFixed(3) + ' in',
        
