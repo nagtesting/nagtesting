@@ -1325,19 +1325,19 @@ function calcPlate(b) {
   if (cTi>=hTo) throw new Error('Cold inlet must be below hot outlet');
   const hTmean=(hTi+hTo)/2;
   const hFluid=fluidAtConditions(hFlKey,hTmean,hPop);
-  const Qhot=(hF/3600)*hFluidDB.cp*(hTi-hTo);
+  const Qhot=(hF/3600)*hFluid.cp*(hTi-hTo);   // FIX: use actual-T cp, not DB reference
   let cF=parseFloat(b.cF)||0, cTo=parseFloat(b.cTo)||0;
   const coldMode=b.coldMode||'flow';
   if (coldMode==='temp') {
     if (cTo<=cTi) throw new Error('Cold outlet must be > cold inlet');
     if (cTo>=hTi) throw new Error('Cold outlet cannot exceed hot inlet');
-    cF=(Qhot/(cFluidDB.cp*(cTo-cTi)))*3600;
+    cF=(Qhot/(hFluid.cp*(cTo-cTi)))*3600;   // consistent cp
   } else {
     if (cF<=0) throw new Error('Cold flow must be positive');
-    cTo=cTi+Qhot/((cF/3600)*cFluidDB.cp);
+    cTo=cTi+Qhot/((cF/3600)*hFluid.cp);     // consistent cp
     if (cTo>=hTi) throw new Error('Cold outlet exceeds hot inlet — check flow/temps');
   }
-  const Qcold=(cF/3600)*cFluidDB.cp*(cTo-cTi);
+  const Qcold=(cF/3600)*hFluid.cp*(cTo-cTi);
   const balErr=Math.abs(Qhot-Qcold)/Math.max(Qhot,Qcold,0.001)*100;
   const Q=(Qhot+Qcold)/2;
   const cTmean=(cTi+cTo)/2;
@@ -1351,8 +1351,14 @@ function calcPlate(b) {
   if (!lmtdRes.lmtd) throw new Error(lmtdRes.err||'LMTD error');
   const {lmtd,F,dT1,dT2}=lmtdRes, FLMTD=lmtd*F;
   const Dh=2*gap/phi;
-  const Ac=pw*gap;
-  function htcPlate(fluid,mKgs) {
+  const Ac=pw*gap;   // cross-section of ONE channel
+  // FIX: number of channels per side determines per-channel flow
+  // For nPlates plates: approximately nPlates/2 channels per side
+  const nPlates_user = Math.max(4, parseInt(b.nPlates)||20);
+  const nChanH = Math.max(1, Math.floor(nPlates_user / 2));
+  const nChanC = Math.max(1, nPlates_user - 1 - nChanH);  // alternating channels
+  function htcPlate(fluid, mKgs_total, nChannels) {
+    const mKgs = mKgs_total / Math.max(nChannels, 1);  // FIX: per-channel flow
     const G=mKgs/Math.max(Ac,1e-8);
     const Re=G*Dh/(fluid.mu*1e-3);
     const Pr=Math.max(fluid.mu*1e-3*fluid.cp*1000/fluid.k,0.5);
@@ -1360,27 +1366,32 @@ function calcPlate(b) {
     let C_Nu,m_Nu;
     if(ang<=30){C_Nu=0.228;m_Nu=0.65;}else if(ang<=45){C_Nu=0.350;m_Nu=0.68;}else if(ang<=60){C_Nu=0.479;m_Nu=0.70;}else{C_Nu=0.560;m_Nu=0.72;}
     const Nu=C_Nu*Math.pow(Math.max(Re,10),m_Nu)*Math.pow(Pr,0.333)*phi;
-    return {h:Nu*fluid.k/Dh, Re, G};
+    return {h:Nu*fluid.k/Dh, Re, G, vel:mKgs/Math.max(fluid.rho*Ac,1e-8)};
   }
-  const hRes=htcPlate(hFluid,hF/3600), cRes=htcPlate(cFluid,cF/3600);
+  const hRes=htcPlate(hFluid,hF/3600,nChanH), cRes=htcPlate(cFluid,cF/3600,nChanC);
   const hH=hRes.h, hC=cRes.h;
   const Rwall=th/kw;
   const U=1/(1/hH+1/hC+Rwall+foul);
   const U_clean=1/(1/hH+1/hC+Rwall);
   const A_req=Q*1000/(U*FLMTD);
   const A_plate=pw*plen;
-  const nPlates=Math.max(2,Math.ceil(A_req/A_plate)+2);
-  const A_provided=nPlates*A_plate;
+  // FIX: compute both auto-sized and user-specified plate counts
+  const nPlates_auto = Math.max(4, Math.ceil(A_req/A_plate)+2);
+  // If user supplied nPlates, honour it (show oversurface); else auto-size
+  const nPlates_final = b.nPlates ? nPlates_user : nPlates_auto;
+  const A_provided=nPlates_final*A_plate;
   const overDesign=(A_provided/A_req-1)*100;
-  function pdPlate(fluid,mKgs){
+  function pdPlate(fluid, mKgs_total, nChannels){
+    const mKgs = mKgs_total / Math.max(nChannels, 1);  // FIX: per-channel flow
     const G=mKgs/Math.max(Ac,1e-8);
     const Re=G*Dh/(fluid.mu*1e-3);
     const f_pl=Re<2000?24/Math.max(Re,1):0.6*Math.pow(Re,-0.3);
-    const dyn=fluid.rho*Math.pow(mKgs/(fluid.rho*Math.max(Ac,1e-8)),2)/2;
-    const np=nPlates/2;
+    const vel=mKgs/Math.max(fluid.rho*Ac,1e-8);
+    const dyn=fluid.rho*vel*vel/2;
+    const np=nPlates_final/2;
     return Math.max((f_pl*np*(plen/Dh)+1.5*np)*dyn/1e5, 0);
   }
-  const dpH=pdPlate(hFluid,hF/3600), dpC=pdPlate(cFluid,cF/3600);
+  const dpH=pdPlate(hFluid,hF/3600,nChanH), dpC=pdPlate(cFluid,cF/3600,nChanC);
   const NTU=A_req*U/Math.max(Math.min((hF/3600)*hFluidDB.cp,(cF/3600)*cFluidDB.cp)*1000,0.001);
   const Cmin=Math.min((hF/3600)*hFluidDB.cp,(cF/3600)*cFluidDB.cp);
   const eff=Cmin>0?Q/(Cmin*(hTi-cTi)):0;
@@ -1393,7 +1404,7 @@ function calcPlate(b) {
   const minApproachDT = Math.min(hTi - cTo, hTo - cTi);
   return {
     Q,Qhot,Qcold,U,U_clean,balErr,lmtd,F,FLMTD,dT1,dT2,
-    A_req,A_provided,overDesign,nPlates,A_plate,dpH,dpC,pdAllowH,pdAllowC,
+    A_req,A_provided,overDesign,nPlates:nPlates_final,A_plate,dpH,dpC,pdAllowH,pdAllowC,
     hH,hC,NTU,eff,hTi,hTo,cTi,cTo,cF,
     minApproachDT,
     hFluid,cFluid,st,warns
