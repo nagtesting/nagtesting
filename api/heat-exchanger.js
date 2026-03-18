@@ -1653,28 +1653,34 @@ function calcFinFan(b) {
     const eta_surf=1-phi_fin*(1-eta_fin_approx);
     return {eta_fin:eta_fin_approx,eta_surf};
   }
-  const clearT=Math.max(pitchT-finOD,pitchT-tubeOD*1.1,0.001);
-  const A_min_row=tubeLen*clearT*(1-finDensity*finThk);
-  const A_min_total=Math.max(A_min_row*nBays*nBundlesPBay,0.001);
-  const cp_air_kJ=aFluid.cp;
-  const mAir_kgs=Qhot/(cp_air_kJ*(aTout-aTamb));
-  const mAir_kgh=mAir_kgs*3600;
-  const rho_air=aFluid.rho;
-  const v_face=mAir_kgs/(rho_air*Math.max(A_face_total,0.01));
-  const G_max=mAir_kgs/Math.max(A_min_total*nRows,0.001);
-  const v_max=G_max/rho_air;
-  const mu_air=aFluid.mu*1e-3;
-  const Re_air=G_max*finOD/mu_air;
-  const Pr_air=Math.max(mu_air*cp_air_kJ*1000/aFluid.k,0.5);
-  const s_fin=finSpacing-finThk;
-  const s_over_D=Math.max(s_fin/finOD,0.05);
-  const Re_safe=Math.max(Re_air,500);
-  const j_factor=tubeLayout==='staggered'?0.1378*Math.pow(Re_safe,-0.2178)*Math.pow(s_over_D,-0.1285):0.0724*Math.pow(Re_safe,-0.2178)*Math.pow(s_over_D,-0.1285);
-  const cp_air_J=cp_air_kJ*1000;
-  let h_air=j_factor*G_max*cp_air_J/Math.pow(Pr_air,2/3);
-  for(let i=0;i<5;i++){finEff(h_air);h_air=j_factor*G_max*cp_air_J/Math.pow(Pr_air,2/3);}
-  const {eta_fin,eta_surf}=finEff(h_air);
-  const h_air_eff=eta_surf*h_air;
+  // ── Air-side minimum free-flow area (corrected) ──────────────────────────
+  // clearT = gap between fin tips of adjacent tubes (fin-to-fin only)
+  const clearT = Math.max(pitchT - finOD, 0.001);
+  const nTubesPerRow = Math.max(1, Math.round(nTubes / nRows));
+  // A_min includes the full row width (nTubesPerRow) — previous code omitted this
+  const A_min_row   = tubeLen * clearT * (1 - finDensity * finThk) * nTubesPerRow;
+  const A_min_total = Math.max(A_min_row * nBays * nBundlesPBay, 0.001);
+  const cp_air_kJ = aFluid.cp;
+  const mAir_kgs  = Qhot / (cp_air_kJ * (aTout - aTamb));
+  const mAir_kgh  = mAir_kgs * 3600;
+  const rho_air   = aFluid.rho;
+  const v_face    = mAir_kgs / (rho_air * Math.max(A_face_total, 0.01));
+  const G_max     = mAir_kgs / A_min_total;
+  const v_max     = G_max / rho_air;
+  const mu_air    = aFluid.mu * 1e-3;
+  const cp_air_J  = cp_air_kJ * 1000;
+  const Re_air    = G_max * tubeOD / mu_air;
+  const Pr_air    = Math.max(mu_air * cp_air_J / aFluid.k, 0.5);
+  const s_fin     = Math.max(finSpacing - finThk, 0.0001);
+  const s_over_D  = Math.max(s_fin / tubeOD, 0.05);
+  const Re_safe   = Math.max(Math.min(Re_air, 50000), 500);
+  const j_factor  = tubeLayout === 'staggered'
+    ? 0.1378 * Math.pow(Re_safe, -0.2178) * Math.pow(s_over_D, -0.1285)
+    : 0.0724 * Math.pow(Re_safe, -0.2115) * Math.pow(s_over_D, -0.1472);
+  let h_air = j_factor * G_max * cp_air_J / Math.pow(Pr_air, 2/3);
+  for (let i = 0; i < 5; i++) { finEff(h_air); h_air = j_factor * G_max * cp_air_J / Math.pow(Pr_air, 2/3); }
+  const {eta_fin, eta_surf} = finEff(h_air);
+  const h_air_eff = eta_surf * h_air;
   const nTubesPerPass=Math.max(1,Math.round(nTubes/nPasses));
   const massPerTube=tF_kgs/Math.max(nTubesPerPass,1);
   const hTube_res=calcHtube(tFluid,massPerTube,tubeID,tubeLen);
