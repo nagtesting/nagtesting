@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -561,7 +562,7 @@
                 <div class="grid-3">
                     <div class="input-group">
                         <label id="lbl_flow">Mass Flow (kg/h)</label>
-                        <input type="number" id="flow" value="60000" step="100" oninput="calculate()">
+                        <input type="number" id="flow" value="60000" step="100">
                     </div>
                     <div class="input-group">
                         <label id="lbl_p1">Inlet Pressure P₁ (bar)</label>
@@ -575,12 +576,12 @@
                 <div class="grid-2">
                     <div class="input-group">
                         <label id="lbl_h1">Inlet Enthalpy h₁ (kJ/kg) <span class="auto-tag">AUTO</span></label>
-                        <input type="number" id="h1" value="3300" step="10" oninput="calculate()">
+                        <input type="number" id="h1" value="3300" step="10">
                         <div class="sat-note" id="inletNote"></div>
                     </div>
                     <div class="input-group">
                         <label id="lbl_s1">Inlet Entropy s₁ (kJ/kg·K) <span class="auto-tag">AUTO</span></label>
-                        <input type="number" id="s1" value="6.77" step="0.01" oninput="calculate()">
+                        <input type="number" id="s1" value="6.77" step="0.01">
                     </div>
                 </div>
 
@@ -588,15 +589,15 @@
                 <div class="grid-3">
                     <div class="input-group">
                         <label>Isentropic η_t (0–1)</label>
-                        <input type="number" id="eff" value="0.85" min="0" max="1" step="0.01" oninput="calculate()">
+                        <input type="number" id="eff" value="0.85" min="0" max="1" step="0.01">
                     </div>
                     <div class="input-group">
                         <label>Mechanical η_m (0–1)</label>
-                        <input type="number" id="effm" value="0.98" min="0" max="1" step="0.01" oninput="calculate()">
+                        <input type="number" id="effm" value="0.98" min="0" max="1" step="0.01">
                     </div>
                     <div class="input-group">
                         <label>Generator η_g (0–1)</label>
-                        <input type="number" id="effg" value="0.97" min="0" max="1" step="0.01" oninput="calculate()">
+                        <input type="number" id="effg" value="0.97" min="0" max="1" step="0.01">
                     </div>
                 </div>
 
@@ -615,11 +616,11 @@
                 <div class="grid-2">
                     <div class="input-group">
                         <label id="lbl_h2s">Isentropic Enthalpy h₂s (kJ/kg) <span class="auto-tag">AUTO</span></label>
-                        <input type="number" id="h2s" value="2600" step="10" oninput="calculate()">
+                        <input type="number" id="h2s" value="2600" step="10">
                     </div>
                     <div class="input-group">
                         <label id="lbl_hfg">hfg at Exhaust (kJ/kg) <span class="auto-tag">AUTO</span> <span class="info-badge" title="Latent heat — for steam quality check">i</span></label>
-                        <input type="number" id="hfg" value="2163" step="10" oninput="calculate()">
+                        <input type="number" id="hfg" value="2163" step="10">
                     </div>
                 </div>
 
@@ -629,26 +630,26 @@
                     <div class="grid-3">
                         <div class="input-group">
                             <label id="lbl_condP">Condenser Pressure (bar) <span class="auto-tag">AUTO from P₂</span></label>
-                            <input type="number" id="condP" value="0.07" step="0.01" oninput="calculate()">
+                            <input type="number" id="condP" value="0.07" step="0.01">
                             <div class="sat-note" id="condNote"></div>
                         </div>
                         <div class="input-group">
                             <label id="lbl_hf">Condensate hf (kJ/kg) <span class="auto-tag">AUTO</span></label>
-                            <input type="number" id="hf" value="163" step="1" oninput="calculate()">
+                            <input type="number" id="hf" value="163" step="1">
                         </div>
                         <div class="input-group">
                             <label id="lbl_hfgc">Latent Heat hfg (kJ/kg) <span class="auto-tag">AUTO</span></label>
-                            <input type="number" id="hfg_cond" value="2409" step="1" oninput="calculate()">
+                            <input type="number" id="hfg_cond" value="2409" step="1">
                         </div>
                     </div>
                     <div class="grid-2">
                         <div class="input-group">
                             <label id="lbl_cwIn">Cooling Water Inlet Temp (°C)</label>
-                            <input type="number" id="cwIn" value="28" step="1" oninput="calculate()">
+                            <input type="number" id="cwIn" value="28" step="1">
                         </div>
                         <div class="input-group">
                             <label id="lbl_cwOut">Cooling Water Outlet Temp (°C)</label>
-                            <input type="number" id="cwOut" value="38" step="1" oninput="calculate()">
+                            <input type="number" id="cwOut" value="38" step="1">
                         </div>
                     </div>
                 </div>
@@ -667,17 +668,17 @@
                         </div>
                         <div class="input-group">
                             <label>Extraction Fraction (0–1)</label>
-                            <input type="number" id="extFrac" value="0.30" min="0.01" max="0.99" step="0.05" oninput="calculate()">
+                            <input type="number" id="extFrac" value="0.30" min="0.01" max="0.99" step="0.05">
                         </div>
                     </div>
                     <div class="grid-2">
                         <div class="input-group">
                             <label id="lbl_he">Extraction Enthalpy he (kJ/kg) <span class="auto-tag">AUTO</span></label>
-                            <input type="number" id="he" value="2950" step="10" oninput="calculate()">
+                            <input type="number" id="he" value="2950" step="10">
                         </div>
                         <div class="input-group">
                             <label>Extraction Use</label>
-                            <select id="extUse" onchange="calculate()">
+                            <select id="extUse">
                                 <option value="process">Process Heating</option>
                                 <option value="feedwater">Feedwater Heating</option>
                             </select>
@@ -699,31 +700,49 @@
                         </div>
                         <div class="input-group">
                             <label>Extraction Fraction (0–1)</label>
-                            <input type="number" id="extFrac2" value="0.25" min="0.01" max="0.99" step="0.05" oninput="calculate()">
+                            <input type="number" id="extFrac2" value="0.25" min="0.01" max="0.99" step="0.05">
                         </div>
                     </div>
                     <div class="grid-2">
                         <div class="input-group">
                             <label id="lbl_he2">Extraction Enthalpy he2 (kJ/kg) <span class="auto-tag">AUTO</span></label>
-                            <input type="number" id="he2" value="2950" step="10" oninput="calculate()">
+                            <input type="number" id="he2" value="2950" step="10">
                         </div>
                         <div class="input-group">
                             <label id="lbl_hf2">Condenser hf at exhaust (kJ/kg) <span class="auto-tag">AUTO</span></label>
-                            <input type="number" id="hf2" value="163" step="1" oninput="calculate()">
+                            <input type="number" id="hf2" value="163" step="1">
                         </div>
                     </div>
                     <div class="section-title">🌊 Condenser (Mixed)</div>
                     <div class="grid-2">
                         <div class="input-group">
                             <label id="lbl_cwIn2">CW Inlet Temp (°C)</label>
-                            <input type="number" id="cwIn2" value="28" step="1" oninput="calculate()">
+                            <input type="number" id="cwIn2" value="28" step="1">
                         </div>
                         <div class="input-group">
                             <label id="lbl_cwOut2">CW Outlet Temp (°C)</label>
-                            <input type="number" id="cwOut2" value="38" step="1" oninput="calculate()">
+                            <input type="number" id="cwOut2" value="38" step="1">
                         </div>
                     </div>
                 </div>
+            </div>
+
+
+            <!-- ── CALCULATE BUTTON ─────────────────────────────────── -->
+            <div class="card" style="padding:16px 20px;">
+                <button class="btn-primary"
+                        onclick="calculate()"
+                        id="calcBtn"
+                        style="cursor:pointer;font-size:1rem;font-weight:700;
+                               letter-spacing:.3px;padding:13px;display:flex;
+                               align-items:center;justify-content:center;gap:10px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    Calculate
+                </button>
             </div>
 
             <!-- Quick Reference (collapsible) -->
@@ -1866,5 +1885,14 @@ Q_proc  = 16.667 × (2834.7−604.7)        = <span class="good">37 170 kW (37.2
     });
   });
 })();
+// Enter key on any input triggers Calculate
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT') {
+        e.preventDefault();
+        calculate();
+    }
+});
 </script>
 </body>
