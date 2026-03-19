@@ -14,9 +14,8 @@
       "memory": 256
     },
     "api/steam-calcs.py": {
-      "maxDuration": 30,
-      "memory": 512,
-      "runtime": "python3.9"
+      "maxDuration": 10,
+      "memory": 256
     },
     "api/heat-exchanger.js": {
       "maxDuration": 10,
