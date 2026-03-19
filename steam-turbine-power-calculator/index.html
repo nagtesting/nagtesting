@@ -566,11 +566,11 @@
                     </div>
                     <div class="input-group">
                         <label id="lbl_p1">Inlet Pressure P₁ (bar)</label>
-                        <input type="number" id="p1" value="60" step="1" oninput="autoSteam('inlet'); calculate()">
+                        <input type="number" id="p1" value="60" step="1" oninput="autoSteam('inlet')">
                     </div>
                     <div class="input-group">
                         <label id="lbl_t1">Inlet Temp T₁ (°C)</label>
-                        <input type="number" id="t1" value="450" step="5" oninput="autoSteam('inlet'); calculate()">
+                        <input type="number" id="t1" value="450" step="5" oninput="autoSteam('inlet')">
                     </div>
                 </div>
                 <div class="grid-2">
@@ -605,12 +605,12 @@
                 <div class="grid-2">
                     <div class="input-group">
                         <label id="p2Label">Exit Pressure P₂ (bar)</label>
-                        <input type="number" id="p2" value="3" step="0.5" oninput="autoSteam('exhaust'); calculate()">
+                        <input type="number" id="p2" value="3" step="0.5" oninput="autoSteam('exhaust')">
                         <div class="sat-note" id="exhaustNote"></div>
                     </div>
                     <div class="input-group">
                         <label id="lbl_t2">Exit Temp T₂ (°C) — superheated only</label>
-                        <input type="number" id="t2" value="" step="5" placeholder="Blank = saturated" oninput="autoSteam('exhaust'); calculate()">
+                        <input type="number" id="t2" value="" step="5" placeholder="Blank = saturated" oninput="autoSteam('exhaust')">
                     </div>
                 </div>
                 <div class="grid-2">
@@ -660,11 +660,11 @@
                     <div class="grid-3">
                         <div class="input-group">
                             <label id="lbl_pe">Extraction Pressure Pe (bar)</label>
-                            <input type="number" id="pe" value="10" step="0.5" oninput="autoSteam('extraction'); calculate()">
+                            <input type="number" id="pe" value="10" step="0.5" oninput="autoSteam('extraction')">
                         </div>
                         <div class="input-group">
                             <label id="lbl_te">Extraction Temp Te (°C)</label>
-                            <input type="number" id="te" value="200" step="5" placeholder="Blank = saturated" oninput="autoSteam('extraction'); calculate()">
+                            <input type="number" id="te" value="200" step="5" placeholder="Blank = saturated" oninput="autoSteam('extraction')">
                         </div>
                         <div class="input-group">
                             <label>Extraction Fraction (0–1)</label>
@@ -692,11 +692,11 @@
                     <div class="grid-3">
                         <div class="input-group">
                             <label id="lbl_pe2">Extraction Pressure Pe (bar)</label>
-                            <input type="number" id="pe2" value="10" step="0.5" oninput="autoSteam('mixed_ext'); calculate()">
+                            <input type="number" id="pe2" value="10" step="0.5" oninput="autoSteam('mixed_ext')">
                         </div>
                         <div class="input-group">
                             <label id="lbl_te2">Extraction Temp Te (°C)</label>
-                            <input type="number" id="te2" value="200" step="5" placeholder="Blank = saturated" oninput="autoSteam('mixed_ext'); calculate()">
+                            <input type="number" id="te2" value="200" step="5" placeholder="Blank = saturated" oninput="autoSteam('mixed_ext')">
                         </div>
                         <div class="input-group">
                             <label>Extraction Fraction (0–1)</label>
@@ -1015,7 +1015,7 @@ async function _doAutoSteam(section) {
                 setAutoField('hfg_cond', h_disp(r.hfg));
                 document.getElementById('condNote').textContent = `T_sat = ${tU(r.T_sat)}`;
             }
-            calculate();
+            // calculate() removed — user must click Calculate button
 
         } else if (section === 'extraction') {
             const P_bar = P_to_bar(g('pe'));
@@ -1024,7 +1024,7 @@ async function _doAutoSteam(section) {
 
             const r = await apiCall({ action:'inletProps', P_bar, T_C });
             setAutoField('he', h_disp(r.h));
-            calculate();
+            // calculate() removed — user must click Calculate button
 
         } else if (section === 'mixed_ext') {
             const P_bar = P_to_bar(g('pe2'));
@@ -1040,7 +1040,7 @@ async function _doAutoSteam(section) {
                 const r2 = await apiCall({ action:'exhaustProps', P_bar:P2_bar, s1_SI:s_to_SI(g('s1')), T2_C:null });
                 setAutoField('hf2', h_disp(r2.hf));
             }
-            calculate();
+            // calculate() removed — user must click Calculate button
         }
         updateEngineStatus('ready');
     } catch(e) {
@@ -1062,7 +1062,7 @@ function setType(type, btn) {
     document.getElementById('mixedInputs').classList.toggle('hidden', type !== 'mixed');
     updateDiagram(type);
     autoSteam('exhaust');
-    calculate();
+    // calculate() removed — user must click Calculate button
 }
 
 function updateDiagram(type) {
