@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -903,8 +904,14 @@ function setSys(sys) {
     }
     if (qEl && prevQ !== '') qEl.value = prevQ;
     liveHint();
-    // Re-run calculation if we already had a result
-    if (_lastResult) doCalcClick();
+    // Clear old result on unit switch — user must click Calculate again
+    // Avoids blinking/premature recalculation with incomplete inputs
+    if (_lastResult) {
+      _lastResult = null;
+      document.getElementById('results').innerHTML = '';
+      const rb = document.getElementById('resultsBody');
+      if (rb) rb.innerHTML = '';
+    }
   }
 }
 
@@ -1915,6 +1922,13 @@ function toggleShare(e) {
 }
 document.addEventListener('click', () => { document.getElementById('shareDD')?.classList.remove('open'); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('shareDD')?.classList.remove('open'); });
+// Allow Enter key in input fields to trigger calculation
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT') { e.preventDefault(); doCalcClick(); }
+  }
+});
 
 function shareVia(platform) {
   const enc = encodeURIComponent, url = SHARE_URL, title = SHARE_TITLE;
