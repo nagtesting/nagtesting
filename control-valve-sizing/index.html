@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -285,11 +286,11 @@ select option{background:var(--ink2)}
         <div class="field"><label>Flow Rate</label>
           <div class="iw"><input type="number" id="flow" value="200" oninput="calc()"><span class="iunit" id="uFlow">GPM</span></div></div>
         <div class="field"><label>Temperature</label>
-          <div class="iw"><input type="number" id="temp" value="60" oninput="calc()"><span class="iunit" id="uTemp">°F</span></div></div>
+          <div class="iw"><input type="number" id="temp" value="60" oninput="calc();autoZ()"><span class="iunit" id="uTemp">°F</span></div></div>
       </div>
       <div class="row2">
         <div class="field"><label>Inlet Pressure P₁</label>
-          <div class="iw"><input type="number" id="p1" value="100" oninput="calc()"><span class="iunit" id="uP">psi</span></div></div>
+          <div class="iw"><input type="number" id="p1" value="100" oninput="calc();autoZ()"><span class="iunit" id="uP">psi</span></div></div>
         <div class="field"><label>Outlet Pressure P₂</label>
           <div class="iw"><input type="number" id="p2" value="70" oninput="calc()"><span class="iunit" id="uP2">psi</span></div></div>
       </div>
@@ -300,8 +301,12 @@ select option{background:var(--ink2)}
           <div class="iw"><input type="number" id="sg" value="1.0" step="0.001" oninput="clearChipSel();calc()"><span class="iunit" id="uSG">SG</span></div></div>
       </div>
       <div class="row2" id="gasRow" style="display:none">
-        <div class="field"><label data-tip="Gas compressibility factor Z">Compress. Z</label>
-          <input type="number" id="zf" value="1.00" step="0.001" oninput="calc()"></div>
+        <div class="field">
+          <label data-tip="Z auto-calculated via PR EOS when a named gas fluid is selected. Change T or P to update. Type to override.">Compress. Z
+            <span id="zAutoTag" style="display:none;font-size:.6rem;font-weight:700;letter-spacing:.5px;padding:1px 6px;border-radius:3px;background:rgba(0,122,108,.1);border:1px solid rgba(0,122,108,.3);color:var(--teal2);margin-left:4px;text-transform:none">AUTO ⟳</span>
+          </label>
+          <input type="number" id="zf" value="1.00" step="0.001" oninput="zManualOverride();calc()">
+        </div>
         <div class="field"><label data-tip="Specific heat ratio Cp/Cv">k = Cp/Cv</label>
           <input type="number" id="kval" value="1.40" step="0.01" oninput="calc()"></div>
       </div>
@@ -557,28 +562,28 @@ const FLUID_DB={
     {n:"Acetic Acid",sg:1.050,pv:0.210,k:1,z:1,type:'l',Pc:57.9},
   ],
   gas_gen:[
-    {n:"Air",sg:28.97,pv:0,k:1.40,z:1.000,type:'g'},
-    {n:"Nitrogen (N₂)",sg:28.01,pv:0,k:1.40,z:1.000,type:'g'},
-    {n:"Oxygen (O₂)",sg:32.00,pv:0,k:1.40,z:1.000,type:'g'},
-    {n:"Hydrogen (H₂)",sg:2.016,pv:0,k:1.41,z:1.000,type:'g'},
-    {n:"Carbon Dioxide",sg:44.01,pv:0,k:1.30,z:0.994,type:'g'},
-    {n:"Carbon Monoxide",sg:28.01,pv:0,k:1.40,z:1.000,type:'g'},
-    {n:"Ammonia (NH₃)",sg:17.03,pv:0,k:1.31,z:0.994,type:'g'},
-    {n:"Chlorine",sg:70.90,pv:0,k:1.34,z:0.990,type:'g'},
-    {n:"Argon",sg:39.95,pv:0,k:1.67,z:1.000,type:'g'},
-    {n:"Helium",sg:4.003,pv:0,k:1.67,z:1.000,type:'g'},
-    {n:"SO₂",sg:64.07,pv:0,k:1.29,z:0.990,type:'g'},
-    {n:"H₂S",sg:34.08,pv:0,k:1.32,z:0.990,type:'g'},
+    {n:"Air",          sg:28.97,pv:0,k:1.40,z:1.000,type:'g',Tc:132.5,Pc_bar:37.86,omega:0.035},
+    {n:"Nitrogen (N₂)",sg:28.01,pv:0,k:1.40,z:1.000,type:'g',Tc:126.2,Pc_bar:34.00,omega:0.039},
+    {n:"Oxygen (O₂)",  sg:32.00,pv:0,k:1.40,z:1.000,type:'g',Tc:154.6,Pc_bar:50.43,omega:0.022},
+    {n:"Hydrogen (H₂)",sg:2.016,pv:0,k:1.41,z:1.000,type:'g',Tc:33.19,Pc_bar:13.13,omega:-0.219},
+    {n:"Carbon Dioxide",sg:44.01,pv:0,k:1.30,z:0.994,type:'g',Tc:304.2,Pc_bar:73.83,omega:0.225},
+    {n:"Carbon Monoxide",sg:28.01,pv:0,k:1.40,z:1.000,type:'g',Tc:132.9,Pc_bar:34.99,omega:0.049},
+    {n:"Ammonia (NH₃)",sg:17.03,pv:0,k:1.31,z:0.994,type:'g',Tc:405.5,Pc_bar:113.3,omega:0.253},
+    {n:"Chlorine",     sg:70.90,pv:0,k:1.34,z:0.990,type:'g',Tc:416.9,Pc_bar:79.91,omega:0.069},
+    {n:"Argon",        sg:39.95,pv:0,k:1.67,z:1.000,type:'g',Tc:150.8,Pc_bar:48.87,omega:0.000},
+    {n:"Helium",       sg:4.003,pv:0,k:1.67,z:1.000,type:'g',Tc:5.19, Pc_bar:2.27, omega:-0.390},
+    {n:"SO₂",          sg:64.07,pv:0,k:1.29,z:0.990,type:'g',Tc:430.8,Pc_bar:78.84,omega:0.245},
+    {n:"H₂S",          sg:34.08,pv:0,k:1.32,z:0.990,type:'g',Tc:373.2,Pc_bar:89.63,omega:0.094},
   ],
   gas_hc:[
-    {n:"Methane (CH₄)",sg:16.04,pv:0,k:1.30,z:0.998,type:'g'},
-    {n:"Ethane (C₂H₆)",sg:30.07,pv:0,k:1.19,z:0.990,type:'g'},
-    {n:"Propane (C₃H₈)",sg:44.10,pv:0,k:1.13,z:0.981,type:'g'},
-    {n:"n-Butane",sg:58.12,pv:0,k:1.10,z:0.970,type:'g'},
-    {n:"Ethylene",sg:28.05,pv:0,k:1.24,z:0.993,type:'g'},
-    {n:"Propylene",sg:42.08,pv:0,k:1.15,z:0.980,type:'g'},
-    {n:"Natural Gas",sg:17.97,pv:0,k:1.31,z:0.990,type:'g'},
-    {n:"LPG",sg:51.0,pv:0,k:1.11,z:0.975,type:'g'},
+    {n:"Methane (CH₄)",  sg:16.04,pv:0,k:1.30,z:0.998,type:'g',Tc:190.6,Pc_bar:46.10,omega:0.011},
+    {n:"Ethane (C₂H₆)",  sg:30.07,pv:0,k:1.19,z:0.990,type:'g',Tc:305.3,Pc_bar:48.72,omega:0.099},
+    {n:"Propane (C₃H₈)", sg:44.10,pv:0,k:1.13,z:0.981,type:'g',Tc:369.8,Pc_bar:42.48,omega:0.152},
+    {n:"n-Butane",        sg:58.12,pv:0,k:1.10,z:0.970,type:'g',Tc:425.1,Pc_bar:37.96,omega:0.200},
+    {n:"Ethylene",        sg:28.05,pv:0,k:1.24,z:0.993,type:'g',Tc:282.3,Pc_bar:50.40,omega:0.087},
+    {n:"Propylene",       sg:42.08,pv:0,k:1.15,z:0.980,type:'g',Tc:364.9,Pc_bar:46.00,omega:0.144},
+    {n:"Natural Gas",     sg:17.97,pv:0,k:1.31,z:0.990,type:'g',Tc:203.0,Pc_bar:46.41,omega:0.012},
+    {n:"LPG",             sg:51.0, pv:0,k:1.11,z:0.975,type:'g',Tc:397.0,Pc_bar:42.00,omega:0.176},
   ],
   steam:[
     {n:"Saturated Steam",sg:18.02,pv:0,k:1.30,z:1.0,type:'s'},
@@ -794,6 +799,7 @@ function filterFluids(){
 }
 
 function selectFluid(f){
+  _zUserOverride=false;  // reset manual override — new fluid selected
   selFluid=f;
   document.querySelectorAll('#fChips .fchip').forEach(c=>{
     c.classList.toggle('active',c.dataset.name===f.n);
@@ -804,9 +810,74 @@ function selectFluid(f){
   document.getElementById('kval').value=f.k||1.40;
   document.getElementById('zf').value=f.z||1.00;
   calc();
+  autoZ();  // immediately compute Z for current T/P via PR EOS
 }
 
 function clearChipSel(){selFluid=null;document.querySelectorAll('#fChips .fchip').forEach(c=>c.classList.remove('active','gold'));}
+
+// ── AUTO Z — PR EOS via /api/eos when gas phase + named fluid selected ────
+let _zDebounce = null;
+let _zUserOverride = false;
+
+function zManualOverride(){
+  // User typed in the Z field — stop auto-updating until a new fluid is chosen
+  _zUserOverride = true;
+  const tag = document.getElementById('zAutoTag');
+  if(tag){ tag.style.display='none'; }
+}
+
+function autoZ(){
+  const isG = PHASE.includes('gas');
+  if(!isG || !selFluid || !selFluid.Tc) return;  // only gas with known critical props
+  if(_zUserOverride) return;                       // user manually set Z — respect it
+  clearTimeout(_zDebounce);
+  _zDebounce = setTimeout(_autoZAsync, 280);       // debounce 280 ms
+}
+
+async function _autoZAsync(){
+  const isG = PHASE.includes('gas');
+  if(!isG || !selFluid || !selFluid.Tc) return;
+
+  const m     = UNITS === 'met';
+  const T_raw = parseFloat(document.getElementById('temp').value);
+  const P_raw = parseFloat(document.getElementById('p1').value);
+  if(!isFinite(T_raw) || !isFinite(P_raw) || P_raw <= 0) return;
+
+  // Convert to absolute SI for EOS
+  const T_K   = m ? T_raw + 273.15 : (T_raw - 32) * 5/9 + 273.15;
+  const P_Pa  = m ? P_raw * 1e5    : P_raw * 6894.76;   // bar→Pa or psi→Pa
+  const Tc_K  = selFluid.Tc;                              // stored in K
+  const Pc_Pa = selFluid.Pc_bar * 1e5;                   // bar → Pa
+  const omega  = selFluid.omega;
+  const M      = selFluid.sg;                             // for gases, sg = MW g/mol
+
+  if(T_K < 10 || !isFinite(Tc_K) || !isFinite(Pc_Pa)) return;
+
+  try {
+    const resp = await fetch('/api/eos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eos:'pr', T_K, P_Pa, Tc_K, Pc_Pa, omega, M, n:1 }),
+    });
+    const data = await resp.json();
+    if(!data.success || !data.data || !isFinite(data.data.Z)) return;
+
+    const Z = +data.data.Z.toFixed(4);
+    document.getElementById('zf').value = Z;
+
+    // Show AUTO badge with Tr/Pr tooltip
+    const tag = document.getElementById('zAutoTag');
+    if(tag){
+      tag.style.display = 'inline';
+      const Tr = data.data.Tr ? data.data.Tr.toFixed(3) : '?';
+      const Pr = data.data.Pr ? data.data.Pr.toFixed(3) : '?';
+      tag.title = 'PR EOS  Tr=' + Tr + '  Pr=' + Pr + '  (click Z field to override)';
+    }
+    calc(); // recalculate Cv with the updated Z
+  } catch(e) {
+    // silent fail — keep the existing Z value unchanged
+  }
+}
 function toggleCustom(){document.getElementById('customSec').classList.toggle('open');}
 
 // ── FLOW TYPE ─────────────────────────────────────────────
