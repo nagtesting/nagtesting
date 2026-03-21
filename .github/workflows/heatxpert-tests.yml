@@ -1,6 +1,6 @@
 # ════════════════════════════════════════════════════════════════════════════
 # .github/workflows/heatxpert-tests.yml
-# HeatXpert Pro — Automated API Test Suite (fixed)
+# HeatXpert Pro — Automated API Test Suite
 # ════════════════════════════════════════════════════════════════════════════
 
 name: HeatXpert Pro API Tests
@@ -30,7 +30,7 @@ jobs:
     timeout-minutes: 10
 
     env:
-      BASE_URL: ${{ github.event.inputs.base_url || 'https://multicalci.com' }}
+      BASE_URL: ${{ github.event.inputs.base_url || 'https://www.multicalci.com' }}
       NODE_ENV: test
 
     steps:
@@ -39,13 +39,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Setup Node.js (no cache — package.json created on the fly) ───
+      # ── 2. Setup Node.js ─────────────────────────────────────────────────
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # ── 3. Create package.json and install deps ──────────────────────────
+      # ── 3. Create package.json and install deps ───────────────────────────
       - name: Install Jest and dependencies
         run: |
           cat > package.json << 'EOF'
@@ -72,28 +72,32 @@ jobs:
           EOF
           npm install --save-dev jest jest-junit node-fetch
 
-      # ── 4. Copy test file into working directory ─────────────────────────
+      # ── 4. Copy test file into working directory ──────────────────────────
       - name: Prepare test file
         run: |
           cp .github/tests/heatxpert.test.js ./heatxpert.test.js
           echo "Target API: $BASE_URL/api/heatxpert"
 
-      # ── 5. Smoke-check API is reachable ──────────────────────────────────
+      # ── 5. Smoke-check API reachability ───────────────────────────────────
+      # -L flag follows 307/308 redirects (Vercel trailingSlash redirect)
+      # -X POST is re-sent after redirect with --post301/302/303 not needed
+      # because Vercel 307 preserves POST method automatically
       - name: Smoke-check API reachability
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L \
+            -L \
             -X POST "$BASE_URL/api/heatxpert" \
             -H "Content-Type: application/json" \
             -d '{"calcType":"fouling","Rf_s":0.0002,"Rf_t":0.0002,"U_cl":800}' \
-            --max-time 15)
+            --max-time 20)
           echo "HTTP status: $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "API returned $STATUS — aborting"
             exit 1
           fi
-          echo "API reachable"
+          echo "API reachable and returning 200"
 
-      # ── 6. Run tests ─────────────────────────────────────────────────────
+      # ── 6. Run tests ──────────────────────────────────────────────────────
       - name: Run HeatXpert test suite
         run: |
           mkdir -p test-results
@@ -101,7 +105,7 @@ jobs:
         env:
           BASE_URL: ${{ env.BASE_URL }}
 
-      # ── 7. Upload XML report ──────────────────────────────────────────────
+      # ── 7. Upload XML report ───────────────────────────────────────────────
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -110,7 +114,7 @@ jobs:
           path: test-results/heatxpert-results.xml
           retention-days: 30
 
-      # ── 8. Print failure summary ──────────────────────────────────────────
+      # ── 8. Print failure summary ───────────────────────────────────────────
       - name: Print failure summary
         if: failure()
         run: |
