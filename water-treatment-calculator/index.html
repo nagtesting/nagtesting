@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes">
+<title>Water Treatment Plant (WTP) Calculator | multicalci.com</title>
+<meta name="description" content="Free water treatment plant calculator for coagulant dosing, chlorine demand and filtration design.">
+<link rel="canonical" href="https://multicalci.com/water-treatment-calculator/">
+<meta property="og:title" content="Water Treatment Plant (WTP) Calculator | multicalci.com">
+<meta property="og:description" content="Free water treatment plant calculator for coagulant dosing, chlorine demand and filtration design.">
+<meta property="og:url" content="https://multicalci.com/water-treatment-calculator/">
+<meta property="og:type" content="website">
+    <meta property="og:image" content="https://multicalci.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Water Treatment Plant (WTP) Calculator | multicalci.com">
+    <meta name="twitter:image" content="https://multicalci.com/assets/og-image.png">
+
+
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Water Treatment Plant Calculator","description":"WTP design calculator for coagulation, sedimentation, filtration and disinfection per IS 10500 and WHO standards.","applicationCategory":"EngineeringApplication","operatingSystem":"Web","url":"https://multicalci.com/water-treatment-calculator/","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<meta name="robots" content="index, follow">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=Epilogue:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ocean:#071221;--ocean2:#0c1e38;--ocean3:#102844;
+  --surface:#eef6fd;--surface2:#dceefa;--surface3:#c8e2f5;
+  --panel:#ffffff;--bdr:#c0d8ef;--bdr2:#9ec0e0;
+  --ink:#071221;--ink2:#1a3655;--ink3:#375878;--ink4:#617d9b;
+  --aqua:#0284c7;--aqual:#e0f2fe;--aquab:#7dd3fc;
+  --teal:#0d9488;--teall:#f0fdf9;--tealb:#5eead4;
+  --blue:#1d4ed8;--bluel:#eff6ff;--blueb:#93c5fd;
+  --em:#059669;--eml:#ecfdf5;--emb:#6ee7b7;
+  --am:#b45309;--aml:#fef3c7;--amb:#fcd34d;
+  --coral:#c62828;--corl:#fef2f2;--corb:#fca5a5;
+  --vio:#6d28d9;--viol:#f5f3ff;--viob:#c4b5fd;
+  --ind:#1e40af;--indl:#dbeafe;--indb:#93c5fd;
+  --slate:#334155;--slatel:#f1f5f9;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --serif:'Fraunces',Georgia,serif;
+  --mono:'Fira Code',monospace;
+  --r1:4px;--r2:8px;--r3:12px;--r4:16px;--r5:20px;--r6:28px;
+  --s1:0 1px 3px rgba(7,18,33,.07);
+  --s2:0 3px 12px rgba(7,18,33,.09),0 1px 3px rgba(7,18,33,.05);
+  --s3:0 8px 32px rgba(7,18,33,.12),0 3px 8px rgba(7,18,33,.07);
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--surface);line-height:1.6;min-height:100vh}
+
+/* ──── HEADER ──── */
+.hdr{background:linear-gradient(140deg,var(--ocean) 0%,var(--ocean2) 55%,#0d2845 100%);color:#fff;padding:0 16px;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 15% 50%,rgba(2,132,199,.18),transparent 55%),radial-gradient(ellipse 50% 70% at 85% 20%,rgba(13,148,136,.12),transparent 50%);pointer-events:none}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent 0%,rgba(2,132,199,.5) 30%,rgba(13,148,136,.5) 60%,transparent 100%);}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.hdr-inner{max-width:1520px;margin:0 auto;padding:18px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;z-index:1}
+.hdr-logo{width:52px;height:52px;border-radius:var(--r4);background:linear-gradient(135deg,var(--aqua),var(--teal));display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 16px rgba(2,132,199,.35);flex-shrink:0}
+.hdr-text .t1{font-family:var(--serif);font-size:1.8rem;font-weight:900;line-height:1;letter-spacing:-.5px}
+.hdr-text .t1 span{color:rgba(125,211,252,.85)}
+.hdr-text .t2{font-size:.64rem;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.45);font-weight:700;margin-top:3px}
+.hdr-tags{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+.tag{padding:3px 10px;border-radius:20px;font-size:.6rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);color:rgba(255,255,255,.55)}
+.tag.hi{background:rgba(2,132,199,.2);border-color:rgba(2,132,199,.35);color:rgba(125,211,252,.9)}
+.hdr-actions{display:flex;gap:7px;flex-wrap:wrap}
+.btn-hdr{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r2);font-family:var(--sans);font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);transition:all .17s;letter-spacing:.3px;white-space:nowrap}
+.btn-hdr:hover{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.3)}
+.btn-hdr.primary{background:linear-gradient(135deg,var(--aqua),var(--teal));border-color:transparent;color:#fff}
+.btn-hdr.primary:hover{box-shadow:0 4px 16px rgba(2,132,199,.4)}
+
+/* ──── UNIT TOGGLE ──── */
+.unit-bar{background:var(--ocean);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.unit-bar-inner{max-width:1520px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.unit-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4)}
+.unit-toggle{display:flex;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--r2);overflow:hidden}
+.unit-btn{padding:5px 16px;font-size:.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.45);transition:all .15s;letter-spacing:.4px}
+.unit-btn.active{background:linear-gradient(135deg,var(--aqua),var(--teal));color:#fff}
+.vers-badge{font-size:.6rem;color:rgba(255,255,255,.3);font-weight:600;letter-spacing:.5px}
+
+/* ──── WRAP & NAV ──── */
+.wrap{max-width:1520px;margin:0 auto;padding:18px 14px}
+.nav-wrap{background:var(--ocean2);border-radius:var(--r6);padding:5px;margin-bottom:18px;display:flex;gap:2px;overflow-x:auto;box-shadow:var(--s3);-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav-wrap::-webkit-scrollbar{display:none}
+.nb{padding:9px 16px;background:transparent;border:1px solid transparent;border-radius:var(--r3);font-family:var(--sans);font-size:.71rem;font-weight:700;cursor:pointer;color:rgba(255,255,255,.4);transition:all .18s;white-space:nowrap;flex-shrink:0;letter-spacing:.2px;display:flex;align-items:center;gap:6px}
+.nb:hover{color:rgba(255,255,255,.75);background:rgba(255,255,255,.05)}
+.nb.active{background:linear-gradient(135deg,var(--aqua),var(--teal));color:#fff;box-shadow:0 2px 10px rgba(2,132,199,.3)}
+.tab-pane{display:none}
+.tab-pane.active{display:block;animation:fu .28s ease}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ──── LAYOUT GRIDS ──── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:1100px){.two-col{grid-template-columns:1fr}}
+@media(max-width:860px){.three-col{grid-template-columns:1fr 1fr};.four-col{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.three-col,.four-col{grid-template-columns:1fr}}
+
+/* ──── CARDS ──── */
+.card{background:var(--panel);border:1.5px solid var(--bdr);border-radius:var(--r6);padding:22px;box-shadow:var(--s1);position:relative;overflow:hidden;margin-bottom:18px}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ca,linear-gradient(90deg,var(--aqua),var(--teal)));border-radius:var(--r6) var(--r6) 0 0}
+.card.aqua{--ca:linear-gradient(90deg,var(--aqua),var(--teal))}
+.card.blue{--ca:linear-gradient(90deg,var(--blue),var(--aqua))}
+.card.em{--ca:linear-gradient(90deg,var(--em),var(--teal))}
+.card.am{--ca:linear-gradient(90deg,var(--am),#d97706)}
+.card.coral{--ca:linear-gradient(90deg,var(--coral),#ef4444)}
+.card.vio{--ca:linear-gradient(90deg,var(--vio),var(--blue))}
+.card.ind{--ca:linear-gradient(90deg,var(--ind),var(--blue))}
+.card.slate{--ca:linear-gradient(90deg,var(--slate),#64748b)}
+.card-hd{display:flex;align-items:center;gap:11px;padding-bottom:14px;border-bottom:1.5px solid var(--surface3);margin-bottom:18px}
+.ci{width:42px;height:42px;border-radius:var(--r2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ci.aqua{background:linear-gradient(135deg,var(--aquab),var(--aqua));box-shadow:0 3px 8px rgba(2,132,199,.25)}
+.ci.teal{background:linear-gradient(135deg,var(--tealb),var(--teal));box-shadow:0 3px 8px rgba(13,148,136,.25)}
+.ci.blue{background:linear-gradient(135deg,var(--blueb),var(--blue));box-shadow:0 3px 8px rgba(29,78,216,.2)}
+.ci.em{background:linear-gradient(135deg,var(--emb),var(--em));box-shadow:0 3px 8px rgba(5,150,105,.22)}
+.ci.am{background:linear-gradient(135deg,var(--amb),var(--am));box-shadow:0 3px 8px rgba(180,83,9,.22)}
+.ci.coral{background:linear-gradient(135deg,var(--corb),var(--coral));box-shadow:0 3px 8px rgba(198,40,40,.2)}
+.ci.vio{background:linear-gradient(135deg,var(--viob),var(--vio));box-shadow:0 3px 8px rgba(109,40,217,.2)}
+.card-title{font-size:.82rem;font-weight:800;color:var(--ink);letter-spacing:.2px;text-transform:uppercase;line-height:1.2}
+.card-title small{display:block;font-size:.65rem;font-weight:500;color:var(--ink4);text-transform:none;letter-spacing:0;margin-top:2px;font-family:var(--sans)}
+
+/* ──── SECTION HEADINGS ──── */
+.sh{font-size:.63rem;font-weight:800;text-transform:uppercase;letter-spacing:1.8px;padding-bottom:5px;border-bottom:1.5px solid;margin:16px 0 11px;display:flex;align-items:center;gap:6px}
+.sh.aqua{color:var(--aqua);border-color:var(--aquab)}
+.sh.teal{color:var(--teal);border-color:var(--tealb)}
+.sh.blue{color:var(--blue);border-color:var(--blueb)}
+.sh.em{color:var(--em);border-color:var(--emb)}
+.sh.am{color:var(--am);border-color:var(--amb)}
+.sh.coral{color:var(--coral);border-color:var(--corb)}
+.sh.vio{color:var(--vio);border-color:var(--viob)}
+.sh.slate{color:var(--slate);border-color:var(--bdr2)}
+
+/* ──── FORMS ──── */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:4px}
+label{display:block;font-size:.64rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.urow{display:flex;gap:4px}
+.urow input{flex:1;min-width:0}
+.ul{min-width:52px;padding:8px 6px;font-family:var(--mono);font-size:.64rem;font-weight:600;display:flex;align-items:center;justify-content:center;border-radius:var(--r1);white-space:nowrap;flex-shrink:0;border:1.5px solid}
+.ul.aq{background:var(--aqual);border-color:var(--aquab);color:var(--aqua)}
+.ul.tl{background:var(--teall);border-color:var(--tealb);color:var(--teal)}
+.ul.bl{background:var(--bluel);border-color:var(--blueb);color:var(--blue)}
+.ul.al{background:var(--aml);border-color:var(--amb);color:var(--am)}
+.ul.vl{background:var(--viol);border-color:var(--viob);color:var(--vio)}
+input[type=number],input[type=text],select{
+  width:100%;padding:8px 10px;background:var(--surface);border:1.5px solid var(--bdr);
+  border-radius:var(--r1);color:var(--ink);font-family:var(--mono);font-size:.8rem;font-weight:500;
+  transition:border-color .14s,box-shadow .14s;-webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus{outline:none;border-color:var(--aqua);background:#fff;box-shadow:0 0 0 3px rgba(2,132,199,.1)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23617d9b' d='M5 6L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:26px}
+
+/* ──── BUTTONS ──── */
+.btn-calc{width:100%;padding:12px 20px;margin-top:16px;background:linear-gradient(135deg,var(--aqua),var(--teal));color:#fff;border:none;border-radius:var(--r3);font-family:var(--sans);font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .18s;box-shadow:0 3px 12px rgba(2,132,199,.28);display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-calc:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(2,132,199,.38)}
+.btn-calc.bl{background:linear-gradient(135deg,var(--blue),var(--aqua));box-shadow:0 3px 12px rgba(29,78,216,.25)}
+.btn-calc.em{background:linear-gradient(135deg,var(--em),var(--teal));box-shadow:0 3px 12px rgba(5,150,105,.22)}
+.btn-calc.am{background:linear-gradient(135deg,var(--am),#d97706);box-shadow:0 3px 12px rgba(180,83,9,.22)}
+.btn-calc.vio{background:linear-gradient(135deg,var(--vio),var(--blue));box-shadow:0 3px 12px rgba(109,40,217,.22)}
+.btn-calc.fire{background:linear-gradient(135deg,#b91c1c,#ea580c);box-shadow:0 3px 12px rgba(185,28,28,.25)}
+.btn-reset{padding:8px 16px;background:#fff;color:var(--ink3);border:1.5px solid var(--bdr2);border-radius:var(--r2);font-size:.72rem;font-weight:700;cursor:pointer;transition:all .16s;text-transform:uppercase;letter-spacing:.4px;margin-top:7px;width:100%}
+.btn-reset:hover{border-color:var(--aqua);color:var(--aqua);background:var(--aqual)}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
+.pc{padding:5px 12px;background:var(--surface);border:1.5px solid var(--bdr2);border-radius:20px;font-size:.67rem;font-weight:700;color:var(--ink3);cursor:pointer;transition:all .16s;letter-spacing:.1px;white-space:nowrap}
+.pc:hover,.pc.on{background:var(--aqual);border-color:var(--aqua);color:var(--aqua)}
+
+/* ──── RESULTS AREA ──── */
+.ph{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:46px 20px;text-align:center;min-height:260px;background:linear-gradient(135deg,var(--surface),var(--aqual));border-radius:var(--r4);border:1.5px dashed var(--bdr2)}
+.ph-ico{font-size:2.6rem;opacity:.22;margin-bottom:11px}
+.ph h3{font-size:.9rem;font-weight:700;color:var(--ink4)}
+.ph p{font-size:.76rem;color:var(--ink4);opacity:.7}
+.spin-wrap{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:260px}
+.spin-wrap.show{display:flex}
+.spin{width:40px;height:40px;border:3px solid var(--surface3);border-top-color:var(--aqua);border-radius:50%;animation:rot .6s linear infinite;margin-bottom:12px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.spin-wrap p{font-size:.76rem;color:var(--ink4)}
+.res{display:none}
+.res.show{display:block;animation:fu .32s ease}
+.err{display:none;background:var(--corl);border:1.5px solid var(--corb);border-left:4px solid var(--coral);border-radius:var(--r2);padding:9px 13px;margin-top:9px;font-size:.78rem;font-weight:600;color:#7f1d1d;align-items:center;gap:7px}
+.err.show{display:flex}
+
+/* ──── KPI ──── */
+.kpig{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;margin-bottom:14px}
+.kpi{padding:12px 13px;background:var(--surface);border:1.5px solid var(--bdr);border-radius:var(--r3);border-top:3px solid var(--bdr2);transition:all .16s;cursor:default}
+.kpi:hover{background:#fff;box-shadow:var(--s1);transform:translateY(-1px)}
+.kpi.aq{border-top-color:var(--aqua)}.kpi.tl{border-top-color:var(--teal)}.kpi.bl{border-top-color:var(--blue)}.kpi.em{border-top-color:var(--em)}.kpi.am{border-top-color:var(--am)}.kpi.co{border-top-color:var(--coral)}.kpi.vi{border-top-color:var(--vio)}.kpi.sl{border-top-color:var(--slate)}
+.kpi-l{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink4);margin-bottom:4px}
+.kpi-v{font-size:1.25rem;font-weight:800;color:var(--ink);font-family:var(--mono);line-height:1.1;word-break:break-all}
+.kpi-u{font-size:.64rem;font-weight:600;color:var(--aqua);margin-left:1px}
+.kpi-s{font-size:.6rem;color:var(--ink4);margin-top:2px;line-height:1.3}
+
+/* ──── TABLES ──── */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r3);border:1.5px solid var(--bdr);margin:11px 0;box-shadow:var(--s1)}
+.dt{width:100%;border-collapse:collapse;font-size:.77rem;min-width:400px}
+.dt th{background:var(--ocean);color:#fff;padding:8px 12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:.63rem;text-align:left;white-space:nowrap}
+.dt td{padding:7px 12px;border-bottom:1px solid var(--surface3);font-family:var(--mono);font-size:.77rem;color:var(--ink2);font-weight:500;vertical-align:middle}
+.dt tr:last-child td{border-bottom:none}
+.dt tr:hover td{background:var(--surface)}
+.dt td.lc{font-family:var(--sans);font-weight:700;color:var(--ink3);font-size:.73rem}
+.dt td.good{color:var(--em);font-weight:700}
+.dt td.warn{color:var(--am);font-weight:700}
+.dt td.bad{color:var(--coral);font-weight:700}
+.dt td.hi{color:var(--aqua);font-weight:700}
+.dt td.nd{color:var(--ink4);font-style:italic}
+
+/* ──── NOTES ──── */
+.note{border-radius:var(--r3);padding:12px 14px;margin:9px 0;border-left:4px solid}
+.note.aq{background:var(--aqual);border-color:var(--aqua)}
+.note.tl{background:var(--teall);border-color:var(--teal)}
+.note.bl{background:var(--bluel);border-color:var(--blue)}
+.note.em{background:var(--eml);border-color:var(--em)}
+.note.am{background:var(--aml);border-color:var(--am)}
+.note.co{background:var(--corl);border-color:var(--coral)}
+.note.vi{background:var(--viol);border-color:var(--vio)}
+.note-t{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.note.aq .note-t{color:var(--aqua)}.note.tl .note-t{color:var(--teal)}.note.bl .note-t{color:var(--blue)}.note.em .note-t{color:var(--em)}.note.am .note-t{color:var(--am)}.note.co .note-t{color:var(--coral)}.note.vi .note-t{color:var(--vio)}
+.note-b{font-size:.78rem;color:var(--ink2);line-height:1.8}
+.note-b ul{margin-left:15px;margin-top:4px}.note-b li{margin-bottom:2px}
+.note-b strong{color:var(--ink);font-weight:700}
+
+/* ──── RES HEADER ──── */
+.rh{background:linear-gradient(135deg,var(--ocean),var(--ocean2));color:#fff;border-radius:var(--r4);padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.rh h3{font-family:var(--serif);font-size:.95rem;font-weight:700;line-height:1.2;margin-bottom:2px}
+.rh-meta{font-size:.67rem;color:rgba(255,255,255,.5);font-weight:500}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:.62rem;font-weight:800;letter-spacing:.2px;text-transform:uppercase;flex-shrink:0}
+.b-ok{background:rgba(5,150,105,.25);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.b-warn{background:rgba(180,83,9,.25);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+.b-bad{background:rgba(198,40,40,.25);color:#fca5a5;border:1px solid rgba(252,165,165,.3)}
+.b-info{background:rgba(2,132,199,.25);color:rgba(125,211,252,.9);border:1px solid rgba(2,132,199,.35)}
+
+/* ──── FORMULA BOX ──── */
+.fbox{background:var(--ocean);border-radius:var(--r2);padding:10px 13px;margin:7px 0;font-family:var(--mono);font-size:.73rem;color:rgba(125,211,252,.85);line-height:1.85;letter-spacing:.1px;overflow-x:auto}
+.fbox .c{color:rgba(255,255,255,.35)}
+
+/* ──── STATUS BARS ──── */
+.sbar-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;flex-wrap:wrap}
+.sbar-l{font-size:.68rem;font-weight:700;color:var(--ink3);min-width:140px;flex-shrink:0}
+.sbar-t{flex:1;min-width:60px;height:7px;background:var(--surface3);border-radius:6px;overflow:hidden}
+.sbar-f{height:100%;border-radius:6px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.sbar-f.aq{background:linear-gradient(90deg,var(--aqua),#0ea5e9)}
+.sbar-f.tl{background:linear-gradient(90deg,var(--teal),#14b8a6)}
+.sbar-f.em{background:linear-gradient(90deg,var(--em),#10b981)}
+.sbar-f.am{background:linear-gradient(90deg,var(--am),#f59e0b)}
+.sbar-f.co{background:linear-gradient(90deg,var(--coral),#ef4444)}
+.sbar-pct{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--ink2);min-width:48px;text-align:right}
+
+/* ──── WQBADGE ──── */
+.wqb{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.3px}
+.wqb.ok{background:var(--eml);color:var(--em);border:1px solid var(--emb)}
+.wqb.warn{background:var(--aml);color:var(--am);border:1px solid var(--amb)}
+.wqb.bad{background:var(--corl);color:var(--coral);border:1px solid var(--corb)}
+
+/* ──── OVERVIEW ──── */
+.ov-hero{background:linear-gradient(140deg,var(--ocean) 0%,#0d2848 55%,var(--ocean2) 100%);border-radius:var(--r6);padding:30px;color:#fff;margin-bottom:18px;position:relative;overflow:hidden}
+.ov-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 10%,rgba(2,132,199,.18),transparent 55%);pointer-events:none}
+.ov-hero h1{font-family:var(--serif);font-size:2rem;font-weight:900;line-height:1.1;margin-bottom:8px;position:relative}
+.ov-hero p{font-size:.84rem;color:rgba(255,255,255,.6);line-height:1.85;max-width:680px;position:relative}
+.process-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px;margin-top:22px;position:relative}
+.pf{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--r4);padding:14px 12px;text-align:center}
+.pf-i{font-size:1.6rem;margin-bottom:5px}
+.pf-n{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+.pf-d{font-size:.6rem;color:rgba(255,255,255,.4);margin-top:2px;line-height:1.4}
+.cs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin-top:18px;position:relative}
+.csc{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);border-radius:var(--r4);padding:16px;cursor:pointer;transition:all .2s}
+.csc:hover{background:rgba(255,255,255,.13);border-color:rgba(125,211,252,.3);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.csc-num{font-size:.58rem;font-weight:800;letter-spacing:.9px;color:rgba(125,211,252,.6);text-transform:uppercase;margin-bottom:5px}
+.csc-t{font-size:.8rem;font-weight:700;color:#fff;font-family:var(--serif);margin-bottom:5px}
+.csc-c{font-size:.67rem;color:rgba(255,255,255,.4);line-height:1.7}
+
+/* ──── COMPLIANCE TABLE ──── */
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.comp-card{background:var(--panel);border:1.5px solid var(--bdr);border-radius:var(--r4);padding:16px;box-shadow:var(--s1)}
+.comp-card-hd{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid var(--surface3);display:flex;align-items:center;gap:6px}
+.comp-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dotted var(--surface3);gap:8px}
+.comp-row:last-child{border-bottom:none}
+.comp-param{font-size:.71rem;color:var(--ink3);font-weight:600;flex:1}
+.comp-val{font-family:var(--mono);font-size:.71rem;color:var(--ink2);font-weight:700;text-align:right}
+
+/* ──── MOBILE SPECIFIC ──── */
+@media(max-width:640px){
+  .hdr-inner{padding:14px 0}
+  .hdr-text .t1{font-size:1.4rem}
+  .hdr-tags{display:none}
+  .hdr-actions{width:100%}
+  .hdr-actions .btn-hdr{flex:1;justify-content:center}
+  .wrap{padding:12px 10px}
+  .nb{padding:8px 12px;font-size:.67rem}
+  .kpig{grid-template-columns:1fr 1fr}
+  .ov-hero{padding:18px}
+  .ov-hero h1{font-size:1.45rem}
+  .process-flow{grid-template-columns:1fr 1fr}
+  .fgrid{grid-template-columns:1fr}
+  .card{padding:16px;border-radius:var(--r4)}
+  .two-col{grid-template-columns:1fr}
+  .comp-grid{grid-template-columns:1fr}
+}
+@media(max-width:400px){.kpig{grid-template-columns:1fr}}
+
+/* ──── SHARE MODAL ──── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(7,18,33,.7);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--panel);border-radius:var(--r6);padding:28px;max-width:420px;width:100%;box-shadow:var(--s3);animation:fu .25s ease}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal-hd h3{font-family:var(--serif);font-size:1.1rem;font-weight:800}
+.modal-close{width:32px;height:32px;border:none;background:var(--surface);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--ink3);transition:all .15s}
+.modal-close:hover{background:var(--surface3);color:var(--ink)}
+.share-link-box{display:flex;gap:8px;margin-bottom:18px}
+.share-link-box input{flex:1;font-size:.75rem;background:var(--surface);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:8px 10px;font-family:var(--mono);color:var(--ink3)}
+.copy-btn{padding:8px 14px;background:var(--aqua);color:#fff;border:none;border-radius:var(--r2);font-weight:700;font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .15s}
+.copy-btn:hover{background:var(--blue)}
+.share-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.share-btn{padding:11px 8px;border:1.5px solid var(--bdr);border-radius:var(--r3);background:#fff;cursor:pointer;transition:all .16s;text-align:center;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:4px}
+.share-btn:hover{border-color:var(--aqua);background:var(--aqual);transform:translateY(-1px)}
+.share-btn .si{font-size:1.4rem}
+.share-btn .sl{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3)}
+
+/* ──── PRINT / PDF ──── */
+@media print{
+  .hdr,.nav-wrap,.hdr-actions,.unit-bar,.btn-calc,.btn-reset,.presets,.modal-overlay,.hdr-actions{display:none!important}
+  body{background:#fff;font-size:10pt}
+  .card{box-shadow:none;border:1pt solid #ccc;page-break-inside:avoid;margin-bottom:12pt}
+  .tab-pane{display:block!important}
+  .wrap{padding:0}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+<div class="hdr-inner">
+  <div class="hdr-logo">💧</div>
+  <div class="hdr-text">
+   <div class="t1">WTP<span>-Pro</span> <span style="font-size:.7em;opacity:.5">v2</span></div>
+   <div class="t2">Water Treatment Plant — Complete Engineering Calculator</div>
+  </div>
+  <div class="hdr-tags">
+   <span class="tag hi">RO System</span>
+   <span class="tag">Clarifier</span>
+   <span class="tag">DM Plant</span>
+   <span class="tag">Boiler Feed</span>
+   <span class="tag">Drinking</span>
+   <span class="tag hi">SI + Imperial</span>
+  </div>
+  <div class="hdr-actions">
+   <a href="https://multicalci.com/" class="btn-hdr" style="text-decoration:none;cursor:pointer;">🏠 Home</a>
+   <button class="btn-hdr primary" onclick="openShare()">🔗 Share</button>
+   <button class="btn-hdr" onclick="genPDF()">📄 PDF</button>
+   <button class="btn-hdr" onclick="window.print()">🖨 Print</button>
+  </div>
+ </div>
+</header>
+
+<!-- UNIT TOGGLE BAR -->
+<div class="unit-bar">
+ <div class="unit-bar-inner">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+   <span class="unit-lbl">Units:</span>
+   <div class="unit-toggle">
+    <button class="unit-btn active" id="btn-si" onclick="setUnits('si')">SI (metric)</button>
+    <button class="unit-btn" id="btn-imp" onclick="setUnits('imperial')">Imperial (US)</button>
+   </div>
+   <span class="unit-lbl" id="unit-hint">m³/hr · bar · °C · mg/L</span>
+  </div>
+  <span class="vers-badge">ASME CRTD-34 · IS 10500 · IS 10392 · WHO 2022</span>
+ </div>
+</div>
+
+<div class="wrap">
+
+<!-- NAV -->
+<nav class="nav-wrap">
+ <button class="nb active" data-tab="overview" onclick="sw('overview',this)">🏠 Overview</button>
+ <button class="nb" data-tab="ro" onclick="sw('ro',this)">🔵 RO System</button>
+ <button class="nb" data-tab="clarifier" onclick="sw('clarifier',this)">🟤 Clarifier</button>
+ <button class="nb" data-tab="dm" onclick="sw('dm',this)">🟢 DM Plant</button>
+ <button class="nb" data-tab="boiler" onclick="sw('boiler',this)">🔥 Boiler Feed</button>
+ <button class="nb" data-tab="drinking" onclick="sw('drinking',this)">🚰 Drinking Water</button>
+ <button class="nb" data-tab="chemical" onclick="sw('chemical',this)">🧪 Chemical Dosing</button>
+ <button class="nb" data-tab="standards" onclick="sw('standards',this)">📋 Standards</button>
+</nav>
+
+<!-- ════════════════════════════════════
+     OVERVIEW
+════════════════════════════════════ -->
+<div id="tab-overview" class="tab-pane active">
+ <div class="ov-hero">
+  <h1>Water Treatment Plant<br>Engineering Calculator</h1>
+  <p>The complete engineering reference for water treatment plant design and operations. All major calculation modules covering RO membranes, gravity clarification, ion exchange demineralization, boiler feed water chemistry, potable water treatment, and chemical dosing — with correct ASME, IS, WHO and ABMA standards built-in.</p>
+  <div class="process-flow">
+   <div class="pf"><div class="pf-i">🌊</div><div class="pf-n">Raw Water</div><div class="pf-d">River, bore-well, sea, municipal</div></div>
+   <div class="pf"><div class="pf-i">🟤</div><div class="pf-n">Clarifier</div><div class="pf-d">Coagulation, settling, sludge</div></div>
+   <div class="pf"><div class="pf-i">🔲</div><div class="pf-n">DMF/ACF</div><div class="pf-d">Dual media, carbon filtration</div></div>
+   <div class="pf"><div class="pf-i">🔵</div><div class="pf-n">RO Unit</div><div class="pf-d">Membranes, recovery, rejection</div></div>
+   <div class="pf"><div class="pf-i">🟢</div><div class="pf-n">DM Plant</div><div class="pf-d">Cation, anion, mixed bed</div></div>
+   <div class="pf"><div class="pf-i">🔥</div><div class="pf-n">Boiler</div><div class="pf-d">Steam generation, blowdown</div></div>
+  </div>
+  <div class="cs-grid">
+   <div class="csc" onclick="sw('ro',document.querySelector('.nb[data-tab=ro]'))"><div class="csc-num">Module 01</div><div class="csc-t">RO System Design</div><div class="csc-c">Recovery · Flux · TDS rejection · Salt passage · LSI · Osmotic pressure · Membrane sizing · SEC · SDI assessment</div></div>
+   <div class="csc" onclick="sw('clarifier',document.querySelector('.nb[data-tab=clarifier]'))"><div class="csc-num">Module 02</div><div class="csc-t">Clarifier Design</div><div class="csc-c">SOR · Detention time · Weir loading · Tank dims · Sludge volume · Coagulant dose · G-value · Upflow velocity</div></div>
+   <div class="csc" onclick="sw('dm',document.querySelector('.nb[data-tab=dm]'))"><div class="csc-num">Module 03</div><div class="csc-t">DM Plant</div><div class="csc-c">Resin volume · Exchange capacity · HCl/NaOH regen · Cycle length · Conductivity · Silica leakage · Degasser</div></div>
+   <div class="csc" onclick="sw('boiler',document.querySelector('.nb[data-tab=boiler]'))"><div class="csc-num">Module 04</div><div class="csc-t">Boiler Feed Water</div><div class="csc-c">COC · Blowdown · Makeup flow · O₂ scavenger · Scale limits (ASME/IS/ABMA) · Silica carryover · Steam purity · Heat loss</div></div>
+   <div class="csc" onclick="sw('drinking',document.querySelector('.nb[data-tab=drinking]'))"><div class="csc-num">Module 05</div><div class="csc-t">Drinking Water</div><div class="csc-c">Cl₂ residual · CT value · Giardia log removal · Filtration area · IS 10500 compliance · LSI · RSI corrosion index</div></div>
+   <div class="csc" onclick="sw('chemical',document.querySelector('.nb[data-tab=chemical]'))"><div class="csc-num">Module 06</div><div class="csc-t">Chemical Dosing</div><div class="csc-c">Pump sizing · Tank volume · 3-chemical system · Safety factor · Daily consumption · Stock solution</div></div>
+  </div>
+ </div>
+</div>
+
+<!-- ════════════════════════════════════
+     RO SYSTEM
+════════════════════════════════════ -->
+<div id="tab-ro" class="tab-pane">
+ <div class="two-col">
+  <div>
+   <div class="card blue">
+    <div class="card-hd"><div class="ci blue">🔵</div><div class="card-title">RO System Design<small>Recovery, flux, TDS rejection, LSI, membrane sizing</small></div></div>
+    <div class="presets">
+     <button class="pc" onclick="lp('ro','brackish')">💧 Brackish</button>
+     <button class="pc" onclick="lp('ro','seawater')">🌊 Seawater</button>
+     <button class="pc" onclick="lp('ro','industrial')">🏭 Industrial</button>
+     <button class="pc" onclick="lp('ro','drinking')">🚰 Drinking</button>
+    </div>
+    <div class="sh aqua">📥 Feed Water</div>
+    <div class="fgrid">
+     <div><label>Feed Flow Rate</label><div class="urow"><input type="number" id="ro_feed" value="100" step="1" min="0.1"><div class="ul aq" id="ro_feed_u">m³/hr</div></div></div>
+     <div><label>Feed TDS</label><div class="urow"><input type="number" id="ro_tds" value="2000" step="10"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Feed Pressure</label><div class="urow"><input type="number" id="ro_press" value="10" step="0.5"><div class="ul bl" id="ro_press_u">bar</div></div></div>
+     <div><label>Feed Temperature</label><div class="urow"><input type="number" id="ro_temp" value="25" step="1"><div class="ul tl" id="ro_temp_u">°C</div></div></div>
+     <div><label>SDI (Silt Density Index)</label><div class="urow"><input type="number" id="ro_sdi" value="3" step="0.1" min="0" max="20"><div class="ul bl">SDI</div></div></div>
+     <div><label>Feed Conductivity</label><div class="urow"><input type="number" id="ro_cond" value="3000" step="10"><div class="ul aq">µS/cm</div></div></div>
+    </div>
+    <div class="sh blue">⚙ System Design</div>
+    <div class="fgrid">
+     <div><label>Target Recovery Rate</label><div class="urow"><input type="number" id="ro_rec" value="75" step="1" min="10" max="95"><div class="ul bl">%</div></div></div>
+     <div><label>Membrane Salt Rejection</label><div class="urow"><input type="number" id="ro_rej" value="97" step="0.1" min="80" max="99.9"><div class="ul bl">%</div></div></div>
+     <div><label>Flux Rate</label><div class="urow"><input type="number" id="ro_flux" value="15" step="0.5" min="5" max="40"><div class="ul tl">L/m²/h</div></div></div>
+     <div><label>No. of Stages</label><div class="urow"><input type="number" id="ro_stages" value="2" step="1" min="1" max="3"><div class="ul bl">stages</div></div></div>
+     <div><label>Membrane Active Area</label><div class="urow"><input type="number" id="ro_mem_a" value="37" step="0.5" min="1"><div class="ul tl">m²/elem</div></div></div>
+     <div><label>Elements per Vessel</label><div class="urow"><input type="number" id="ro_epv" value="6" step="1" min="1" max="8"><div class="ul bl">elem</div></div></div>
+    </div>
+    <div class="sh teal">🔬 Water Chemistry (LSI)</div>
+    <div class="fgrid">
+     <div><label>Feed pH</label><div class="urow"><input type="number" id="ro_ph" value="7.5" step="0.1" min="4" max="10"><div class="ul tl">pH</div></div></div>
+     <div><label>Ca²⁺ Hardness</label><div class="urow"><input type="number" id="ro_ca" value="150" step="5"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Total Alkalinity</label><div class="urow"><input type="number" id="ro_alk" value="120" step="5"><div class="ul aq">mg/L</div></div></div>
+    </div>
+    <div id="ro_err" class="err">⚠ <span id="ro_err_t"></span></div>
+    <button class="btn-calc bl" onclick="calcRO()">🔵 Calculate RO System</button>
+    <button class="btn-reset" onclick="clr('ro')">↺ Clear</button>
+   </div>
+  </div>
+  <div>
+   <div class="card blue">
+    <div id="ro_ph_el" class="ph"><div class="ph-ico">🔵</div><h3>RO Results</h3><p>Fill parameters and calculate</p></div>
+    <div id="ro_spin" class="spin-wrap"><div class="spin"></div><p>Computing RO system…</p></div>
+    <div id="ro_res" class="res"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ════════════════════════════════════
+     CLARIFIER
+════════════════════════════════════ -->
+<div id="tab-clarifier" class="tab-pane">
+ <div class="two-col">
+  <div>
+   <div class="card am">
+    <div class="card-hd"><div class="ci am">🟤</div><div class="card-title">Clarifier Design<small>SOR, detention time, weir loading, tank sizing</small></div></div>
+    <div class="presets">
+     <button class="pc" onclick="lp('cl','municipal')">🏙 Municipal</button>
+     <button class="pc" onclick="lp('cl','industrial')">🏭 Industrial</button>
+     <button class="pc" onclick="lp('cl','highturb')">🌊 High Turbidity</button>
+    </div>
+    <div class="sh am">💧 Flow & Raw Water</div>
+    <div class="fgrid">
+     <div><label>Design Flow Rate Q</label><div class="urow"><input type="number" id="cl_flow" value="500" step="10" min="0.1"><div class="ul bl" id="cl_flow_u">m³/hr</div></div></div>
+     <div><label>Raw Turbidity In</label><div class="urow"><input type="number" id="cl_ti" value="100" step="5" min="0.5"><div class="ul aq">NTU</div></div></div>
+     <div><label>Target Effluent NTU</label><div class="urow"><input type="number" id="cl_to" value="5" step="0.5" min="0.1"><div class="ul aq">NTU</div></div></div>
+     <div><label>Suspended Solids (SS)</label><div class="urow"><input type="number" id="cl_ss" value="150" step="5"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Water Temperature</label><div class="urow"><input type="number" id="cl_temp" value="20" step="1"><div class="ul tl" id="cl_temp_u">°C</div></div></div>
+     <div><label>Feed pH</label><div class="urow"><input type="number" id="cl_ph" value="7.2" step="0.1" min="4" max="10"><div class="ul tl">pH</div></div></div>
+    </div>
+    <div class="sh teal">🏗 Design Parameters</div>
+    <div class="fgrid">
+     <div><label>Surface Overflow Rate (SOR)</label><div class="urow"><input type="number" id="cl_sor" value="1.2" step="0.1" min="0.2" max="5"><div class="ul tl" id="cl_sor_u">m/hr</div></div></div>
+     <div><label>Detention Time</label><div class="urow"><input type="number" id="cl_dt" value="3" step="0.25" min="0.5" max="10"><div class="ul bl">hr</div></div></div>
+     <div><label>Weir Loading Rate</label><div class="urow"><input type="number" id="cl_wlr" value="150" step="10" min="50"><div class="ul al" id="cl_wlr_u">m³/m/d</div></div></div>
+     <div><label>Clarifier Type</label><select id="cl_type"><option value="circular">Circular (Radial flow)</option><option value="rectangular">Rectangular</option><option value="inclined">Inclined Plate (Tube Settler)</option><option value="upflow">Upflow Sludge Blanket (UASB)</option></select></div>
+     <div><label>Sludge Volume Index (SVI)</label><div class="urow"><input type="number" id="cl_svi" value="120" step="5" min="30" max="500"><div class="ul al">mL/g</div></div></div>
+     <div><label>MLSS Concentration</label><div class="urow"><input type="number" id="cl_mlss" value="3000" step="100"><div class="ul aq">mg/L</div></div></div>
+    </div>
+    <div class="sh blue">🧪 Coagulation</div>
+    <div class="fgrid">
+     <div><label>Coagulant Type</label><select id="cl_coag"><option value="alum">Alum Al₂(SO₄)₃</option><option value="ferric">Ferric Chloride FeCl₃</option><option value="pac">PAC (Poly Aluminium Chloride)</option><option value="lime">Lime Ca(OH)₂</option></select></div>
+     <div><label>Coagulant Dose</label><div class="urow"><input type="number" id="cl_dose" value="20" step="1" min="1" max="300"><div class="ul aq">mg/L</div></div></div>
+    </div>
+    <div id="cl_err" class="err">⚠ <span id="cl_err_t"></span></div>
+    <button class="btn-calc am" onclick="calcClarifier()">🟤 Calculate Clarifier</button>
+    <button class="btn-reset" onclick="clr('cl')">↺ Clear</button>
+   </div>
+  </div>
+  <div>
+   <div class="card am">
+    <div id="cl_ph_el" class="ph"><div class="ph-ico">🟤</div><h3>Clarifier Results</h3><p>Fill design parameters and calculate</p></div>
+    <div id="cl_spin" class="spin-wrap"><div class="spin"></div><p>Sizing clarifier…</p></div>
+    <div id="cl_res" class="res"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ════════════════════════════════════
+     DM PLANT
+════════════════════════════════════ -->
+<div id="tab-dm" class="tab-pane">
+ <div class="two-col">
+  <div>
+   <div class="card em">
+    <div class="card-hd"><div class="ci teal">🟢</div><div class="card-title">DM Plant Design<small>Ion exchange, resin sizing, regeneration chemicals</small></div></div>
+    <div class="presets">
+     <button class="pc" onclick="lp('dm','power')">⚡ Power Plant</button>
+     <button class="pc" onclick="lp('dm','pharma')">💊 Pharma/UPW</button>
+     <button class="pc" onclick="lp('dm','process')">🏭 Process Water</button>
+    </div>
+    <div class="sh em">💧 Feed Water Ion Analysis</div>
+    <div class="fgrid">
+     <div><label>Feed Flow to DM</label><div class="urow"><input type="number" id="dm_flow" value="30" step="1" min="0.1"><div class="ul bl" id="dm_flow_u">m³/hr</div></div></div>
+     <div><label>Total Cations (as CaCO₃)</label><div class="urow"><input type="number" id="dm_cat" value="300" step="5"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Total Anions (as CaCO₃)</label><div class="urow"><input type="number" id="dm_an" value="280" step="5"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Silica (SiO₂)</label><div class="urow"><input type="number" id="dm_si" value="15" step="1" min="0"><div class="ul tl">mg/L</div></div></div>
+     <div><label>Free CO₂</label><div class="urow"><input type="number" id="dm_co2" value="10" step="1" min="0"><div class="ul tl">mg/L</div></div></div>
+     <div><label>Feed TDS</label><div class="urow"><input type="number" id="dm_tds" value="500" step="10"><div class="ul aq">mg/L</div></div></div>
+    </div>
+    <div class="sh teal">⚗ Resin & Column Design</div>
+    <div class="fgrid">
+     <div><label>Cation Resin Capacity</label><div class="urow"><input type="number" id="dm_catcap" value="1.8" step="0.1" min="0.5" max="3"><div class="ul tl">eq/L</div></div></div>
+     <div><label>Anion Resin Capacity</label><div class="urow"><input type="number" id="dm_ancap" value="1.2" step="0.1" min="0.5" max="2.5"><div class="ul tl">eq/L</div></div></div>
+     <div><label>Target Cycle Length</label><div class="urow"><input type="number" id="dm_cycle" value="16" step="1" min="4" max="72"><div class="ul bl">hr</div></div></div>
+     <div><label>Service Flow Velocity</label><div class="urow"><input type="number" id="dm_vel" value="15" step="1" min="8" max="40"><div class="ul tl" id="dm_vel_u">m/hr</div></div></div>
+     <div><label>Resin Bed Height</label><div class="urow"><input type="number" id="dm_bedh" value="1.2" step="0.1" min="0.6" max="2.5"><div class="ul tl" id="dm_bedh_u">m</div></div></div>
+    </div>
+    <div class="sh blue">🧪 Regeneration Design</div>
+    <div class="fgrid">
+     <div><label>HCl Solution Conc.</label><div class="urow"><input type="number" id="dm_hcl_c" value="5" step="0.5" min="2" max="15"><div class="ul tl">% w/w</div></div></div>
+     <div><label>NaOH Solution Conc.</label><div class="urow"><input type="number" id="dm_naoh_c" value="4" step="0.5" min="2" max="12"><div class="ul tl">% w/w</div></div></div>
+     <div><label>HCl Dose (per eq resin)</label><div class="urow"><input type="number" id="dm_hcl_d" value="100" step="5" min="60" max="200"><div class="ul al">g/eq</div></div></div>
+     <div><label>NaOH Dose (per eq resin)</label><div class="urow"><input type="number" id="dm_naoh_d" value="120" step="5" min="60" max="240"><div class="ul al">g/eq</div></div></div>
+    </div>
+    <div class="sh vio">🎯 Quality Targets</div>
+    <div class="fgrid">
+     <div><label>Target Conductivity</label><div class="urow"><input type="number" id="dm_cond_t" value="0.1" step="0.05" min="0.05" max="10"><div class="ul vl">µS/cm</div></div></div>
+     <div><label>Target Silica (SiO₂)</label><div class="urow"><input type="number" id="dm_si_t" value="0.02" step="0.01" min="0.005"><div class="ul vl">mg/L</div></div></div>
+    </div>
+    <div id="dm_err" class="err">⚠ <span id="dm_err_t"></span></div>
+    <button class="btn-calc em" onclick="calcDM()">🟢 Calculate DM Plant</button>
+    <button class="btn-reset" onclick="clr('dm')">↺ Clear</button>
+   </div>
+  </div>
+  <div>
+   <div class="card em">
+    <div id="dm_ph_el" class="ph"><div class="ph-ico">🟢</div><h3>DM Plant Results</h3><p>Fill parameters and calculate</p></div>
+    <div id="dm_spin" class="spin-wrap"><div class="spin"></div><p>Computing DM design…</p></div>
+    <div id="dm_res" class="res"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ════════════════════════════════════
+     BOILER FEED WATER ← REVISED & EXTENSIVE
+════════════════════════════════════ -->
+<div id="tab-boiler" class="tab-pane">
+ <div class="two-col">
+  <div>
+   <div class="card coral">
+    <div class="card-hd"><div class="ci coral">🔥</div><div class="card-title">Boiler Feed Water Quality<small>ASME CRTD-34 · IS 10392 · ABMA — Complete analysis</small></div></div>
+    <div class="presets">
+     <button class="pc" onclick="lp('bfw','lp')">🔵 Low Pressure (&lt;0-300 psig)</button>
+     <button class="pc" onclick="lp('bfw','mp')">🟡 Medium (301-900 psig)</button>
+     <button class="pc" onclick="lp('bfw','hp')">🔴 High (901-1500 psig)</button>
+     <button class="pc" onclick="lp('bfw','vhp')">⚡ Ultra-HP (>1500 psig)</button>
+    </div>
+    <div class="sh coral">🔥 Boiler Operating Conditions</div>
+    <div class="fgrid">
+     <div><label>Steam Generation Rate</label><div class="urow"><input type="number" id="bfw_steam" value="10" step="0.5" min="0.1"><div class="ul al" id="bfw_steam_u">t/hr</div></div></div>
+     <div><label>Drum Operating Pressure</label><div class="urow"><input type="number" id="bfw_press" value="10" step="0.5" min="1" max="250"><div class="ul co" id="bfw_press_u">bar(g)</div></div></div>
+     <div><label>Boiler Type</label><select id="bfw_type"><option value="firetube">Fire Tube (Shell Boiler)</option><option value="watertube">Water Tube — No Superheater</option><option value="watertube_sh">Water Tube + Superheater/Turbine</option><option value="hrsg">HRSG (Heat Recovery)</option><option value="otsg">Once-Through (OTSG)</option></select></div>
+     <div><label>Condensate Return %</label><div class="urow"><input type="number" id="bfw_cr" value="70" step="5" min="0" max="100"><div class="ul tl">%</div></div></div>
+     <div><label>No. of Boilers</label><div class="urow"><input type="number" id="bfw_nb" value="1" step="1" min="1" max="10"><div class="ul bl">nos.</div></div></div>
+     <div><label>Fuel Type</label><select id="bfw_fuel"><option value="gas">Natural Gas</option><option value="oil">HFO / LDO</option><option value="coal">Coal</option><option value="biomass">Biomass</option></select></div>
+    </div>
+    <div class="sh am">🌡 Makeup Water Quality (Feed to Boiler)</div>
+    <div class="fgrid">
+     <div><label>Makeup Water TDS</label><div class="urow"><input type="number" id="bfw_mu_tds" value="200" step="10"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Total Hardness (as CaCO₃)</label><div class="urow"><input type="number" id="bfw_hard" value="50" step="5"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Total Alkalinity (as CaCO₃)</label><div class="urow"><input type="number" id="bfw_alk" value="80" step="5"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Chlorides (Cl⁻)</label><div class="urow"><input type="number" id="bfw_cl" value="30" step="5"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Silica (SiO₂)</label><div class="urow"><input type="number" id="bfw_sil" value="5" step="0.5" min="0"><div class="ul tl">mg/L</div></div></div>
+     <div><label>Iron (Fe total)</label><div class="urow"><input type="number" id="bfw_fe" value="0.1" step="0.05" min="0"><div class="ul tl">mg/L</div></div></div>
+     <div><label>Copper (Cu total)</label><div class="urow"><input type="number" id="bfw_cu" value="0.05" step="0.01" min="0"><div class="ul tl">mg/L</div></div></div>
+     <div><label>Dissolved O₂ (before DA)</label><div class="urow"><input type="number" id="bfw_do" value="8" step="0.5" min="0" max="15"><div class="ul aq">mg/L</div></div></div>
+     <div><label>TOC (Total Organic Carbon)</label><div class="urow"><input type="number" id="bfw_toc" value="2" step="0.5" min="0"><div class="ul tl">mg/L</div></div></div>
+     <div><label>Oil/Grease</label><div class="urow"><input type="number" id="bfw_oil" value="0" step="0.1" min="0"><div class="ul tl">mg/L</div></div></div>
+    </div>
+    <div class="sh teal">💊 Chemical Treatment</div>
+    <div class="fgrid">
+     <div><label>O₂ Scavenger Chemical</label><select id="bfw_o2_t"><option value="hydrazine">Hydrazine N₂H₄ (≥ 10 bar)</option><option value="smbs">Sodium Metabisulphite (SMBS)</option><option value="carbohydrazide">Carbohydrazide (food/pharma)</option><option value="erythorbate">Sodium Erythorbate</option></select></div>
+     <div><label>O₂ Scavenger Excess %</label><div class="urow"><input type="number" id="bfw_o2_excess" value="20" step="5" min="10" max="100"><div class="ul tl">%</div></div></div>
+     <div><label>pH Control Chemical</label><select id="bfw_ph_t"><option value="naoh">NaOH (Caustic Soda)</option><option value="tsp">TSP (Trisodium Phosphate)</option><option value="ammonia">Ammonia NH₃ (volatile)</option><option value="morpholine">Morpholine (volatile)</option></select></div>
+     <div><label>Target Boiler Water pH</label><div class="urow"><input type="number" id="bfw_ph_target" value="10.5" step="0.1" min="8" max="12"><div class="ul tl">pH</div></div></div>
+     <div><label>Phosphate Dose (PO₄)</label><div class="urow"><input type="number" id="bfw_phos" value="15" step="1" min="0"><div class="ul vl">mg/L</div></div></div>
+     <div><label>Deaerator Present?</label><select id="bfw_da"><option value="yes">Yes — Tray/Spray Deaerator</option><option value="no">No — Chemical Treatment Only</option></select></div>
+    </div>
+    <div class="sh vio">⚡ Limits Selection</div>
+    <div class="fgrid">
+     <div><label>Standard to Check Against</label><select id="bfw_std"><option value="asme">ASME CRTD-34 (International)</option><option value="is">IS 10392 (India)</option><option value="abma">ABMA (US)</option></select></div>
+     <div><label>Max Allowable Boiler TDS</label><div class="urow"><input type="number" id="bfw_tds_max" value="3000" step="100"><div class="ul aq">mg/L</div></div></div>
+    </div>
+    <div id="bfw_err" class="err">⚠ <span id="bfw_err_t"></span></div>
+    <button class="btn-calc fire" onclick="calcBoiler()">🔥 Calculate Boiler Feed Water</button>
+    <button class="btn-reset" onclick="clr('bfw')">↺ Clear</button>
+   </div>
+  </div>
+  <div>
+   <div class="card coral">
+    <div id="bfw_ph_el" class="ph"><div class="ph-ico">🔥</div><h3>Boiler Feed Results</h3><p>Enter all operating parameters then calculate</p></div>
+    <div id="bfw_spin" class="spin-wrap"><div class="spin"></div><p>Running boiler analysis…</p></div>
+    <div id="bfw_res" class="res"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ════════════════════════════════════
+     DRINKING WATER
+════════════════════════════════════ -->
+<div id="tab-drinking" class="tab-pane">
+ <div class="two-col">
+  <div>
+   <div class="card aqua">
+    <div class="card-hd"><div class="ci teal">🚰</div><div class="card-title">Drinking Water Treatment<small>Chlorination, filtration, IS 10500 compliance</small></div></div>
+    <div class="sh teal">💧 Raw Water Quality</div>
+    <div class="fgrid">
+     <div><label>Design Flow</label><div class="urow"><input type="number" id="dw_flow" value="200" step="10" min="0.1"><div class="ul bl" id="dw_flow_u">m³/hr</div></div></div>
+     <div><label>Raw Turbidity</label><div class="urow"><input type="number" id="dw_turb" value="50" step="5" min="0.1"><div class="ul aq">NTU</div></div></div>
+     <div><label>Raw TDS</label><div class="urow"><input type="number" id="dw_tds" value="350" step="10"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Raw pH</label><div class="urow"><input type="number" id="dw_ph" value="7.5" step="0.1" min="4" max="10"><div class="ul tl">pH</div></div></div>
+     <div><label>Total Hardness (as CaCO₃)</label><div class="urow"><input type="number" id="dw_hard" value="200" step="10"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Coliform (MPN/100mL)</label><div class="urow"><input type="number" id="dw_ecoli" value="100" step="5" min="0"><div class="ul tl">MPN</div></div></div>
+     <div><label>Fluoride (F)</label><div class="urow"><input type="number" id="dw_fl" value="0.5" step="0.1" min="0"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Iron (Fe)</label><div class="urow"><input type="number" id="dw_fe" value="0.5" step="0.1" min="0"><div class="ul tl">mg/L</div></div></div>
+    </div>
+    <div class="sh aqua">⚗ Treatment Design</div>
+    <div class="fgrid">
+     <div><label>Alum Coagulant Dose</label><div class="urow"><input type="number" id="dw_alum" value="15" step="1" min="0"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Chlorine Dose Applied</label><div class="urow"><input type="number" id="dw_cl2" value="2.0" step="0.1" min="0.1" max="15"><div class="ul tl">mg/L</div></div></div>
+     <div><label>Chlorine Demand of Water</label><div class="urow"><input type="number" id="dw_cl_d" value="1.2" step="0.1" min="0"><div class="ul tl">mg/L</div></div></div>
+     <div><label>Contact Time (CT)</label><div class="urow"><input type="number" id="dw_ct" value="30" step="5" min="5"><div class="ul bl">min</div></div></div>
+     <div><label>Filtration Rate</label><div class="urow"><input type="number" id="dw_fr" value="5" step="0.5" min="1" max="15"><div class="ul tl" id="dw_fr_u">m/hr</div></div></div>
+     <div><label>No. of Filter Beds</label><div class="urow"><input type="number" id="dw_nf" value="4" step="1" min="2" max="20"><div class="ul bl">nos.</div></div></div>
+     <div><label>Filter Media Depth</label><div class="urow"><input type="number" id="dw_media" value="0.9" step="0.1" min="0.3" max="2"><div class="ul tl" id="dw_media_u">m</div></div></div>
+     <div><label>Water Temperature</label><div class="urow"><input type="number" id="dw_temp" value="25" step="1" min="5" max="35"><div class="ul tl" id="dw_temp_u">°C</div></div></div>
+    </div>
+    <div id="dw_err" class="err">⚠ <span id="dw_err_t"></span></div>
+    <button class="btn-calc" style="background:linear-gradient(135deg,var(--teal),var(--aqua));box-shadow:0 3px 12px rgba(13,148,136,.25)" onclick="calcDrinking()">🚰 Calculate Drinking Water</button>
+    <button class="btn-reset" onclick="clr('dw')">↺ Clear</button>
+   </div>
+  </div>
+  <div>
+   <div class="card aqua">
+    <div id="dw_ph_el" class="ph"><div class="ph-ico">🚰</div><h3>Drinking Water Results</h3><p>Fill parameters and calculate</p></div>
+    <div id="dw_spin" class="spin-wrap"><div class="spin"></div><p>Checking compliance…</p></div>
+    <div id="dw_res" class="res"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ════════════════════════════════════
+     CHEMICAL DOSING
+════════════════════════════════════ -->
+<div id="tab-chemical" class="tab-pane">
+ <div class="two-col">
+  <div>
+   <div class="card vio">
+    <div class="card-hd"><div class="ci vio">🧪</div><div class="card-title">Chemical Dosing System<small>Pump sizing, tank volume, daily consumption</small></div></div>
+    <div class="sh vio">💧 Process Flow</div>
+    <div class="fgrid">
+     <div><label>Process Flow Rate</label><div class="urow"><input type="number" id="cd_flow" value="100" step="5" min="0.1"><div class="ul bl" id="cd_flow_u">m³/hr</div></div></div>
+     <div><label>Operating Hours/Day</label><div class="urow"><input type="number" id="cd_hrs" value="20" step="0.5" min="1" max="24"><div class="ul bl">hr/d</div></div></div>
+     <div><label>Tank Autonomy</label><div class="urow"><input type="number" id="cd_auto" value="7" step="1" min="1" max="30"><div class="ul al">days</div></div></div>
+     <div><label>Pump Safety Factor</label><div class="urow"><input type="number" id="cd_sf" value="1.25" step="0.05" min="1" max="2"><div class="ul tl">×</div></div></div>
+    </div>
+    <div class="sh aqua">🧪 Chemical 1 — Coagulant/Antiscalant</div>
+    <div class="fgrid">
+     <div><label>Chemical 1 Name</label><input type="text" id="cd_n1" value="Alum (Coagulant)"></div>
+     <div><label>Dose</label><div class="urow"><input type="number" id="cd_d1" value="20" step="0.5" min="0"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Solution Strength</label><div class="urow"><input type="number" id="cd_s1" value="10" step="0.5" min="0.1" max="100"><div class="ul tl">% w/v</div></div></div>
+     <div><label>Solution Density</label><div class="urow"><input type="number" id="cd_den1" value="1.08" step="0.01" min="0.8" max="2"><div class="ul bl">kg/L</div></div></div>
+    </div>
+    <div class="sh teal">🧪 Chemical 2 — pH Adjustment</div>
+    <div class="fgrid">
+     <div><label>Chemical 2 Name</label><input type="text" id="cd_n2" value="HCl / Antiscalant"></div>
+     <div><label>Dose</label><div class="urow"><input type="number" id="cd_d2" value="5" step="0.5" min="0"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Solution Strength</label><div class="urow"><input type="number" id="cd_s2" value="5" step="0.5" min="0.1" max="100"><div class="ul tl">% w/v</div></div></div>
+     <div><label>Solution Density</label><div class="urow"><input type="number" id="cd_den2" value="1.04" step="0.01" min="0.8" max="2"><div class="ul bl">kg/L</div></div></div>
+    </div>
+    <div class="sh blue">🧪 Chemical 3 — Disinfectant (NaOCl/Cl₂)</div>
+    <div class="fgrid">
+     <div><label>Chemical 3 Name</label><input type="text" id="cd_n3" value="Sodium Hypochlorite"></div>
+     <div><label>Dose</label><div class="urow"><input type="number" id="cd_d3" value="2" step="0.1" min="0"><div class="ul aq">mg/L</div></div></div>
+     <div><label>Solution Strength</label><div class="urow"><input type="number" id="cd_s3" value="10" step="0.5" min="0.1" max="100"><div class="ul tl">% w/v</div></div></div>
+     <div><label>Solution Density</label><div class="urow"><input type="number" id="cd_den3" value="1.12" step="0.01" min="0.8" max="2"><div class="ul bl">kg/L</div></div></div>
+    </div>
+    <div id="cd_err" class="err">⚠ <span id="cd_err_t"></span></div>
+    <button class="btn-calc vio" onclick="calcChem()">🧪 Calculate Chemical Dosing</button>
+    <button class="btn-reset" onclick="clr('cd')">↺ Clear</button>
+   </div>
+  </div>
+  <div>
+   <div class="card vio">
+    <div id="cd_ph_el" class="ph"><div class="ph-ico">🧪</div><h3>Chemical Dosing Results</h3><p>Fill parameters and calculate</p></div>
+    <div id="cd_spin" class="spin-wrap"><div class="spin"></div><p>Sizing dosing system…</p></div>
+    <div id="cd_res" class="res"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ════════════════════════════════════
+     STANDARDS REFERENCE (CORRECTED)
+════════════════════════════════════ -->
+<div id="tab-standards" class="tab-pane">
+ <div class="card ind" style="margin-bottom:18px">
+  <div class="card-hd"><div class="ci blue">📋</div><div class="card-title">Boiler Feed Water — ASME CRTD-34 Standards<small>Industrial Watertube, High Duty, Drum Type — Official limits by drum pressure</small></div></div>
+  <div class="note bl"><div class="note-t">📌 Source</div><div class="note-b">ASME Consensus on Operating Practices for the Control of Feedwater &amp; Boiler Water Chemistry in Modern Industrial Boilers (CRTD Vol. 34). These are the globally recognised standard for watertube boilers. For fire tube boilers, limits may be relaxed by 20-30% at equivalent pressures.</div></div>
+  <div class="sh blue">🔥 Drum-type Boiler Water Quality Limits (ASME CRTD-34 / ABMA)</div>
+  <div class="tw"><table class="dt" style="min-width:900px">
+   <thead><tr>
+    <th>Parameter</th>
+    <th>0–300 psig (0–21 bar)</th>
+    <th>301–450 psig (21–32 bar)</th>
+    <th>451–600 psig (32–41 bar)</th>
+    <th>601–750 psig (41–52 bar)</th>
+    <th>751–900 psig (52–62 bar)</th>
+    <th>901–1000 psig (62–69 bar)</th>
+    <th>1001–1500 psig (69–103 bar)</th>
+    <th>1501–2000 psig (103–138 bar)</th>
+    <th>OTSG / &gt;2000 psig</th>
+   </tr></thead>
+   <tbody>
+    <tr><td class="lc">Boiler Water TDS max (mg/L)</td><td class="good">700–3500</td><td class="good">600–3000</td><td>500–2500</td><td>200–1000</td><td>150–750</td><td>125–625</td><td class="warn">100</td><td class="bad">50</td><td class="bad">0.05</td></tr>
+    <tr><td class="lc">Conductivity max (µS/cm)</td><td>1100–5400</td><td>900–4600</td><td>800–3800</td><td>300–1500</td><td>200–1200</td><td>200–1000</td><td>150</td><td>80</td><td>0.15–0.25</td></tr>
+    <tr><td class="lc">Total Alkalinity max (mg/L)</td><td>700</td><td>600</td><td>500</td><td>400</td><td>300</td><td>200</td><td class="nd">NS</td><td class="nd">NS</td><td class="nd">NS</td></tr>
+    <tr><td class="lc">Silica max (mg/L SiO₂)</td><td class="good">150</td><td class="good">90</td><td class="warn">40</td><td class="warn">30</td><td>20</td><td>8</td><td class="bad">2</td><td class="bad">1</td><td class="bad">0.02</td></tr>
+    <tr><td class="lc">Suspended Solids max (mg/L)</td><td>15</td><td>10</td><td>8</td><td>3</td><td>2</td><td>1</td><td>1</td><td class="nd">NS</td><td class="nd">NS</td></tr>
+    <tr><td class="lc">Steam Purity (TDS max, mg/L)</td><td>0.2–1.0</td><td>0.2–1.0</td><td>0.2–1.0</td><td>0.1–0.5</td><td>0.1–0.5</td><td>0.1–0.5</td><td>0.1</td><td>0.05</td><td>0.05</td></tr>
+    <tr><td class="lc">Boiler Water pH</td><td>10.5–12.0</td><td>10.5–11.8</td><td>10.0–11.8</td><td>10.0–11.5</td><td>9.8–11.0</td><td>9.6–10.8</td><td>9.0–10.0</td><td>8.5–9.5</td><td class="nd">VAM</td></tr>
+   </tbody>
+  </table></div>
+  <div class="sh teal">📋 Feedwater Quality Limits (ASME CRTD-34) — Water entering boiler</div>
+  <div class="tw"><table class="dt" style="min-width:900px">
+   <thead><tr>
+    <th>Feedwater Parameter</th>
+    <th>0–300 psig</th>
+    <th>301–600 psig</th>
+    <th>601–1000 psig</th>
+    <th>1001–1500 psig</th>
+    <th>1501–2000 psig</th>
+    <th>Notes</th>
+   </tr></thead>
+   <tbody>
+    <tr><td class="lc">Iron, Fe (µg/L)</td><td>100</td><td>50</td><td>25</td><td>10</td><td>5</td><td>As total iron</td></tr>
+    <tr><td class="lc">Copper, Cu (µg/L)</td><td>50</td><td>25</td><td>20</td><td>10</td><td>3</td><td>As total copper</td></tr>
+    <tr><td class="lc">Total Hardness (µg/L)</td><td class="warn">≈0 (trace)</td><td class="bad">ND</td><td class="bad">ND</td><td class="bad">ND</td><td class="bad">ND</td><td>As CaCO₃ equivalent</td></tr>
+    <tr><td class="lc">pH at 25°C</td><td>7.5–10</td><td>7.5–10</td><td>8.0–9.5</td><td>8.5–9.5</td><td>9.0–9.5</td><td>Adjusted for corrosion control</td></tr>
+    <tr><td class="lc">Dissolved O₂ (µg/L)</td><td>≤7000 (7 ppm)</td><td>≤1000</td><td>≤100</td><td>≤20</td><td>≤7</td><td>After deaerator</td></tr>
+    <tr><td class="lc">Silica, SiO₂ (mg/L)</td><td>≤150</td><td>≤40</td><td>≤10</td><td>≤2</td><td>≤1</td><td>For turbine protection</td></tr>
+    <tr><td class="lc">TOC (mg/L)</td><td>&lt;10</td><td>&lt;5</td><td>&lt;3</td><td>&lt;1</td><td>&lt;0.5</td><td>Non-volatile organic carbon</td></tr>
+    <tr><td class="lc">Oil/Grease (mg/L)</td><td>&lt;1.0</td><td>&lt;0.5</td><td>&lt;0.5</td><td>&lt;0.1</td><td>&lt;0.05</td><td>Causes foam/carryover</td></tr>
+   </tbody>
+  </table></div>
+  <div class="note am"><div class="note-t">⚠ Critical Notes</div><div class="note-b"><ul>
+   <li><strong>NS = Not Specified</strong>; ND = Not Detectable; VAM = Use only Volatile Alkaline Materials</li>
+   <li>For boilers with superheaters or turbine drives, apply values for at least the <strong>next higher pressure range</strong></li>
+   <li>With local heat fluxes &gt;150 kW/m², use values for the next higher pressure range</li>
+   <li>Alkalinity values &gt;10% of conductance value may cause foaming and carryover</li>
+   <li>If makeup is DM quality, conductivity for &lt;1000 psig may use the 1000–1500 psig table values</li>
+   <li>Silica carryover to turbine blades becomes critical above 600 psig — strictly control boiler silica</li>
+   <li>OTSG (Once-Through Steam Generators) have essentially zero tolerance for impurities</li>
+  </ul></div></div>
+ </div>
+
+ <div class="three-col">
+  <div class="card aqua">
+   <div class="card-hd"><div class="ci teal">🇮🇳</div><div class="card-title">IS 10392 — Boiler Water<small>Bureau of Indian Standards</small></div></div>
+   <div class="tw"><table class="dt"><thead><tr><th>Parameter</th><th>&lt;20 bar</th><th>20–60 bar</th><th>&gt;60 bar</th></tr></thead>
+   <tbody>
+    <tr><td class="lc">pH</td><td>8.5–9.0</td><td>8.8–9.2</td><td>9.0–9.5</td></tr>
+    <tr><td class="lc">Hardness (ppm)</td><td>≤5</td><td>≤1</td><td class="bad">Nil</td></tr>
+    <tr><td class="lc">TDS (mg/L)</td><td>≤3500</td><td>≤2000</td><td>≤500</td></tr>
+    <tr><td class="lc">Silica (mg/L)</td><td>≤25</td><td>≤10</td><td>≤2</td></tr>
+    <tr><td class="lc">Dissolved O₂</td><td>≤0.1</td><td>≤0.02</td><td class="bad">Nil</td></tr>
+    <tr><td class="lc">Conductivity (µS/cm)</td><td>≤6000</td><td>≤4000</td><td>≤2000</td></tr>
+    <tr><td class="lc">Total Alkalinity</td><td>≤700</td><td>≤500</td><td>≤300</td></tr>
+    <tr><td class="lc">Chlorides (mg/L)</td><td>≤150</td><td>≤75</td><td>≤30</td></tr>
+    <tr><td class="lc">Iron (mg/L)</td><td>≤2</td><td>≤0.5</td><td>≤0.1</td></tr>
+   </tbody></table></div>
+  </div>
+  <div class="card em">
+   <div class="card-hd"><div class="ci em">🚰</div><div class="card-title">IS 10500:2012 — Drinking Water<small>BIS Standard</small></div></div>
+   <div class="tw"><table class="dt"><thead><tr><th>Parameter</th><th>Acceptable</th><th>Max Perm.</th></tr></thead>
+   <tbody>
+    <tr><td class="lc">pH</td><td>6.5–8.5</td><td>No relaxation</td></tr>
+    <tr><td class="lc">TDS (mg/L)</td><td>≤500</td><td>2000</td></tr>
+    <tr><td class="lc">Turbidity (NTU)</td><td>≤1</td><td>5</td></tr>
+    <tr><td class="lc">Hardness (mg/L)</td><td>≤200</td><td>600</td></tr>
+    <tr><td class="lc">Chloride (mg/L)</td><td>≤250</td><td>1000</td></tr>
+    <tr><td class="lc">Fluoride (mg/L)</td><td>≤1.0</td><td>1.5</td></tr>
+    <tr><td class="lc">Iron (mg/L)</td><td>≤0.3</td><td>—</td></tr>
+    <tr><td class="lc">Nitrate (mg/L)</td><td>≤45</td><td>—</td></tr>
+    <tr><td class="lc">Residual Cl₂</td><td>0.2–1.0</td><td>—</td></tr>
+    <tr><td class="lc">Coliform/100mL</td><td class="bad">Nil</td><td>—</td></tr>
+   </tbody></table></div>
+  </div>
+  <div class="card teal" style="--ca:linear-gradient(90deg,var(--teal),var(--em))">
+   <div class="card-hd"><div class="ci teal">🟢</div><div class="card-title">DM Water Standards<small>Ion exchange product quality</small></div></div>
+   <div class="tw"><table class="dt"><thead><tr><th>Parameter</th><th>DM (Two-bed)</th><th>Mixed Bed</th></tr></thead>
+   <tbody>
+    <tr><td class="lc">Conductivity</td><td>&lt;10 µS/cm</td><td>&lt;0.1 µS/cm</td></tr>
+    <tr><td class="lc">Silica (SiO₂)</td><td>&lt;0.1 mg/L</td><td>&lt;0.02 mg/L</td></tr>
+    <tr><td class="lc">pH</td><td>6.8–7.2</td><td>7.0±0.1</td></tr>
+    <tr><td class="lc">TDS (mg/L)</td><td>&lt;5</td><td>&lt;0.1</td></tr>
+    <tr><td class="lc">Hardness</td><td class="bad">Nil</td><td class="bad">Nil</td></tr>
+    <tr><td class="lc">Sodium (Na)</td><td>&lt;0.1 ppm</td><td>&lt;0.01 ppm</td></tr>
+    <tr><td class="lc">Resistivity</td><td>&gt;0.1 MΩ·cm</td><td>&gt;10 MΩ·cm</td></tr>
+   </tbody></table></div>
+  </div>
+ </div>
+
+ <div class="card aqua">
+  <div class="card-hd"><div class="ci aqua">🔵</div><div class="card-title">RO Design Criteria & Key Formulas<small>Quick engineering reference</small></div></div>
+  <div class="three-col">
+   <div>
+    <div class="sh aqua">🔵 RO Design Ranges</div>
+    <div class="note aq"><div class="note-b"><ul>
+     <li><strong>Brackish recovery:</strong> 70–80%</li>
+     <li><strong>Seawater recovery:</strong> 35–50%</li>
+     <li><strong>Flux (brackish):</strong> 14–20 L/m²/h</li>
+     <li><strong>Flux (seawater):</strong> 10–14 L/m²/h</li>
+     <li><strong>SDI feed limit:</strong> ≤5, ideal &lt;3</li>
+     <li><strong>Salt rejection:</strong> 96–99.8%</li>
+     <li><strong>LSI concentrate:</strong> &lt;+1.0 (scaling)</li>
+    </ul></div></div>
+   </div>
+   <div>
+    <div class="sh am">🟤 Clarifier Design</div>
+    <div class="note am"><div class="note-b"><ul>
+     <li><strong>SOR:</strong> 0.8–2.0 m/hr (gravity)</li>
+     <li><strong>Detention time:</strong> 2–4 hours</li>
+     <li><strong>Weir loading:</strong> 125–250 m³/m/day</li>
+     <li><strong>Flocculation G:</strong> 20–60 /s</li>
+     <li><strong>Rapid mix G:</strong> 600–1000 /s</li>
+     <li><strong>Inclined plate SOR:</strong> 5–8× plain</li>
+    </ul></div></div>
+   </div>
+   <div>
+    <div class="sh em">🟢 DM Plant Design</div>
+    <div class="note em"><div class="note-b"><ul>
+     <li><strong>Service velocity:</strong> 10–20 m/hr</li>
+     <li><strong>Cation capacity:</strong> 1.7–2.1 eq/L</li>
+     <li><strong>Anion capacity:</strong> 1.0–1.4 eq/L</li>
+     <li><strong>HCl dose:</strong> 90–110 g/eq resin</li>
+     <li><strong>NaOH dose:</strong> 100–130 g/eq</li>
+     <li><strong>Regen freq:</strong> &lt;2/day ideal</li>
+    </ul></div></div>
+   </div>
+  </div>
+  <div class="sh blue">🔣 Key Formulas</div>
+  <div class="three-col">
+   <div class="fbox"><span class="c">/* RO */</span><br>Recovery R = Qp/Qf × 100<br>TDS_perm = TDS_feed × (1-rej)<br>TDS_conc = (TDS_f×Qf - TDS_p×Qp)/Qc<br>CF = 1/(1-R)<br>SEC = P×Qf/(3600×0.75×Qp) kWh/m³<br><span class="c">/* LSI */</span><br>LSI = pH - pHs<br>pHs = pK2-pKs+p[Ca]+p[Alk]</div>
+   <div class="fbox"><span class="c">/* Clarifier */</span><br>SOR = Q/A (m/hr)<br>Area = Q/SOR (m²)<br>Volume = Q × HRT (m³)<br>Weir = Q_daily/WLR (m)<br><span class="c">/* DM Plant */</span><br>Resin Vol = Flow×Cycle×Load/Cap<br>HCl L/regen = eq×dose/(Conc×density)<br>Cycle hr = (Vol×Cap)/(Load×Flow×1000)</div>
+   <div class="fbox"><span class="c">/* Boiler Feed Water */</span><br>COC = TDS_boiler / TDS_makeup<br>BD% = 1/(COC-1) × 100<br>BD_flow = Steam × BD%/100<br>Makeup = Steam × (1-CR + BD%/100)<br>Silica_boiler = Si_feed × COC<br><span class="c">/* Heat loss */</span><br>Q_BD = BD_flow × h_f (kW)</div>
+  </div>
+ </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="shareModal">
+ <div class="modal">
+  <div class="modal-hd">
+   <h3>🔗 Share WTP-Pro</h3>
+   <button class="modal-close" onclick="closeShare()">✕</button>
+  </div>
+  <p style="font-size:.78rem;color:var(--ink3);margin-bottom:14px">Share this water treatment calculator with your team or colleagues:</p>
+  <div class="share-link-box">
+   <input type="text" id="share-url" value="" readonly>
+   <button class="copy-btn" onclick="copyLink()">📋 Copy</button>
+  </div>
+  <div class="share-btns">
+   <a class="share-btn" onclick="shareWhatsApp()"><span class="si">💬</span><span class="sl">WhatsApp</span></a>
+   <a class="share-btn" onclick="shareEmail()"><span class="si">📧</span><span class="sl">Email</span></a>
+   <a class="share-btn" onclick="shareLinkedIn()"><span class="si">💼</span><span class="sl">LinkedIn</span></a>
+   <a class="share-btn" onclick="shareTelegram()"><span class="si">✈️</span><span class="sl">Telegram</span></a>
+   <a class="share-btn" onclick="window.print()"><span class="si">🖨</span><span class="sl">Print</span></a>
+   <a class="share-btn" onclick="genPDF();closeShare()"><span class="si">📄</span><span class="sl">PDF</span></a>
+  </div>
+ </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+'use strict';
+// ══════════════════════════════════════
+// GLOBAL STATE
+// ══════════════════════════════════════
+let UNITS = 'si';
+const R = {};  // results store for PDF
+const _calcBusy = {}; // double-click guard per module
+
+function _busy(pfx){ return !!_calcBusy[pfx]; }
+function _setBusy(pfx,v){ _calcBusy[pfx]=v; }
+
+// ══════════════════════════════════════
+// UNIT SYSTEM
+// ══════════════════════════════════════
+function setUnits(u) {
+  if(UNITS===u) return; // no-op if same unit system
+  const prev=UNITS;
+  UNITS = u;
+  document.getElementById('btn-si').classList.toggle('active', u==='si');
+  document.getElementById('btn-imp').classList.toggle('active', u==='imperial');
+  document.getElementById('unit-hint').textContent = u==='si'
+    ? 'm³/hr · bar · °C · mg/L'
+    : 'GPM · psi · °F · ppm';
+  // Convert existing input values when toggling
+  const toImp=(prev==='si'&&u==='imperial'), toSI=(prev==='imperial'&&u==='si');
+  if(toImp||toSI){
+    const factor=toImp?1:-1;
+    // Flow fields: m³/hr ↔ GPM (×4.40287)
+    document.querySelectorAll('[id$="_flow_u"]').forEach(el=>{
+      const inp=document.getElementById(el.id.replace('_u',''));
+      if(inp&&inp.value) inp.value=toImp?+(+inp.value*4.40287).toFixed(2):+(+inp.value/4.40287).toFixed(2);
+    });
+    // Temperature fields: °C ↔ °F
+    document.querySelectorAll('[id$="_temp_u"]').forEach(el=>{
+      const inp=document.getElementById(el.id.replace('_u',''));
+      if(inp&&inp.value) inp.value=toImp?+(+inp.value*9/5+32).toFixed(1):+((+inp.value-32)*5/9).toFixed(1);
+    });
+    // Pressure: bar ↔ psi
+    const pu=document.getElementById('ro_press_u');
+    if(pu){const inp=document.getElementById('ro_press');if(inp&&inp.value)inp.value=toImp?+(+inp.value*14.5038).toFixed(1):+(+inp.value/14.5038).toFixed(2);}
+  }
+  updateUnitLabels();
+}
+function updateUnitLabels(){
+  const si = UNITS==='si';
+  // Flow labels
+  document.querySelectorAll('[id$="_flow_u"]').forEach(el=>el.textContent=si?'m³/hr':'GPM');
+  // Pressure
+  const pu = document.getElementById('ro_press_u'); if(pu) pu.textContent=si?'bar':'psi';
+  const bpu = document.getElementById('bfw_press_u'); if(bpu) bpu.textContent=si?'bar(g)':'psig';
+  // Temperature
+  document.querySelectorAll('[id$="_temp_u"]').forEach(el=>el.textContent=si?'°C':'°F');
+  // Velocity
+  const du = document.getElementById('dm_vel_u'); if(du) du.textContent=si?'m/hr':'gpm/ft²';
+  // Bed height
+  const dh = document.getElementById('dm_bedh_u'); if(dh) dh.textContent=si?'m':'ft';
+  // SOR
+  const sor = document.getElementById('cl_sor_u'); if(sor) sor.textContent=si?'m/hr':'gal/ft²/day';
+  // Steam
+  const su = document.getElementById('bfw_steam_u'); if(su) su.textContent=si?'t/hr':'klb/hr';
+  // Filtration rate
+  const fr = document.getElementById('dw_fr_u'); if(fr) fr.textContent=si?'m/hr':'gpm/ft²';
+  // Weir loading
+  const wl = document.getElementById('cl_wlr_u'); if(wl) wl.textContent=si?'m³/m/d':'GPD/ft';
+  // Media depth
+  const md = document.getElementById('dw_media_u'); if(md) md.textContent=si?'m':'ft';
+  // Chemical dosing flow
+  const cdf = document.getElementById('cd_flow_u'); if(cdf) cdf.textContent=si?'m³/hr':'GPM';
+}
+
+// Conversion helpers
+function siToDisp(val, field) {
+  if(UNITS==='si') return val;
+  const conv = {flow:4.40287,press_bar:14.5038,temp_c:v=>v*9/5+32,vel:0.409,length_m:3.28084,sor:590.47,wlr:80.52};
+  if(field==='temp') return val*9/5+32;
+  if(field==='press') return val*14.5038;
+  if(field==='flow') return val*4.40287;
+  if(field==='vel') return val*0.409;
+  if(field==='len') return val*3.28084;
+  return val;
+}
+function dispToSI(val, field) {
+  if(UNITS==='si') return val;
+  if(field==='temp') return (val-32)*5/9;
+  if(field==='press') return val/14.5038;
+  if(field==='flow') return val/4.40287;
+  return val;
+}
+
+// ══════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════
+function sw(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  // Only scroll to top when switching from a different tab, not on initial load
+  if(document.body.dataset.activeTab && document.body.dataset.activeTab!==id){
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  document.body.dataset.activeTab=id;
+}
+function gv(id) { return parseFloat(document.getElementById(id).value); }
+function gs(id) { const e=document.getElementById(id); return e?e.value:''; }
+function gvsi(id, field) { return UNITS==='si' ? gv(id) : dispToSI(gv(id), field); }
+function fmt(v,d=2) { return isNaN(v)?'—':v.toFixed(d); }
+function fmtSI(v, field, d=2) { return UNITS==='si' ? fmt(v,d) : fmt(siToDisp(v,field),d); }
+
+function showErr(pfx,msg){const e=document.getElementById(pfx+'_err'),t=document.getElementById(pfx+'_err_t');if(e&&t){t.textContent=msg;e.classList.add('show');}}
+function hideErr(pfx){const e=document.getElementById(pfx+'_err');if(e)e.classList.remove('show');}
+function startCalc(pfx){_setBusy(pfx,true);document.getElementById(pfx+'_ph_el').style.display='none';document.getElementById(pfx+'_spin').classList.add('show');document.getElementById(pfx+'_res').classList.remove('show');}
+function showRes(pfx,html){_setBusy(pfx,false);document.getElementById(pfx+'_spin').classList.remove('show');const el=document.getElementById(pfx+'_res');el.innerHTML=html;el.classList.add('show');}
+function clr(pfx){
+  const p=document.getElementById(pfx+'_ph_el');
+  if(p){p.style.display='';p.style.removeProperty('display');}
+  document.getElementById(pfx+'_spin').classList.remove('show');
+  const r=document.getElementById(pfx+'_res');
+  if(r){r.classList.remove('show');r.innerHTML='';}
+  hideErr(pfx);
+  document.querySelectorAll('.pc').forEach(c=>c.classList.remove('on'));
+  // Reset all number/text/select inputs within the module's form card
+  const prefix_map={ro:'tab-ro',cl:'tab-clarifier',dm:'tab-dm',bfw:'tab-boiler',dw:'tab-drinking',cd:'tab-chemical'};
+  const tabId=prefix_map[pfx];
+  if(tabId){
+    document.querySelectorAll(`#${tabId} input, #${tabId} select`).forEach(el=>{
+      if(el.defaultValue!==undefined) el.value=el.defaultValue;
+    });
+  }
+}
+
+function kpi(l,v,u,c='aq',s=''){return`<div class="kpi ${c}"><div class="kpi-l">${l}</div><div class="kpi-v">${v}<span class="kpi-u">${u}</span></div>${s?`<div class="kpi-s">${s}</div>`:''}</div>`}
+function rh(title,meta,bc='b-info',bt='Calculated'){return`<div class="rh"><div><h3>${title}</h3><div class="rh-meta">${meta}</div></div><span class="badge ${bc}">${bt}</span></div>`}
+function wqbadge(val,ok,warn){const c=val<=ok?'ok':val<=warn?'warn':'bad';const t=val<=ok?'✓ OK':val<=warn?'⚠ Borderline':'✗ Exceeds';return`<span class="wqb ${c}">${t}</span>`}
+
+// ══════════════════════════════════════
+// PRESETS
+// ══════════════════════════════════════
+const PRESETS = {
+  ro:{
+    brackish:{ro_feed:100,ro_tds:2000,ro_press:10,ro_temp:25,ro_sdi:3,ro_cond:3000,ro_rec:75,ro_rej:97,ro_flux:15,ro_stages:2,ro_mem_a:37,ro_epv:6,ro_ph:7.5,ro_ca:150,ro_alk:120},
+    seawater:{ro_feed:500,ro_tds:35000,ro_press:65,ro_temp:28,ro_sdi:2,ro_cond:52000,ro_rec:45,ro_rej:99.5,ro_flux:11,ro_stages:1,ro_mem_a:37,ro_epv:6,ro_ph:7.8,ro_ca:400,ro_alk:130},
+    industrial:{ro_feed:50,ro_tds:1000,ro_press:8,ro_temp:25,ro_sdi:2.5,ro_cond:1500,ro_rec:80,ro_rej:97,ro_flux:18,ro_stages:2,ro_mem_a:37,ro_epv:6,ro_ph:7.2,ro_ca:100,ro_alk:90},
+    drinking:{ro_feed:200,ro_tds:800,ro_press:7,ro_temp:25,ro_sdi:2,ro_cond:1200,ro_rec:75,ro_rej:96,ro_flux:16,ro_stages:2,ro_mem_a:37,ro_epv:6,ro_ph:7.4,ro_ca:120,ro_alk:100}
+  },
+  cl:{
+    municipal:{cl_flow:500,cl_ti:80,cl_to:5,cl_ss:120,cl_temp:20,cl_ph:7.2,cl_sor:1.2,cl_dt:3,cl_wlr:150,cl_svi:120,cl_mlss:2500,cl_dose:20},
+    industrial:{cl_flow:200,cl_ti:200,cl_to:10,cl_ss:300,cl_temp:25,cl_ph:7.0,cl_sor:1.5,cl_dt:2.5,cl_wlr:180,cl_svi:100,cl_mlss:3000,cl_dose:35},
+    highturb:{cl_flow:100,cl_ti:500,cl_to:5,cl_ss:600,cl_temp:22,cl_ph:6.8,cl_sor:1.0,cl_dt:4,cl_wlr:120,cl_svi:150,cl_mlss:2000,cl_dose:50}
+  },
+  dm:{
+    power:{dm_flow:30,dm_cat:350,dm_an:300,dm_si:20,dm_co2:15,dm_tds:600,dm_catcap:1.8,dm_ancap:1.2,dm_cycle:16,dm_vel:15,dm_bedh:1.2,dm_hcl_c:5,dm_naoh_c:4,dm_hcl_d:100,dm_naoh_d:120,dm_cond_t:0.1,dm_si_t:0.02},
+    pharma:{dm_flow:5,dm_cat:150,dm_an:130,dm_si:8,dm_co2:5,dm_tds:250,dm_catcap:1.8,dm_ancap:1.2,dm_cycle:8,dm_vel:10,dm_bedh:1.5,dm_hcl_c:5,dm_naoh_c:4,dm_hcl_d:110,dm_naoh_d:130,dm_cond_t:0.05,dm_si_t:0.01},
+    process:{dm_flow:50,dm_cat:200,dm_an:180,dm_si:10,dm_co2:8,dm_tds:350,dm_catcap:1.7,dm_ancap:1.1,dm_cycle:12,dm_vel:18,dm_bedh:1.0,dm_hcl_c:5,dm_naoh_c:4,dm_hcl_d:95,dm_naoh_d:115,dm_cond_t:0.2,dm_si_t:0.05}
+  },
+  bfw:{
+    lp: {bfw_steam:5,bfw_press:7,bfw_cr:60,bfw_nb:1,bfw_mu_tds:500,bfw_hard:150,bfw_alk:200,bfw_cl:80,bfw_sil:20,bfw_fe:0.5,bfw_cu:0.05,bfw_do:8,bfw_toc:5,bfw_oil:0,bfw_phos:20,bfw_ph_target:11.0,bfw_tds_max:3000,bfw_o2_excess:20},
+    mp: {bfw_steam:20,bfw_press:30,bfw_cr:75,bfw_nb:1,bfw_mu_tds:100,bfw_hard:30,bfw_alk:80,bfw_cl:20,bfw_sil:5,bfw_fe:0.1,bfw_cu:0.02,bfw_do:5,bfw_toc:2,bfw_oil:0,bfw_phos:12,bfw_ph_target:10.5,bfw_tds_max:1500,bfw_o2_excess:20},
+    hp: {bfw_steam:50,bfw_press:70,bfw_cr:90,bfw_nb:1,bfw_mu_tds:20,bfw_hard:1,bfw_alk:10,bfw_cl:3,bfw_sil:0.5,bfw_fe:0.02,bfw_cu:0.005,bfw_do:2,bfw_toc:0.5,bfw_oil:0,bfw_phos:5,bfw_ph_target:9.5,bfw_tds_max:300,bfw_o2_excess:20},
+    vhp:{bfw_steam:100,bfw_press:130,bfw_cr:95,bfw_nb:2,bfw_mu_tds:2,bfw_hard:0,bfw_alk:1,bfw_cl:0.2,bfw_sil:0.05,bfw_fe:0.003,bfw_cu:0.001,bfw_do:0.5,bfw_toc:0.2,bfw_oil:0,bfw_phos:2,bfw_ph_target:9.2,bfw_tds_max:50,bfw_o2_excess:10}
+  }
+};
+function lp(mod,name){
+  const p=PRESETS[mod]&&PRESETS[mod][name];if(!p)return;
+  for(const[id,val]of Object.entries(p)){const el=document.getElementById(id);if(el)el.value=val;}
+  document.querySelectorAll('.pc').forEach(c=>{const oc=c.getAttribute('onclick')||'';c.classList.toggle('on',oc.includes(`'${mod}','${name}'`)||oc.includes(`'${mod}', '${name}'`));});
+}
+
+// ══════════════════════════════════════
+// RO CALCULATION
+// ══════════════════════════════════════
+function calcRO(){
+  if(_busy('ro'))return;
+  hideErr('ro');
+  const Qf=gv('ro_feed'),TDSf=gv('ro_tds'),P=gv('ro_press'),T=gv('ro_temp');
+  const SDI=gv('ro_sdi'),cond=gv('ro_cond'),rec=gv('ro_rec')/100,rej=gv('ro_rej')/100;
+  const flux=gv('ro_flux'),stages=gv('ro_stages'),memA=gv('ro_mem_a'),epv=gv('ro_epv');
+  const pH=gv('ro_ph'),ca=gv('ro_ca'),alk=gv('ro_alk');
+  if([Qf,TDSf,P,T,SDI,rec,rej,flux,stages,memA,epv].some(isNaN))return showErr('ro','Fill all required fields.');
+  if(rec>=0.95||rec<0.1)return showErr('ro','Recovery must be 10–95%.');
+  if(SDI>=6)return showErr('ro','SDI ≥ 6 — Pre-treat to SDI < 5 before RO.');
+  if(rej<0.85)return showErr('ro','Salt rejection must be at least 85%.');
+  startCalc('ro');
+  setTimeout(()=>{
+    const Qp=Qf*rec, Qc=Qf-Qp, CF=1/(1-rec);
+    const TDSp=TDSf*(1-rej);
+    const TDSc=(TDSf*Qf - TDSp*Qp)/Math.max(Qc,0.001);
+    const actRej=(1-TDSp/TDSf)*100;
+    const totalMemA=(Qp*1000)/flux;
+    const nElem=Math.ceil(totalMemA/memA);
+    // FIX-8: derive nVperStage first → nVessel=nVperStage*stages (ceiling-consistent)
+    const nVperStage=Math.ceil(Math.ceil(nElem/epv)/stages);
+    const nVessel=nVperStage*stages;
+    const TCF=Math.exp(2640*(1/(T+273.15)-1/298.15));  // FIX-11: correct Kelvin offset
+    const fluxCorr=flux/TCF;
+    // LSI
+    const pK2=10.33-0.0142*T, pKs=8.34-0.013*T;
+    const pCa=-Math.log10(Math.max(ca/40080,1e-10));
+    const pAlk=-Math.log10(Math.max(alk/50000,1e-10));
+    const pHs=pK2-pKs+pCa+pAlk;
+    const pHconc=pH+Math.log10(CF);
+    const LSI_feed=pH-pHs;
+    // Correct LSI_conc: scale Ca and Alk by CF to get concentrate pHs, then LSI = pHconc - pHs_conc
+    const pCa_conc=-Math.log10(Math.max(ca*CF/40080,1e-10));
+    const pAlk_conc=-Math.log10(Math.max(alk*CF/50000,1e-10));
+    const pHs_conc=pK2-pKs+pCa_conc+pAlk_conc;
+    const LSI_conc=pHconc-pHs_conc;
+    // Osmotic pressure
+    const osmFeed=TDSf*0.0000689, osmConc=TDSc*0.0000689;
+    const NDP=P-osmConc;
+    // SEC (Specific Energy Consumption) — kWh/m³ of permeate
+    // Formula: SEC = (P[bar] × Qf[m³/hr]) / (Qp[m³/hr] × η × 3.6)
+    // 3.6 converts bar·m³/hr → kWh; η = 0.75 pump efficiency
+    const SEC=(P*Qf)/(Qp*0.75*36); // FIX-1: 1 bar·m³=100kJ=1/36kWh; divisor=36 not 3.6
+    const lsiBadge=LSI_conc>1?'b-bad':LSI_conc>0?'b-warn':'b-ok';
+    const qualBadge=TDSp<500?'b-ok':TDSp<1000?'b-warn':'b-bad';
+    R.ro={Qf,Qp:Qp.toFixed(2),Qc:Qc.toFixed(2),TDSf,TDSp:TDSp.toFixed(0),TDSc:TDSc.toFixed(0),rec:(rec*100).toFixed(0),rej:actRej.toFixed(1),nVessel,nElem,SEC:SEC.toFixed(2),LSI_conc:LSI_conc.toFixed(3),_units:UNITS};
+    showRes('ro', rh('RO System Design',`Feed: ${Qf} m³/hr @ TDS ${TDSf} mg/L | Recovery: ${(rec*100).toFixed(0)}% | ${stages}-Stage`,qualBadge,TDSp<500?'✓ Potable Quality':TDSp<1000?'⚠ Process Grade':'✗ Needs Post-treatment')+
+    `<div class="kpig">
+      ${kpi('Permeate Flow',Qp.toFixed(1),'m³/hr','aq','Product water')}
+      ${kpi('Concentrate Flow',Qc.toFixed(1),'m³/hr','co','Reject/brine')}
+      ${kpi('Permeate TDS',TDSp.toFixed(0),'mg/L',TDSp<500?'em':TDSp<1000?'am':'co')}
+      ${kpi('Concentrate TDS',TDSc.toFixed(0),'mg/L','co','Brine')}
+      ${kpi('Salt Rejection',actRej.toFixed(2),'%','tl')}
+      ${kpi('Conc. Factor (CF)',CF.toFixed(2),'×','bl','1/(1-R)')}
+      ${kpi('Membrane Area',totalMemA.toFixed(0),'m²','vi','Required total')}
+      ${kpi('Pressure Vessels',nVessel,'nos.','sl',`${nVperStage}/stage × ${stages} stages`)}
+    </div>
+    <div class="sh aqua">📊 Performance & Energy</div>
+    <div class="kpig">
+      ${kpi('Osmotic P (conc)',osmConc.toFixed(2),'bar','co')}
+      ${kpi('Net Driving P',NDP.toFixed(2),'bar',NDP>2?'em':'co',NDP<2?'⚠ Insufficient':'✓ Adequate')}
+      ${kpi('Spec. Energy (SEC)',SEC.toFixed(2),'kWh/m³','am',TDSf>5000?'Seawater range':'Brackish range')}
+      ${kpi('Temp. Correction (TCF)',TCF.toFixed(3),'','tl',`At ${T}°C vs 25°C`)}
+      ${kpi('No. Elements',nElem,'elem.','bl',`${epv}/vessel`)}
+      ${kpi('Corrected Flux',fluxCorr.toFixed(1),'L/m²/h','tl','Temp adjusted')}
+    </div>
+    <div class="sh teal">🧪 Langelier Saturation Index (Scaling Risk)</div>
+    <div class="kpig">
+      ${kpi('LSI Feed',LSI_feed.toFixed(3),'',LSI_feed>0.5?'co':LSI_feed>0?'am':'em',LSI_feed>0?'Scaling tendency':'No scaling')}
+      ${kpi('LSI Concentrate',LSI_conc.toFixed(3),'',LSI_conc>1?'co':LSI_conc>0?'am':'em')}
+      ${kpi('Est. Conc. pH',pHconc.toFixed(2),'','aq')}
+      ${kpi('Antiscalant?',LSI_conc>0?'Required':'Not needed','',LSI_conc>0?'co':'em')}
+    </div>
+    <div class="note ${lsiBadge==='b-bad'?'co':lsiBadge==='b-warn'?'am':'em'}"><div class="note-t">${LSI_conc>1?'⚠ CaCO₃ Scaling Risk':LSI_conc>0?'⚠ Monitor Closely':'✓ Stable Water Chemistry'}</div>
+    <div class="note-b">LSI of concentrate = <strong>${LSI_conc.toFixed(3)}</strong>. ${LSI_conc>1?'Antiscalant essential — dose 2–4 mg/L before RO':LSI_conc>0?'Borderline — pH adjustment or antiscalant recommended':'Calcium carbonate will not precipitate at this CF.'}
+    SDI = ${SDI}: ${SDI>4?'<strong>High fouling risk</strong> — dual media + cartridge filter required':SDI>3?'Moderate risk — 5µm cartridge filter recommended':'Low risk — standard pre-treatment adequate'}.</div></div>
+    <div class="sh blue">⚖ Mass Balance</div>
+    <div class="tw"><table class="dt"><thead><tr><th>Stream</th><th>Flow (m³/hr)</th><th>TDS (mg/L)</th><th>Cond. (µS/cm)</th><th>% of Feed</th></tr></thead>
+    <tbody>
+      <tr><td class="lc">Feed</td><td class="hi">${Qf}</td><td>${TDSf}</td><td>${cond}</td><td class="hi">100%</td></tr>
+      <tr><td class="lc">Permeate</td><td class="good">${Qp.toFixed(2)}</td><td class="good">${TDSp.toFixed(0)}</td><td class="good">${(TDSp*1.6).toFixed(0)}</td><td class="good">${(rec*100).toFixed(0)}%</td></tr>
+      <tr><td class="lc">Concentrate</td><td class="bad">${Qc.toFixed(2)}</td><td class="bad">${TDSc.toFixed(0)}</td><td class="bad">${(TDSc*1.6).toFixed(0)}</td><td class="bad">${((1-rec)*100).toFixed(0)}%</td></tr>
+    </tbody></table></div>
+    <div class="tw"><table class="dt"><thead><tr><th>Check</th><th>Value</th><th>Limit</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="lc">Permeate TDS</td><td>${TDSp.toFixed(0)} mg/L</td><td>≤500 (drinking)</td><td>${TDSp<=500?'<span class="good">✓ Potable</span>':'<span class="warn">⚠ Not potable</span>'}</td></tr>
+      <tr><td class="lc">Recovery Rate</td><td>${(rec*100).toFixed(0)}%</td><td>70–80% brackish</td><td>${rec>=0.65&&rec<=0.85?'<span class="good">✓ Optimal</span>':'<span class="warn">⚠ Review</span>'}</td></tr>
+      <tr><td class="lc">SDI</td><td>${SDI}</td><td>≤5 for RO</td><td>${SDI<=3?'<span class="good">✓ Excellent</span>':SDI<=5?'<span class="warn">⚠ Acceptable</span>':'<span class="bad">✗ Pre-treat</span>'}</td></tr>
+      <tr><td class="lc">Net Driving Pressure</td><td>${NDP.toFixed(1)} bar</td><td>>2 bar required</td><td>${NDP>=2?'<span class="good">✓ OK</span>':'<span class="bad">✗ Insufficient</span>'}</td></tr>
+      <tr><td class="lc">LSI (concentrate)</td><td>${LSI_conc.toFixed(3)}</td><td>&lt;0 stable, &lt;1 OK with AS</td><td>${LSI_conc<=0?'<span class="good">✓ Stable</span>':LSI_conc<=1?'<span class="warn">⚠ Use antiscalant</span>':'<span class="bad">✗ High scaling risk</span>'}</td></tr>
+    </tbody></table></div>`);
+  },600);
+}
+
+// ══════════════════════════════════════
+// CLARIFIER
+// ══════════════════════════════════════
+function calcClarifier(){
+  if(_busy('cl'))return;
+  hideErr('cl');
+  const Q=gv('cl_flow'),ti=gv('cl_ti'),to=gv('cl_to'),SS=gv('cl_ss'),T=gv('cl_temp'),pH=gv('cl_ph');
+  const SOR=gv('cl_sor'),DT=gv('cl_dt'),WLR=gv('cl_wlr'),type=gs('cl_type'),SVI=gv('cl_svi'),MLSS=gv('cl_mlss');
+  const coag=gs('cl_coag'),dose=gv('cl_dose');
+  if([Q,ti,to,SS,SOR,DT,WLR,SVI,MLSS,dose].some(isNaN))return showErr('cl','Fill all required fields.');
+  if(to>=ti)return showErr('cl','Effluent turbidity must be less than influent.');
+  if(Q<=0||SOR<=0)return showErr('cl','Flow rate and SOR must be positive.');
+  startCalc('cl');
+  setTimeout(()=>{
+    const Qdaily=Q*24;
+    const A=Q/SOR, V=Q*DT, depth=V/A;
+    let dia=0,len=0,wid=0;
+    if(type==='circular'||type==='inclined'||type==='upflow') dia=Math.sqrt(A*4/Math.PI);
+    else { len=Math.sqrt(A*1.5); wid=A/len; }
+    const weir=Qdaily/WLR;
+    const turbRem=(ti-to)/ti*100;
+    const ssRem=Math.min(98,turbRem*0.92);
+    const ssKgd=(SS*ssRem/100)*Qdaily/1000;
+    // FIX-2: correct formula — ssKgd[kg/d]*SVI[mL/g]/1000 = m³/day (dividing by MLSS was dimensionally wrong)
+    const sludgeVol=ssKgd*SVI/1000;
+    const coagKgd=dose*Qdaily/1e6*1e3;
+    const coagNames={alum:'Alum Al₂(SO₄)₃',ferric:'Ferric Chloride',pac:'PAC',lime:'Lime'};
+    const G_rapid=800, G_floc=Math.max(20,Math.min(60,55-(ti-50)*0.05));
+    const upVel=Q/A;
+    R.clar={Q,A:A.toFixed(0),dia:dia.toFixed(1),len:len.toFixed(1),wid:wid.toFixed(1),depth:depth.toFixed(2),V:V.toFixed(0),turbRem:turbRem.toFixed(1),sludgeVol:sludgeVol.toFixed(1),coagKgd:coagKgd.toFixed(1)};
+    showRes('cl', rh('Clarifier Design',`Q=${Q} m³/hr | SOR=${SOR} m/hr | HRT=${DT} hr | ${type}`,turbRem>=90?'b-ok':turbRem>=75?'b-warn':'b-bad',`Turbidity removal ${turbRem.toFixed(0)}%`)+
+    `<div class="kpig">
+      ${kpi('Surface Area',A.toFixed(0),'m²','aq')}
+      ${type==='circular'||type==='inclined'||type==='upflow'?kpi('Tank Diameter',dia.toFixed(1),'m','bl'):kpi('L × W',`${len.toFixed(1)}×${wid.toFixed(1)}`,'m','bl')}
+      ${kpi('Side Water Depth',depth.toFixed(2),'m','tl',depth>=2.5&&depth<=5?'✓ OK':'⚠ Review')}
+      ${kpi('Tank Volume',V.toFixed(0),'m³','bl',`HRT = ${(DT*60).toFixed(0)} min`)}
+      ${kpi('Turbidity Removal',turbRem.toFixed(1),'%',turbRem>=90?'em':turbRem>=75?'am':'co')}
+      ${kpi('SS Removal',ssRem.toFixed(1),'%',ssRem>=85?'em':'am')}
+      ${kpi('Upflow Velocity',upVel.toFixed(3),'m/hr','aq')}
+      ${kpi('Weir Length Reqd.',weir.toFixed(1),'m','tl','Min.')}
+    </div>
+    <div class="sh am">🧪 Sludge & Coagulation</div>
+    <div class="kpig">
+      ${kpi('SS Removed',ssKgd.toFixed(0),'kg/day','am','Sludge mass')}
+      ${kpi('Sludge Volume',sludgeVol.toFixed(1),'m³/day','am',`At SVI=${SVI}`)}
+      ${kpi(coagNames[coag]+' Dose',dose,'mg/L','vi')}
+      ${kpi('Coagulant Qty.',coagKgd.toFixed(1),'kg/day','vi','Daily')}
+    </div>
+    <div class="tw"><table class="dt"><thead><tr><th>Design Check</th><th>Calculated</th><th>Standard</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="lc">Surface Overflow Rate</td><td>${SOR} m/hr</td><td>0.8–2.0 m/hr</td><td>${SOR>=0.8&&SOR<=2.0?'<span class="good">✓ OK</span>':'<span class="warn">⚠ Review</span>'}</td></tr>
+      <tr><td class="lc">Detention Time</td><td>${DT} hr</td><td>2–4 hr</td><td>${DT>=2&&DT<=4?'<span class="good">✓ OK</span>':'<span class="warn">⚠ Review</span>'}</td></tr>
+      <tr><td class="lc">Weir Loading Rate</td><td>${WLR} m³/m/day</td><td>125–250 m³/m/day</td><td>${WLR>=125&&WLR<=250?'<span class="good">✓ OK</span>':'<span class="warn">⚠ Review</span>'}</td></tr>
+      <tr><td class="lc">Effluent Turbidity</td><td>${to} NTU</td><td>≤1 NTU (IS 10500)</td><td>${to<=1?'<span class="good">✓ Potable</span>':to<=5?'<span class="warn">⚠ Pre-filter</span>':'<span class="bad">✗ High</span>'}</td></tr>
+      <tr><td class="lc">Side Water Depth</td><td>${depth.toFixed(2)} m</td><td>2.5–5.0 m</td><td>${depth>=2.5&&depth<=5?'<span class="good">✓ OK</span>':'<span class="warn">⚠ Check</span>'}</td></tr>
+      <tr><td class="lc">SVI</td><td>${SVI} mL/g</td><td>&lt;150 good settling</td><td>${SVI<=150?'<span class="good">✓ Good</span>':SVI<=250?'<span class="warn">⚠ Fair</span>':'<span class="bad">✗ Poor</span>'}</td></tr>
+    </tbody></table></div>
+    <div class="note am"><div class="note-t">🟤 Coagulation Guidance</div>
+    <div class="note-b"><ul>
+      <li>Rapid mix: <strong>G = ${G_rapid}/s</strong> for 1–2 min (flash mix coagulant addition)</li>
+      <li>Flocculation: <strong>G = ${G_floc.toFixed(0)}/s</strong> for 20–30 min (gentle mixing)</li>
+      <li>${coagNames[coag]} daily qty: <strong>${coagKgd.toFixed(1)} kg/day</strong></li>
+      <li>${pH<6.5||pH>8?'⚠ pH outside optimal range for coagulation (6.5–8.0). Correct pH before coagulant addition.':'✓ pH within optimal coagulation range (6.5–8.0).'}</li>
+      <li>Jar test strongly recommended to confirm optimal dose, pH and coagulant type</li>
+    </ul></div></div>`);
+  },600);
+}
+
+// ══════════════════════════════════════
+// DM PLANT
+// ══════════════════════════════════════
+function calcDM(){
+  if(_busy('dm'))return;
+  hideErr('dm');
+  const flow=gv('dm_flow'),cat=gv('dm_cat'),an=gv('dm_an'),si=gv('dm_si'),co2=gv('dm_co2'),tds=gv('dm_tds');
+  const catcap=gv('dm_catcap'),ancap=gv('dm_ancap'),cycle=gv('dm_cycle'),vel=gv('dm_vel'),bedh=gv('dm_bedh');
+  const hcl_c=gv('dm_hcl_c'),naoh_c=gv('dm_naoh_c'),hcl_d=gv('dm_hcl_d'),naoh_d=gv('dm_naoh_d');
+  const cond_t=gv('dm_cond_t'),si_t=gv('dm_si_t');
+  if([flow,cat,an,si,co2,catcap,ancap,cycle,vel,bedh,hcl_c,naoh_c,hcl_d,naoh_d].some(isNaN))return showErr('dm','Fill all required fields.');
+  if(cat<0||an<0||si<0)return showErr('dm','Concentrations cannot be negative.');
+  startCalc('dm');
+  setTimeout(()=>{
+    const catMeq=cat/50, totalAn=an+si*50/30+co2*50/22, anMeq=totalAn/50;
+    const volCycle=flow*cycle;
+    const colAreaCat=flow/vel, colDiaCat=Math.sqrt(colAreaCat*4/Math.PI);
+    const colAreaAn=flow/(vel*0.85), colDiaAn=Math.sqrt(colAreaAn*4/Math.PI);
+    const catResL=colAreaCat*bedh*1000, anResL=colAreaAn*bedh*1000;
+    const hclKg=(catResL*catcap*hcl_d)/1000;
+    const naohKg=(anResL*ancap*naoh_d)/1000;
+    // FIX-3&4: conc-dependent densities (old 1.18=36%HCl, 1.22=20%NaOH — wrong for dilute solutions)
+    const hclDen=hcl_c<=6?1.020+hcl_c*0.003:hcl_c<=15?1.030+hcl_c*0.005:1.100+hcl_c*0.003;
+    const naohDen=naoh_c<=5?1.000+naoh_c*0.010:naoh_c<=15?1.050+naoh_c*0.011:1.200+naoh_c*0.005;
+    const hclL=hclKg/(hcl_c/100*hclDen);
+    const naohL=naohKg/(naoh_c/100*naohDen);
+    const totalCapCat=catResL*catcap;
+    const loadPerHr=catMeq*flow*1000;
+    // FIX-5: totalCapCat[eq]*1000 → meq, to match loadPerHr[meq/hr]
+    const cycleHr=Math.min(cycle*1.2, totalCapCat*1000/Math.max(loadPerHr,0.001));
+    const regPerDay=24/Math.max(cycleHr,cycle);
+    const washWaterM3=(catResL+anResL)*0.005;
+    // Silica leakage: estimated based on anion resin exhaustion at end of cycle.
+    // Silica (weak acid) leaks more at end-of-run; ~0.5–2% of feed for well-regenerated resin.
+    // Flag if feed silica is high relative to resin capacity.
+    const siLeakFraction = (si > 20) ? 0.015 : (si > 10) ? 0.008 : 0.004;
+    const siLeak = si * siLeakFraction;
+    R.dm={flow,cycle,colDiaCat:colDiaCat.toFixed(2),colDiaAn:colDiaAn.toFixed(2),catResL:catResL.toFixed(0),anResL:anResL.toFixed(0),hclKg:hclKg.toFixed(1),naohKg:naohKg.toFixed(1),cycleHr:cycleHr.toFixed(1)};
+    showRes('dm', rh('DM Plant Design',`Feed: ${flow} m³/hr | Cycle: ${cycle} hr | Cations: ${cat} mg/L CaCO₃`,'b-info','DM Design')+
+    `<div class="kpig">
+      ${kpi('Cation Column Ø',colDiaCat.toFixed(2),'m','aq',`Area = ${colAreaCat.toFixed(2)} m²`)}
+      ${kpi('Anion Column Ø',colDiaAn.toFixed(2),'m','tl',`Area = ${colAreaAn.toFixed(2)} m²`)}
+      ${kpi('Cation Resin Vol.',catResL.toFixed(0),'L','bl',`Bed H = ${bedh} m`)}
+      ${kpi('Anion Resin Vol.',anResL.toFixed(0),'L','vi',`Bed H = ${bedh} m`)}
+      ${kpi('HCl (100%) / Regen',hclKg.toFixed(1),'kg','am',`${hclL.toFixed(0)} L as ${hcl_c}% soln`)}
+      ${kpi('NaOH (100%) / Regen',naohKg.toFixed(1),'kg','am',`${naohL.toFixed(0)} L as ${naoh_c}% soln`)}
+      ${kpi('Est. Cycle Length',cycleHr.toFixed(1),'hr','em')}
+      ${kpi('Regens per Day',Math.max(1,regPerDay).toFixed(1),'/day',regPerDay>3?'co':'em',regPerDay>3?'⚠ Too frequent':'✓ OK')}
+    </div>
+    <div class="sh teal">💧 Ion Loads & Capacity</div>
+    <div class="kpig">
+      ${kpi('Cation Load',catMeq.toFixed(2),'meq/L','aq')}
+      ${kpi('Anion Load',anMeq.toFixed(2),'meq/L','tl','Incl. silica, CO₂')}
+      ${kpi('Silica Load',si,'mg/L','vi',si>20?'⚠ High':'✓ OK')}
+      ${kpi('Free CO₂',co2,'mg/L','sl',co2>20?'Degasser needed':'OK')}
+    </div>
+    <div class="tw"><table class="dt"><thead><tr><th>Parameter</th><th>Cation Unit</th><th>Anion Unit</th></tr></thead>
+    <tbody>
+      <tr><td class="lc">Column Diameter</td><td class="hi">${colDiaCat.toFixed(2)} m</td><td class="hi">${colDiaAn.toFixed(2)} m</td></tr>
+      <tr><td class="lc">Resin Volume</td><td>${catResL.toFixed(0)} L</td><td>${anResL.toFixed(0)} L</td></tr>
+      <tr><td class="lc">Working Capacity</td><td>${catcap} eq/L</td><td>${ancap} eq/L</td></tr>
+      <tr><td class="lc">Total Capacity</td><td>${(catResL*catcap).toFixed(0)} eq</td><td>${(anResL*ancap).toFixed(0)} eq</td></tr>
+      <tr><td class="lc">Regen Qty (100%)</td><td>${hclKg.toFixed(1)} kg HCl</td><td>${naohKg.toFixed(1)} kg NaOH</td></tr>
+      <tr><td class="lc">Regen Soln. Volume</td><td>${hclL.toFixed(0)} L (${hcl_c}%)</td><td>${naohL.toFixed(0)} L (${naoh_c}%)</td></tr>
+      <tr><td class="lc">Daily HCl/NaOH</td><td>${(hclKg*Math.max(1,regPerDay)).toFixed(1)} kg/day</td><td>${(naohKg*Math.max(1,regPerDay)).toFixed(1)} kg/day</td></tr>
+    </tbody></table></div>
+    <div class="sh em">✅ Expected Product Quality</div>
+    <div class="tw"><table class="dt"><thead><tr><th>Parameter</th><th>Expected</th><th>Target</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="lc">Conductivity</td><td>&lt;${(cond_t*5).toFixed(2)} µS/cm</td><td>${cond_t} µS/cm</td><td>${cond_t<1?'<span class="good">✓ DM Grade</span>':'<span class="good">✓ Process</span>'}</td></tr>
+      <tr><td class="lc">Silica Leakage</td><td>~${siLeak.toFixed(4)} mg/L</td><td>${si_t} mg/L</td><td>${siLeak<=si_t?'<span class="good">✓ OK</span>':'<span class="warn">⚠ Mixed bed needed</span>'}</td></tr>
+      <tr><td class="lc">Hardness</td><td>Nil</td><td>Nil</td><td><span class="good">✓ OK</span></td></tr>
+      <tr><td class="lc">Wash Water</td><td>${(washWaterM3*1000).toFixed(0)} L/regen</td><td>—</td><td>~${(washWaterM3/cycle/flow*100).toFixed(1)}% of production</td></tr>
+    </tbody></table></div>
+    ${co2>15?`<div class="note am"><div class="note-t">💨 Degasser Strongly Recommended</div><div class="note-b">Free CO₂ = ${co2} mg/L. A degasser tower between cation and anion exchangers removes CO₂ by up to 90%, reducing anion resin load by ~${(co2/Math.max(totalAn,1)*50*0.9).toFixed(0)}% and saving significant NaOH per regeneration.</div></div>`:''}
+    <div class="note em"><div class="note-t">🟢 Design Sequence</div><div class="note-b">Recommended train: <strong>Cation → Degasser → Anion → Mixed Bed Polisher</strong> (for conductivity &lt;0.1 µS/cm). Always design 1 standby column per service unit (N+1 configuration).</div></div>`);
+  },600);
+}
+
+// ══════════════════════════════════════
+// BOILER FEED WATER — REVISED & EXTENSIVE
+// ══════════════════════════════════════
+function calcBoiler(){
+  if(_busy('bfw'))return;
+  hideErr('bfw');
+  const steam=gv('bfw_steam'),press=gv('bfw_press'),cr=gv('bfw_cr')/100;
+  const nb=gv('bfw_nb'),btype=gs('bfw_type'),fuel=gs('bfw_fuel');
+  const muTDS=gv('bfw_mu_tds'),hard=gv('bfw_hard'),alk=gv('bfw_alk');
+  const cl=gv('bfw_cl'),sil=gv('bfw_sil'),fe=gv('bfw_fe'),cu=gv('bfw_cu');
+  const DO_raw=gv('bfw_do'),toc=gv('bfw_toc'),oil=gv('bfw_oil');
+  const o2type=gs('bfw_o2_t'),o2excess=gv('bfw_o2_excess')/100;
+  const phTarget=gv('bfw_ph_target'),phos=gv('bfw_phos');
+  const daPresent=gs('bfw_da')==='yes', std=gs('bfw_std');
+  const TDSmax=gv('bfw_tds_max');
+
+  if([steam,press,cr,muTDS,hard,sil,fe,cu,DO_raw,toc,phos].some(isNaN))return showErr('bfw','Fill all required fields.');
+  if(muTDS<=0)return showErr('bfw','Makeup TDS must be positive.');
+  if(press<=0)return showErr('bfw','Boiler pressure must be positive.');
+
+  startCalc('bfw');
+  setTimeout(()=>{
+    // ── PRESSURE-BASED LIMITS (ASME CRTD-34 / ABMA) ──
+    // Pressure in psig for ASME table lookup
+    const pressPsig = press * 14.504;
+    let limTDS, limSilica, limAlk, limCond, limFe_ug, limCu_ug, limDO_ug, limPH_lo, limPH_hi, limSteamTDS, limTSS;
+    if(pressPsig<=300){
+      limTDS=3500;limSilica=150;limAlk=700;limCond=5400;limFe_ug=100;limCu_ug=50;limDO_ug=7000;limPH_lo=10.5;limPH_hi=12.0;limSteamTDS=1.0;limTSS=15;
+    } else if(pressPsig<=450){
+      limTDS=3000;limSilica=90;limAlk=600;limCond=4600;limFe_ug=50;limCu_ug=25;limDO_ug=1000;limPH_lo=10.5;limPH_hi=11.8;limSteamTDS=1.0;limTSS=10;
+    } else if(pressPsig<=600){
+      limTDS=2500;limSilica=40;limAlk=500;limCond=3800;limFe_ug=25;limCu_ug=20;limDO_ug=100;limPH_lo=10.0;limPH_hi=11.8;limSteamTDS=1.0;limTSS=8;
+    } else if(pressPsig<=750){
+      limTDS=1000;limSilica=30;limAlk=400;limCond=1500;limFe_ug=25;limCu_ug=20;limDO_ug=100;limPH_lo=10.0;limPH_hi=11.5;limSteamTDS=0.5;limTSS=3;
+    } else if(pressPsig<=900){
+      limTDS=750;limSilica=20;limAlk=300;limCond=1200;limFe_ug=15;limCu_ug=15;limDO_ug=20;limPH_lo=9.8;limPH_hi=11.0;limSteamTDS=0.5;limTSS=2;
+    } else if(pressPsig<=1000){
+      limTDS=625;limSilica=8;limAlk=200;limCond=1000;limFe_ug=10;limCu_ug=10;limDO_ug=20;limPH_lo=9.6;limPH_hi=10.8;limSteamTDS=0.5;limTSS=1;
+    } else if(pressPsig<=1500){
+      limTDS=100;limSilica=2;limAlk=null;limCond=150;limFe_ug=10;limCu_ug=10;limDO_ug=20;limPH_lo=9.0;limPH_hi=10.0;limSteamTDS=0.1;limTSS=1;
+    } else if(pressPsig<=2000){
+      limTDS=50;limSilica=1;limAlk=null;limCond=80;limFe_ug=5;limCu_ug=3;limDO_ug=7;limPH_lo=8.5;limPH_hi=9.5;limSteamTDS=0.05;limTSS=null;
+    } else {
+      limTDS=0.05;limSilica=0.02;limAlk=null;limCond=0.25;limFe_ug=null;limCu_ug=null;limDO_ug=7;limPH_lo=8.5;limPH_hi=9.5;limSteamTDS=0.05;limTSS=null;
+    }
+    // For superheater/turbine type, use next range up (more stringent)
+    if(btype==='watertube_sh'||btype==='hrsg'){
+      limTDS=Math.round(limTDS*0.6); limSilica=Math.round(limSilica*0.5*10)/10;
+    }
+    const effectiveTDSmax=Math.min(TDSmax,limTDS);
+    // ── COC & BLOWDOWN ──
+    const COC = effectiveTDSmax / Math.max(muTDS,0.001);
+    const BD_pct = 1/(COC-1)*100;
+    const BD_tph = steam * BD_pct/100;
+    const condFlow = steam * cr;
+    const muFlow = steam * (1 - cr) + BD_tph;
+    const totalFeedFlow = steam + BD_tph;
+    // ── BOILER WATER CHEMISTRY ──
+    const boilerTDS = muTDS * COC;
+    const boilerSil = sil * COC;
+    const boilerAlk = alk * COC;
+    const boilerCond = boilerTDS * 1.6;  // approx conductivity
+    const boilerCl   = cl * COC;
+    // ── MAX COC BY SILICA ──
+    const maxCOCsilica = limSilica / Math.max(sil, 0.001);
+    // ── MAX COC BY ALKALINITY ──
+    const maxCOCalk = limAlk ? limAlk / Math.max(alk, 0.001) : Infinity;
+    // ── RECOMMENDED COC ──
+    const recCOC = Math.min(COC, maxCOCsilica, maxCOCalk, 20);
+    // ── DO after Deaerator ──
+    const DO_after_DA = daPresent ? Math.min(DO_raw * 0.005, 0.005) : DO_raw;  // DA reduces DO by 99%+
+    // ── O2 SCAVENGER ──
+    let o2DoseMgL=0, o2Name='', o2Note='';
+    const DO_to_scav = DO_after_DA;
+    if(o2type==='hydrazine'){
+      o2DoseMgL = DO_to_scav * 1.0 * (1+o2excess);  // stoich 1:1 + excess residual
+      o2Name='Hydrazine N₂H₄'; o2Note='Decomposes to N₂ + H₂O — no TDS contribution. Not for food steam.';
+    } else if(o2type==='smbs'){
+      o2DoseMgL = DO_to_scav * 8 * (1+o2excess);  // Na₂S₂O₅: MW=190, O₂ reacts 2 moles SMBS:1 O₂ → ~8 ppm per ppm O₂
+      o2Name='SMBS (Na₂S₂O₅)'; o2Note='Used for LP/MP boilers. Decomposes above 120°C releasing SO₂.';
+    } else if(o2type==='carbohydrazide'){
+      o2DoseMgL = DO_to_scav * 1.4 * (1+o2excess);
+      o2Name='Carbohydrazide'; o2Note='Food-grade alternative to hydrazine. Effective up to 200 bar.';
+    } else {
+      o2DoseMgL = DO_to_scav * 1.5 * (1+o2excess);
+      o2Name='Sodium Erythorbate'; o2Note='Food-grade oxygen scavenger. pH stable.';
+    }
+    const o2KgDay = o2DoseMgL * muFlow * 24 / 1e6 * 1e3;
+    const phosKgDay = phos * muFlow * 24 / 1e6 * 1e3;
+    // ── STEAM SATURATION TEMP ──
+    // FIX-6: use absolute pressure (gauge + 1.013 atm) for saturation temperature formula
+    const satT = press>0 ? (100 + 28.5*Math.log(Math.max((press+1.013)/1.013,1))) : 100;
+    // ── HEAT LOSS IN BLOWDOWN ──
+    const hf = 4.18 * satT + 0.0015 * satT*satT;  // kJ/kg
+    const bdHeatLoss = BD_tph * 1000 * hf / 3600;  // kW
+    const bdHeatMcal = bdHeatLoss * 0.86;  // Mcal/hr
+    // ── SILICA CARRYOVER (vaporous) ──
+    // Silica volatility increases above 600 psig
+    // FIX-9: corrected to ASME CRTD-34 values (old factors were 2-3× overestimated)
+    const silicaVolatilityFactor = pressPsig>1200?0.10:pressPsig>900?0.05:pressPsig>600?0.02:0.005;
+    const silCarryover = boilerSil * silicaVolatilityFactor;
+    // ── FEED PUMP SIZING ──
+    const pumpHead = press*100/9.81 + 30;  // m (including safety margin)
+    const pumpFlow = totalFeedFlow * 1000/3600;  // L/s
+    // ── COMPLIANCE FLAGS ──
+    const f = {
+      tds:     boilerTDS  <= limTDS,
+      silica:  boilerSil  <= limSilica,
+      alk:     !limAlk || boilerAlk <= limAlk,
+      fe:      fe*1000   <= limFe_ug,
+      cu:      cu*1000   <= limCu_ug,
+      do:      DO_after_DA*1000 <= limDO_ug,
+      toc:     toc <= (pressPsig>1000?1:pressPsig>600?3:5),
+      oil:     oil <= (pressPsig>600?0.5:1.0),
+      cond:    boilerCond <= limCond
+    };
+    const allOK = Object.values(f).every(Boolean);
+    const stdName = std==='asme'?'ASME CRTD-34':std==='is'?'IS 10392':'ABMA';
+    R.bfw={steam,press,pressPsig:pressPsig.toFixed(0),COC:COC.toFixed(2),BD_pct:BD_pct.toFixed(2),BD_tph:BD_tph.toFixed(3),muFlow:muFlow.toFixed(2),totalFeedFlow:totalFeedFlow.toFixed(2),boilerTDS:boilerTDS.toFixed(0),boilerSil:boilerSil.toFixed(2),satT:satT.toFixed(0),bdHeatLoss:bdHeatLoss.toFixed(0),o2DoseMgL:o2DoseMgL.toFixed(2),o2Name,recCOC:recCOC.toFixed(1)};
+
+    showRes('bfw', rh('Boiler Feed Water Quality Analysis',`${steam} t/hr @ ${press} bar(g) [${pressPsig.toFixed(0)} psig] | ${stdName} | ${btype.replace('_',' ')}`,
+      allOK?'b-ok':'b-bad', allOK?'✓ Within Spec':'⚠ Parameters Exceed Limits')+
+    `<div class="sh coral">💧 Mass Balance & Flows</div>
+    <div class="kpig">
+      ${kpi('Cycles of Conc. (COC)',COC.toFixed(2),'×','aq','TDS_boiler/TDS_makeup')}
+      ${kpi('Blowdown Rate',BD_pct.toFixed(2),'%','co',`${BD_tph.toFixed(3)} t/hr blowdown`)}
+      ${kpi('Makeup Flow Required',muFlow.toFixed(2),'t/hr','bl',`${(muFlow*24).toFixed(0)} t/day`)}
+      ${kpi('Condensate Return',condFlow.toFixed(2),'t/hr','em',`${(cr*100).toFixed(0)}% of steam`)}
+      ${kpi('Total Feed Flow',totalFeedFlow.toFixed(2),'t/hr','tl','Boiler inlet')}
+      ${kpi('Rec. Max COC',recCOC.toFixed(1),'×',recCOC>=COC?'em':'co',`Limited by ${recCOC===maxCOCsilica?'silica':recCOC===maxCOCalk?'alkalinity':'TDS limit'}`)}
+      ${kpi('Sat. Steam Temp',satT.toFixed(0),'°C','am',`At ${press} bar(g)`)}
+      ${kpi('BD Heat Loss',bdHeatLoss.toFixed(0),'kW','co',`${bdHeatMcal.toFixed(0)} Mcal/hr recoverable`)}
+    </div>
+    <div class="sh am">🌡 Boiler Water Chemistry (Calculated)</div>
+    <div class="kpig">
+      ${kpi('Boiler TDS',boilerTDS.toFixed(0),'mg/L',f.tds?'em':'co',`Limit: ${limTDS} mg/L`)}
+      ${kpi('Boiler Conductivity',boilerCond.toFixed(0),'µS/cm',f.cond?'em':'co',`Limit: ${limCond} µS/cm`)}
+      ${kpi('Boiler Silica',boilerSil.toFixed(2),'mg/L',f.silica?'em':'co',`Limit: ${limSilica} mg/L`)}
+      ${kpi('Boiler Alkalinity',boilerAlk.toFixed(0),'mg/L',f.alk?'em':'am',`Limit: ${limAlk||'NS'} mg/L`)}
+      ${kpi('Boiler Chloride',boilerCl.toFixed(1),'mg/L','am','At COC×')}
+      ${kpi('Silica Carryover',silCarryover.toFixed(3),'mg/L','vi',pressPsig>600?'⚠ Check turbine blades':'Low risk')}
+    </div>
+    <div class="sh teal">💊 Chemical Treatment Quantities</div>
+    <div class="kpig">
+      ${kpi('O₂ Scavenger Dose',o2DoseMgL.toFixed(2),'mg/L','tl',o2Name)}
+      ${kpi('O₂ Scavenger',o2KgDay.toFixed(3),'kg/day','tl',`${o2excess*100}% excess`)}
+      ${kpi('Phosphate Dose',phos,'mg/L','vi','Scale inhibitor')}
+      ${kpi('Phosphate Qty.',phosKgDay.toFixed(3),'kg/day','vi',`${(phosKgDay*30).toFixed(1)} kg/month`)}
+      ${kpi('Target pH',phTarget,'','em',limPH_lo+'–'+limPH_hi+' (ASME)')}
+      ${kpi('DA Installed',daPresent?'Yes':'No','',daPresent?'em':'co',`DO after DA: ~${DO_after_DA.toFixed(3)} mg/L`)}
+    </div>
+
+    <div class="sh blue">📋 ${stdName} Compliance Check</div>
+    <div class="tw"><table class="dt"><thead><tr><th>Parameter</th><th>Feed/Boiler Value</th><th>ASME Limit (${pressPsig.toFixed(0)} psig)</th><th>IS 10392 Limit</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="lc">Boiler TDS</td><td class="${f.tds?'good':'bad'}">${boilerTDS.toFixed(0)} mg/L</td><td>≤${limTDS} mg/L</td><td>${press<20?'≤3500':press<60?'≤2000':'≤500'} mg/L</td><td>${f.tds?'<span class="good">✓ OK</span>':'<span class="bad">✗ Reduce COC / Increase BD</span>'}</td></tr>
+      <tr><td class="lc">Boiler Silica</td><td class="${f.silica?'good':'bad'}">${boilerSil.toFixed(2)} mg/L</td><td>≤${limSilica} mg/L</td><td>${press<20?'≤25':press<60?'≤10':'≤2'} mg/L</td><td>${f.silica?'<span class="good">✓ OK</span>':'<span class="bad">✗ Reduce COC or improve pre-treatment</span>'}</td></tr>
+      <tr><td class="lc">Feedwater Hardness</td><td class="${hard<=0.1?'good':hard<=5?'warn':'bad'}">${hard} mg/L</td><td>${pressPsig>300?'ND':pressPsig>0?'Trace only':''}</td><td>${press<20?'≤5':press<60?'≤1':'Nil'} ppm</td><td>${hard<=0.1?'<span class="good">✓ OK</span>':hard<=5?'<span class="warn">⚠ Softening required</span>':'<span class="bad">✗ Full demineralisation required</span>'}</td></tr>
+      <tr><td class="lc">Feedwater Iron (Fe)</td><td class="${f.fe?'good':'bad'}">${fe} mg/L (${(fe*1000).toFixed(0)} µg/L)</td><td>≤${limFe_ug??'ND'} µg/L</td><td>${press<20?'≤2000':press<60?'≤500':'≤100'} µg/L</td><td>${f.fe?'<span class="good">✓ OK</span>':'<span class="bad">✗ Pre-treatment required</span>'}</td></tr>
+      <tr><td class="lc">Feedwater Copper (Cu)</td><td class="${f.cu?'good':'bad'}">${cu} mg/L (${(cu*1000).toFixed(0)} µg/L)</td><td>≤${limCu_ug??'ND'} µg/L</td><td>—</td><td>${f.cu?'<span class="good">✓ OK</span>':'<span class="bad">✗ Check condensate</span>'}</td></tr>
+      <tr><td class="lc">Dissolved O₂ (after DA)</td><td class="${f.do?'good':'bad'}">${DO_after_DA.toFixed(3)} mg/L (${(DO_after_DA*1000).toFixed(1)} µg/L)</td><td>≤${limDO_ug} µg/L</td><td>${press<20?'≤100':press<60?'≤20':'≤5'} µg/L</td><td>${f.do?'<span class="good">✓ OK</span>':'<span class="bad">✗ Improve deaeration + scavenger dose</span>'}</td></tr>
+      <tr><td class="lc">Feedwater TOC</td><td class="${f.toc?'good':'warn'}">${toc} mg/L</td><td>${pressPsig>1000?'&lt;1':pressPsig>600?'&lt;3':'&lt;10'} mg/L</td><td>—</td><td>${f.toc?'<span class="good">✓ OK</span>':'<span class="warn">⚠ Activate carbon filtration</span>'}</td></tr>
+      <tr><td class="lc">Oil/Grease</td><td class="${f.oil?'good':'bad'}">${oil} mg/L</td><td>${pressPsig>600?'&lt;0.5':'&lt;1.0'} mg/L</td><td>—</td><td>${f.oil?'<span class="good">✓ OK</span>':'<span class="bad">✗ Oil separator + ACF required</span>'}</td></tr>
+      <tr><td class="lc">Boiler pH</td><td>${phTarget}</td><td>${limPH_lo}–${limPH_hi}</td><td>${press<20?'10.5–12.0':press<60?'10.0–11.5':'9.0–10.5'}</td><td>${phTarget>=limPH_lo&&phTarget<=limPH_hi?'<span class="good">✓ OK</span>':'<span class="warn">⚠ Adjust pH treatment</span>'}</td></tr>
+      <tr><td class="lc">Alkalinity (Boiler)</td><td>${boilerAlk.toFixed(0)} mg/L</td><td>${limAlk??'NS'} mg/L</td><td>${press<20?'≤700':press<60?'≤500':'≤300'} mg/L</td><td>${f.alk?'<span class="good">✓ OK</span>':'<span class="warn">⚠ Reduce COC or makeup alkalinity</span>'}</td></tr>
+    </tbody></table></div>
+
+    <div class="note ${allOK?'em':BD_pct>10?'co':'am'}">
+      <div class="note-t">🔥 ${allOK?'System Within Specification':'Action Required'}</div>
+      <div class="note-b"><ul>
+        <li>Blowdown: <strong>${BD_pct.toFixed(2)}% = ${BD_tph.toFixed(3)} t/hr</strong> ${BD_pct>10?'— ⚠ High! Increase condensate return or lower makeup TDS':BD_pct<1?'— ⚠ Very low. Verify TDS data.':'— ✓ Acceptable range'}</li>
+        <li>Max COC before silica limit: <strong>${maxCOCsilica.toFixed(1)}×</strong> (silica in boiler would be ${(sil*maxCOCsilica).toFixed(1)} vs limit ${limSilica} mg/L)</li>
+        <li>Recommended COC: <strong>${recCOC.toFixed(1)}×</strong> (considering all limits)</li>
+        <li>O₂ scavenger: <strong>${o2Name}</strong> at ${o2DoseMgL.toFixed(2)} mg/L → ${o2KgDay.toFixed(3)} kg/day</li>
+        <li>Blowdown heat loss: ${bdHeatLoss.toFixed(0)} kW — ${bdHeatLoss>50?'install flash tank + heat exchanger for heat recovery':'heat recovery optional at this scale'}</li>
+        <li>O₂ note: ${o2Note}</li>
+        <li>${!daPresent?'⚠ Deaerator strongly recommended — without DA, O₂ scavenger alone cannot reliably achieve low DO levels for pressures > 15 bar.':'✓ Deaerator present — reduces DO by >99% before chemical scavenging.'}</li>
+        <li>Silica carryover to steam: ~${silCarryover.toFixed(3)} mg/L ${silCarryover>0.05?'— ⚠ Risk of silica deposits on turbine blades!':'— within safe limits'}</li>
+        ${btype==='watertube_sh'||btype==='hrsg'?'<li>⚠ Superheater/turbine present — apply NEXT HIGHER pressure range limits per ASME CRTD-34.</li>':''}
+        ${btype==='otsg'?'<li>⚠ OTSG — ultra-low TDS required (essentially DM water). Conductivity target &lt;0.25 µS/cm.</li>':''}
+      </ul></div>
+    </div>
+    <div class="note bl"><div class="note-t">📋 Treatment Programme Summary</div>
+    <div class="note-b">
+      <strong>Pre-treatment:</strong> ${hard>5?'Softener + ':''} ${muTDS>500?'RO/DM + ':''} Deaerator ${!daPresent?'(INSTALL!)':''}<br>
+      <strong>Internal chemicals:</strong> ${o2Name} ${o2DoseMgL.toFixed(2)} mg/L + Phosphate ${phos} mg/L + pH control (${gs('bfw_ph_t')})<br>
+      <strong>Blowdown control:</strong> Target COC ${recCOC.toFixed(1)}× with ${BD_pct.toFixed(2)}% BD rate<br>
+      <strong>Monitoring frequency:</strong> ${press>60?'Online continuous (TDS, pH, DO, conductivity)':'Daily manual testing (TDS, pH, hardness, alkalinity)'}
+    </div></div>`);
+  },700);
+}
+
+// ══════════════════════════════════════
+// DRINKING WATER
+// ══════════════════════════════════════
+function calcDrinking(){
+  if(_busy('dw'))return;
+  hideErr('dw');
+  const flow=gv('dw_flow'),turb=gv('dw_turb'),tds=gv('dw_tds');
+  const pH=gv('dw_ph'),hard=gv('dw_hard'),ecoli=gv('dw_ecoli');
+  const fl=gv('dw_fl'),fe=gv('dw_fe');
+  const alum=gv('dw_alum'),cl2=gv('dw_cl2'),cl_d=gv('dw_cl_d');
+  const ct=gv('dw_ct'),fr=gv('dw_fr'),nf=gv('dw_nf'),media=gv('dw_media'),temp=gv('dw_temp');
+  if([flow,turb,tds,pH,hard,alum,cl2,cl_d,ct,fr,nf,media,temp].some(isNaN))return showErr('dw','Fill all required fields.');
+  if(cl2<=cl_d)return showErr('dw','Chlorine dose must exceed demand. Increase dose or reduce demand estimate.');
+  if(flow<=0)return showErr('dw','Flow rate must be positive.');
+  if(nf<2)return showErr('dw','Minimum 2 filter beds required (N−1 design).');
+  startCalc('dw');
+  setTimeout(()=>{
+    const clRes=cl2-cl_d, CT_act=clRes*ct;
+    const CT_giardia = temp>20?28:temp>15?50:temp>10?70:95;  // FIX-12: EPA LT1ESWTR pH7-8: 95 mg·min/L at ≤10°C
+    const CT_crypto  = temp>20?4500:8600;  // 2-log Crypto (ozone reference)
+    const logGiardia = Math.min(6, CT_act/CT_giardia*3);
+    const alumKgd = alum*flow*24/1e3;
+    const cl2Kgd  = cl2*flow*24/1e3;
+    const filtAreaTot = flow/fr;
+    const filtAreaEa  = flow/(fr*(nf-1));  // N-1 for backwash
+    const filtLen = Math.sqrt(filtAreaEa);
+    // Turbidity after clarifier
+    const turbAfterClar = turb * (1-Math.min(0.97, alum/100*0.8+0.2));
+    const turbFinal = Math.max(0.05, turbAfterClar*0.1);
+    const feAfterFilt = fe>0.3 ? fe*0.15 : fe;
+    // Corrosion indices
+    const pK2=10.33-0.014*temp, pKs=8.34-0.013*temp;
+    // FIX-10: Ca²⁺≈0.6×hardness, Alk≈hardness as CaCO₃ (proxy approximation)
+    const ca_dw=hard*0.6*40.08/100;  // Ca mg/L
+    const alk_dw=hard;               // Alk mg/L as CaCO₃ proxy
+    const pCa=-Math.log10(Math.max(ca_dw/40080,1e-10));
+    const pAlk=-Math.log10(Math.max(alk_dw/50000,1e-10));
+    const pHs=pK2-pKs+pCa+pAlk;
+    const LSI=pH-pHs, RSI=2*pHs-pH;
+    const Qdaily=flow*24;
+    const popServed=Math.round(Qdaily*1000/150);
+    const fluorDose=fl<0.6?1.0-fl:0;
+    // IS 10500 compliance
+    const c = {turb:turbFinal<=1,tds:tds<=500,pH:pH>=6.5&&pH<=8.5,cl2r:clRes>=0.2&&clRes<=1.0,hard:hard<=200,fe:feAfterFilt<=0.3,fl:fl<=1.0};
+    const comply = Object.values(c).every(Boolean);
+    R.dw={flow,turbFinal:turbFinal.toFixed(2),clRes:clRes.toFixed(2),CT_act:CT_act.toFixed(0),alumKgd:alumKgd.toFixed(1),cl2Kgd:cl2Kgd.toFixed(1),filtAreaEa:filtAreaEa.toFixed(1),logGiardia:logGiardia.toFixed(1)};
+    showRes('dw', rh('Drinking Water Treatment',`Q=${flow} m³/hr | Raw: ${turb} NTU | TDS: ${tds} mg/L | Cl₂: ${cl2} mg/L`,comply?'b-ok':'b-warn',comply?'✓ IS 10500 Compliant':'⚠ Review Parameters')+
+    `<div class="kpig">
+      ${kpi('Population Served',popServed.toLocaleString(),'','aq','At 150 L/cap/day')}
+      ${kpi('Daily Volume',Qdaily.toFixed(0),'m³/day','bl')}
+      ${kpi('Final Turbidity',turbFinal.toFixed(2),'NTU',turbFinal<=1?'em':turbFinal<=5?'am':'co',turbFinal<=1?'IS: ≤1 NTU ✓':turbFinal<=5?'WHO: ≤5 NTU':'Exceeds limit')}
+      ${kpi('Cl₂ Residual',clRes.toFixed(2),'mg/L',clRes>=0.2&&clRes<=1.0?'em':'co',clRes>=0.2?'✓ Adequate':'⚠ Inadequate')}
+      ${kpi('CT Value (actual)',CT_act.toFixed(0),'mg·min/L',CT_act>=CT_giardia?'em':'co',`Req: ${CT_giardia} (3-log Giardia)`)}
+      ${kpi('Giardia Log Removal',logGiardia.toFixed(1),'log',logGiardia>=3?'em':'am',`Target: ≥3 log`)}
+      ${kpi('LSI (corrosion)',LSI.toFixed(2),'',LSI>0.5?'co':LSI<-0.5?'am':'em',LSI>0.5?'Scaling':LSI<-0.5?'Corrosive':'Balanced')}
+      ${kpi('Ryznar Index (RSI)',RSI.toFixed(2),'',RSI<6?'co':RSI>7?'am':'em',RSI<6?'Scaling tendency':RSI>7?'Corrosive':'Stable')}
+    </div>
+    <div class="sh aqua">⚗ Chemical & Filter Design</div>
+    <div class="kpig">
+      ${kpi('Alum Dose',alum,'mg/L','am')},${kpi('Alum Qty.',alumKgd.toFixed(1),'kg/day','am')}
+      ${kpi('Chlorine Dose',cl2,'mg/L','tl')}${kpi('Cl₂ Qty.',cl2Kgd.toFixed(1),'kg/day','tl')}
+      ${kpi('Filter Area (total)',filtAreaTot.toFixed(1),'m²','bl',`${nf} beds`)}
+      ${kpi('Area per Filter',filtAreaEa.toFixed(1),'m²','bl',`≈ ${filtLen.toFixed(1)}×${filtLen.toFixed(1)} m`)}
+    </div>
+    <div class="tw"><table class="dt"><thead><tr><th>Parameter</th><th>Raw</th><th>Treated (Est.)</th><th>IS 10500 Limit</th><th>WHO Limit</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="lc">Turbidity</td><td>${turb} NTU</td><td class="good">${turbFinal.toFixed(2)} NTU</td><td>≤1 NTU</td><td>≤1 NTU</td><td>${c.turb?'<span class="good">✓</span>':'<span class="bad">✗</span>'}</td></tr>
+      <tr><td class="lc">TDS</td><td>${tds} mg/L</td><td>${(tds*0.98).toFixed(0)} mg/L</td><td>≤500 mg/L</td><td>&lt;1000 mg/L</td><td>${c.tds?'<span class="good">✓</span>':'<span class="warn">⚠ RO needed</span>'}</td></tr>
+      <tr><td class="lc">pH</td><td>${pH}</td><td>${pH}</td><td>6.5–8.5</td><td>6.5–8.5</td><td>${c.pH?'<span class="good">✓</span>':'<span class="bad">✗ Adjust</span>'}</td></tr>
+      <tr><td class="lc">Residual Cl₂</td><td>—</td><td class="good">${clRes.toFixed(2)} mg/L</td><td>0.2–1.0 mg/L</td><td>0.2–0.5 mg/L</td><td>${c.cl2r?'<span class="good">✓</span>':'<span class="warn">⚠</span>'}</td></tr>
+      <tr><td class="lc">Total Hardness</td><td>${hard} mg/L</td><td>${hard} mg/L</td><td>≤200 mg/L</td><td>&lt;500 mg/L</td><td>${c.hard?'<span class="good">✓</span>':hard<=600?'<span class="warn">⚠</span>':'<span class="bad">✗ Soften</span>'}</td></tr>
+      <tr><td class="lc">Iron (Fe)</td><td>${fe} mg/L</td><td>${feAfterFilt.toFixed(2)} mg/L</td><td>≤0.3 mg/L</td><td>&lt;0.3 mg/L</td><td>${c.fe?'<span class="good">✓</span>':'<span class="warn">⚠ DMF needed</span>'}</td></tr>
+      <tr><td class="lc">Fluoride</td><td>${fl} mg/L</td><td>${fl} mg/L</td><td>≤1.0 mg/L</td><td>1.5 mg/L</td><td>${c.fl?'<span class="good">✓</span>':'<span class="bad">✗ Defluoridation</span>'}</td></tr>
+      <tr><td class="lc">Coliform</td><td>${ecoli} MPN</td><td class="good">Nil (post-Cl₂)</td><td>Nil/100mL</td><td>0/100mL</td><td>${CT_act>=CT_giardia?'<span class="good">✓ Inactivated</span>':'<span class="warn">⚠ Increase CT</span>'}</td></tr>
+    </tbody></table></div>
+    ${fluorDose>0?`<div class="note am"><div class="note-t">💧 Fluoride Dosing</div><div class="note-b">Current fluoride ${fl} mg/L is below WHO recommendation (0.6–1.5 mg/L). Add <strong>${fluorDose.toFixed(2)} mg/L as F</strong> using NaF or Na₂SiF₆ for dental protection.</div></div>`:''}
+    <div class="note ${comply?'em':'am'}"><div class="note-t">${comply?'✅ IS 10500:2012 Compliance Achieved':'⚠ Compliance Issues Identified'}</div>
+    <div class="note-b">${comply?'All key parameters meet IS 10500:2012. Maintain minimum 0.2 mg/L Cl₂ residual throughout distribution network (0.5 mg/L at distant points).':'Review flagged parameters. Priority items: residual chlorine adequacy and turbidity before distribution.'}</div></div>`);
+  },600);
+}
+
+// ══════════════════════════════════════
+// CHEMICAL DOSING
+// ══════════════════════════════════════
+function calcChem(){
+  if(_busy('cd'))return;
+  hideErr('cd');
+  const flow=gv('cd_flow'),hrs=gv('cd_hrs'),auto=gv('cd_auto'),sf=gv('cd_sf');
+  const d1=gv('cd_d1'),s1=gv('cd_s1')/100,den1=gv('cd_den1'),n1=gs('cd_n1');
+  const d2=gv('cd_d2'),s2=gv('cd_s2')/100,den2=gv('cd_den2'),n2=gs('cd_n2');
+  const d3=gv('cd_d3'),s3=gv('cd_s3')/100,den3=gv('cd_den3'),n3=gs('cd_n3');
+  if([flow,hrs,auto,sf,d1,s1,den1,d2,s2,den2,d3,s3,den3].some(isNaN))return showErr('cd','Fill all required fields.');
+  if([d1,d2,d3].every(v=>v<=0))return showErr('cd','At least one chemical dose must be >0.');
+  startCalc('cd');
+  setTimeout(()=>{
+    function cc(dose,str,den,name){
+      if(dose<=0)return null;
+      const Lhr=(dose*flow)/(str*den*1e3);
+      const Lday=Lhr*hrs;
+      // FIX-7: kgday = ACTIVE chemical mass (×str); old was solution mass
+      const kgday=Lday*den*str;
+      const kgdaySoln=Lday*den;
+      const tank=Lday*auto, pump=Lhr*sf;
+      return{name,dose,str:str*100,den,Lhr,Lday,kgday,kgdaySoln,tank,pump};
+    }
+    const c1=cc(d1,s1,den1,n1||'Chemical 1');
+    const c2=cc(d2,s2,den2,n2||'Chemical 2');
+    const c3=cc(d3,s3,den3,n3||'Chemical 3');
+    const cs=[c1,c2,c3].filter(Boolean);
+    R.cd={flow,cs:cs.map(c=>({name:c.name,dose:c.dose,pump:c.pump.toFixed(2),kgday:c.kgday.toFixed(1),tank:(c.tank/1000).toFixed(2)}))};
+    const cols=['aq','tl','bl'];
+    let html=rh('Chemical Dosing System',`Q = ${flow} m³/hr | ${hrs} hr/day | ${auto} day autonomy | SF = ${sf}×`,'b-info','Dosing Design');
+    cs.forEach((c,i)=>{
+      html+=`<div class="sh ${cols[i]||'aq'}">📦 ${c.name}</div>
+      <div class="kpig">
+        ${kpi('Dosing Pump Rate',c.pump.toFixed(2),'L/hr',cols[i]||'aq',`SF = ${sf}×`)}
+        ${kpi('Daily Volume',c.Lday.toFixed(1),'L/day','bl')}
+        ${kpi('Daily Mass',c.kgday.toFixed(1),'kg/day','am')}
+        ${kpi('Storage Tank',(c.tank/1000).toFixed(2),'m³','tl',`${auto} day autonomy`)}
+      </div>`;
+    });
+    html+=`<div class="sh vio">📋 Summary Table</div>
+    <div class="tw"><table class="dt"><thead><tr><th>Chemical</th><th>Dose (mg/L)</th><th>Pump (L/hr)</th><th>Daily (L)</th><th>Chemical (kg/day)</th><th>Tank (m³)</th></tr></thead>
+    <tbody>`;
+    cs.forEach(c=>{html+=`<tr><td class="lc">${c.name}</td><td class="hi">${c.dose}</td><td class="hi">${c.pump.toFixed(2)}</td><td>${c.Lday.toFixed(1)}</td><td>${c.kgday.toFixed(1)}</td><td class="good">${(c.tank/1000).toFixed(2)}</td></tr>`;});
+    html+=`</tbody></table></div>
+    <div class="note vi"><div class="note-t">⚙ Pump Selection Guidance</div>
+    <div class="note-b"><ul>
+      <li>Use <strong>diaphragm metering pumps</strong> (magnetic drive for corrosive chemicals)</li>
+      <li>Size pump at 60–80% of max stroke for controllability range</li>
+      <li>Always install: pulsation dampener + pressure relief valve + anti-siphon valve</li>
+      <li>Tank material: HDPE or FRP for acids/oxidisers; SS 316 for neutral chemicals</li>
+      <li>All tanks: level indicator, low-level alarm, secondary containment (110% tank vol.)</li>
+      <li>Calibration: verify pump output against calibration cylinder weekly</li>
+    </ul></div></div>`;
+    showRes('cd',html);
+  },500);
+}
+
+// ══════════════════════════════════════
+// SHARE MODAL
+// ══════════════════════════════════════
+function openShare(){
+  document.getElementById('share-url').value=window.location.href;
+  document.getElementById('shareModal').classList.add('show');
+}
+function closeShare(){document.getElementById('shareModal').classList.remove('show');}
+document.getElementById('shareModal').addEventListener('click',function(e){if(e.target===this)closeShare();});
+
+function copyLink(){
+  const inp=document.getElementById('share-url');
+  inp.select(); try{navigator.clipboard.writeText(inp.value);}catch(e){}
+  const btn=document.querySelector('.copy-btn'); btn.textContent='✓ Copied!';
+  setTimeout(()=>btn.textContent='📋 Copy',2000);
+}
+function shareWhatsApp(){window.open(`https://api.whatsapp.com/send?text=WTP-Pro%20Water%20Treatment%20Plant%20Calculator%20Suite%20%F0%9F%92%A7%0A${encodeURIComponent(document.getElementById('share-url').value)}`);}
+function shareEmail(){window.location.href=`mailto:?subject=WTP-Pro%20Water%20Treatment%20Calculator&body=Check%20out%20this%20water%20treatment%20plant%20engineering%20calculator:%20${encodeURIComponent(document.getElementById('share-url').value)}`;}
+function shareLinkedIn(){window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(document.getElementById('share-url').value)}`);}
+function shareTelegram(){window.open(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('share-url').value)}&text=WTP-Pro%20Water%20Treatment%20Calculator`);}
+
+// ══════════════════════════════════════
+// PDF REPORT
+// ══════════════════════════════════════
+function genPDF(){
+  const sects=[];
+  if(R.ro)sects.push(`<h2>RO System Design</h2><table><tr><th>Parameter</th><th>Value</th></tr><tr><td>Feed Flow</td><td>${R.ro.Qf} m³/hr</td></tr><tr><td>Feed TDS</td><td>${R.ro.TDSf} mg/L</td></tr><tr><td>Recovery</td><td>${R.ro.rec}%</td></tr><tr><td>Permeate Flow</td><td>${R.ro.Qp} m³/hr</td></tr><tr><td>Permeate TDS</td><td>${R.ro.TDSp} mg/L</td></tr><tr><td>Concentrate TDS</td><td>${R.ro.TDSc} mg/L</td></tr><tr><td>Salt Rejection</td><td>${R.ro.rej}%</td></tr><tr><td>Pressure Vessels</td><td>${R.ro.nVessel} nos.</td></tr><tr><td>Total Elements</td><td>${R.ro.nElem} nos.</td></tr><tr><td>SEC</td><td>${R.ro.SEC} kWh/m³</td></tr><tr><td>LSI (concentrate)</td><td>${R.ro.LSI_conc}</td></tr></table>`);
+  if(R.clar)sects.push(`<h2>Clarifier Design</h2><table><tr><th>Parameter</th><th>Value</th></tr><tr><td>Flow</td><td>${R.clar.Q} m³/hr</td></tr><tr><td>Surface Area</td><td>${R.clar.A} m²</td></tr><tr><td>Diameter</td><td>${R.clar.dia} m</td></tr><tr><td>Depth</td><td>${R.clar.depth} m</td></tr><tr><td>Volume</td><td>${R.clar.V} m³</td></tr><tr><td>Turbidity Removal</td><td>${R.clar.turbRem}%</td></tr><tr><td>Sludge Volume</td><td>${R.clar.sludgeVol} m³/day</td></tr><tr><td>Coagulant Qty.</td><td>${R.clar.coagKgd} kg/day</td></tr></table>`);
+  if(R.dm)sects.push(`<h2>DM Plant Design</h2><table><tr><th>Parameter</th><th>Value</th></tr><tr><td>Feed Flow</td><td>${R.dm.flow} m³/hr</td></tr><tr><td>Cycle Length</td><td>${R.dm.cycle} hr</td></tr><tr><td>Cation Column Ø</td><td>${R.dm.colDiaCat} m</td></tr><tr><td>Anion Column Ø</td><td>${R.dm.colDiaAn} m</td></tr><tr><td>Cation Resin</td><td>${R.dm.catResL} L</td></tr><tr><td>Anion Resin</td><td>${R.dm.anResL} L</td></tr><tr><td>HCl per Regen</td><td>${R.dm.hclKg} kg</td></tr><tr><td>NaOH per Regen</td><td>${R.dm.naohKg} kg</td></tr><tr><td>Est. Cycle</td><td>${R.dm.cycleHr} hr</td></tr></table>`);
+  if(R.bfw)sects.push(`<h2>Boiler Feed Water</h2><table><tr><th>Parameter</th><th>Value</th></tr><tr><td>Steam Output</td><td>${R.bfw.steam} t/hr</td></tr><tr><td>Drum Pressure</td><td>${R.bfw.press} bar(g) / ${R.bfw.pressPsig} psig</td></tr><tr><td>COC</td><td>${R.bfw.COC}×</td></tr><tr><td>Blowdown Rate</td><td>${R.bfw.BD_pct}%</td></tr><tr><td>Blowdown Flow</td><td>${R.bfw.BD_tph} t/hr</td></tr><tr><td>Makeup Flow</td><td>${R.bfw.muFlow} t/hr</td></tr><tr><td>Boiler TDS</td><td>${R.bfw.boilerTDS} mg/L</td></tr><tr><td>Boiler Silica</td><td>${R.bfw.boilerSil} mg/L</td></tr><tr><td>BD Heat Loss</td><td>${R.bfw.bdHeatLoss} kW</td></tr><tr><td>O₂ Scavenger</td><td>${R.bfw.o2Name} @ ${R.bfw.o2DoseMgL} mg/L</td></tr><tr><td>Rec. Max COC</td><td>${R.bfw.recCOC}×</td></tr></table>`);
+  if(R.dw)sects.push(`<h2>Drinking Water Treatment</h2><table><tr><th>Parameter</th><th>Value</th></tr><tr><td>Design Flow</td><td>${R.dw.flow} m³/hr</td></tr><tr><td>Final Turbidity</td><td>${R.dw.turbFinal} NTU</td></tr><tr><td>Cl₂ Residual</td><td>${R.dw.clRes} mg/L</td></tr><tr><td>CT Value</td><td>${R.dw.CT_act} mg·min/L</td></tr><tr><td>Giardia Log Removal</td><td>${R.dw.logGiardia} log</td></tr><tr><td>Alum Qty.</td><td>${R.dw.alumKgd} kg/day</td></tr><tr><td>Chlorine Qty.</td><td>${R.dw.cl2Kgd} kg/day</td></tr><tr><td>Filter Area (each)</td><td>${R.dw.filtAreaEa} m²</td></tr></table>`);
+  if(R.cd)sects.push(`<h2>Chemical Dosing System</h2><table><tr><th>Chemical</th><th>Dose</th><th>Pump Rate</th><th>Daily Qty.</th><th>Tank (m³)</th></tr>${R.cd.cs.map(c=>`<tr><td>${c.name}</td><td>${c.dose} mg/L</td><td>${c.pump} L/hr</td><td>${c.kgday} kg/day</td><td>${c.tank}</td></tr>`).join('')}</table>`);
+  if(!sects.length)return alert('No calculations yet. Run at least one module first, then generate PDF.');
+  const now=new Date().toLocaleString('en-IN');
+  const stdUnits = UNITS==='si'?'SI (metric)':'Imperial (US)';
+  const htmlContent=`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><title>Water Treatment Plant (WTP) Calculator | multicalci.com</title>
+<meta name="description" content="Free water treatment plant calculator for coagulant dosing, chlorine demand and filtration design.">
+<link rel="canonical" href="https://multicalci.com/water-treatment-calculator/">
+<meta property="og:title" content="Water Treatment Plant (WTP) Calculator | multicalci.com">
+<meta property="og:description" content="Free water treatment plant calculator for coagulant dosing, chlorine demand and filtration design.">
+<meta property="og:url" content="https://multicalci.com/water-treatment-calculator/">
+<meta property="og:type" content="website">
+    <meta property="og:image" content="https://multicalci.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Water Treatment Plant (WTP) Calculator | multicalci.com">
+    <meta name="twitter:image" content="https://multicalci.com/assets/og-image.png">
+
+
+<meta name="robots" content="index, follow">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Epilogue:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>@page{size:A4;margin:14mm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Epilogue',sans-serif;font-size:9.5pt;color:#071221;background:#fff}
+  .hdr{border-bottom:3pt solid #071221;padding-bottom:10pt;margin-bottom:14pt;display:flex;justify-content:space-between;align-items:flex-end}
+  .brand{font-family:'Fraunces',serif;font-size:20pt;font-weight:900}.sub{font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;color:#617d9b;font-weight:700;margin-top:3pt}
+  .meta{text-align:right;font-size:7.5pt;color:#617d9b;line-height:1.6}
+  h2{font-family:'Fraunces',serif;font-size:11pt;font-weight:800;color:#0284c7;border-bottom:1.5pt solid #bfdbfe;margin:14pt 0 7pt;padding-bottom:4pt}
+  table{width:100%;border-collapse:collapse;margin-bottom:10pt;page-break-inside:avoid}
+  th{background:#071221;color:#fff;padding:6pt 9pt;font-size:7pt;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:.3px}
+  td{padding:5pt 9pt;border-bottom:1pt solid #dceefa;font-family:'Fira Code',monospace;font-size:8pt}td:first-child{font-family:'Epilogue',sans-serif;font-weight:600;color:#375878}
+  .disc{background:#eff6ff;border-left:3pt solid #0284c7;padding:8pt 10pt;border-radius:3pt;font-size:7.5pt;color:#1e40af;margin-top:14pt}
+  .ftr{position:fixed;bottom:0;left:14mm;right:14mm;border-top:1pt solid #dceefa;padding-top:3pt;display:flex;justify-content:space-between;font-size:6.5pt;color:#617d9b;font-weight:600}
+  </style></head><body>
+  <div class="hdr"><div><div class="brand">💧 WTP-Pro v2</div><div class="sub">Water Treatment Plant — Engineering Report</div></div>
+  <div class="meta">multicalci.com<br>Generated: ${now}<br>Units: ${stdUnits}<br>Standards: ASME CRTD-34, IS 10500, IS 10392, WHO 2022</div></div>
+  ${sects.join('\n')}
+  <div class="disc">⚠ <strong>Disclaimer:</strong> These are preliminary engineering calculations for design guidance only. All results must be verified by a qualified water treatment engineer. Refer to ASME CRTD-34, IS 10500:2012, IS 10392:1982, WHO Guidelines for Drinking-water Quality (2022) and relevant BIS/ABMA standards before final implementation. Regulatory requirements may vary by jurisdiction.</div>
+  <div class="ftr"><span>WTP-Pro v2 | Confidential</span><span>${now}</span><span>For Engineering Guidance Only</span></div>
+  </body></html>`;
+  // Use blob URL to avoid pop-up blocker issues
+  const blob=new Blob([htmlContent],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.target='_blank'; a.rel='noopener';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+}
+</script>
+</body>
