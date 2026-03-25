@@ -957,6 +957,46 @@ async function steamQuench_handler(req, res) {
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
   catch { res.status(400).json({ error: 'Invalid JSON body' }); return; }
 
+  // ── ACTION: preview ─────────────────────────────────────────────────────────
+  // Lightweight property preview for live input display (replaces client-side
+  // steam table calls in liveProp()). Accepts partial inputs — any combination
+  // of (P_s, T1), (Pw, Tw), (P_s, T2) — and returns only display properties.
+  // Called on every keypress; no mass-balance logic runs here.
+  if (body.action === 'preview') {
+    const out = {};
+    const { P_s: Pp, T1: T1p, Tw: Twp, Pw: Pwp, T2: T2p } = body;
+
+    // Inlet steam preview
+    if (isFinite(Pp) && Pp > 0) {
+      const Ts = tSat_squench(Pp);
+      out.Ts = isFinite(Ts) ? +Ts.toFixed(2) : null;
+      if (isFinite(T1p) && T1p > 0 && isFinite(Ts)) {
+        const Ps_MPa = Pp * 0.1;
+        out.h1      = +h_steam(T1p, Ps_MPa).toFixed(1);
+        out.v1      = +v_steam(T1p, Ps_MPa).toFixed(5);
+        out.s1      = +s_steam(T1p, Ps_MPa).toFixed(3);
+        out.sh_in   = +(T1p - Ts).toFixed(1);
+        out.inlet_ok = T1p > Ts + 0.5;
+      }
+      if (isFinite(T2p) && T2p > 0 && isFinite(Ts)) {
+        const Ps_MPa = Pp * 0.1;
+        out.h2      = +h_steam(T2p, Ps_MPa).toFixed(1);
+        out.sh_out  = +(T2p - Ts).toFixed(1);
+      }
+    }
+
+    // Quench water preview
+    if (isFinite(Pwp) && Pwp > 0 && isFinite(Twp) && Twp >= 0) {
+      const Pw_MPa = Pwp * 0.1;
+      out.hw       = +h_water(Twp, Pw_MPa).toFixed(1);
+      out.Tsat_w   = +tSat_squench(Pwp).toFixed(2);
+      out.water_ok = Twp < out.Tsat_w;
+    }
+
+    return res.status(200).json(out);
+  }
+  // ── END preview ─────────────────────────────────────────────────────────────
+
   const {
     P_s,          // steam pressure (bara)
     T1,           // inlet steam temp (°C)
