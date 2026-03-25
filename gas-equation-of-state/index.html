@@ -2408,6 +2408,9 @@ Sources: DECHEMA VLE Databank, NIST ThermoData Engine,
     });
   });
 })();
+    document.querySelectorAll('.edu-panel').forEach(function(p){
+  if(!p.classList.contains('on')) p.style.display='none';
+});
 </script>
 <div class="toast" id="toastEl"></div>
 
