@@ -105,7 +105,7 @@ jobs:
       - name: Run Steam Quench test suite
         run: |
           mkdir -p test-results
-          npx jest --testPathPattern="steam-quench\.test\.js$" --forceExit --verbose --ci
+          npx jest --testPathPatterns="steam-quench\.test\.js$" --forceExit --verbose --ci
         env:
           BASE_URL: ${{ env.BASE_URL }}
 
