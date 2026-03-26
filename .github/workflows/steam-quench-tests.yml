@@ -46,6 +46,7 @@ jobs:
           node-version: '20'
 
       # ── 3. Create package.json and install deps ───────────────────────────
+      # testMatch scoped to stem-quench only so heatxpert.test.js is NOT picked up
       - name: Install Jest and dependencies
         run: |
           cat > package.json << 'EOF'
@@ -58,7 +59,7 @@ jobs:
             },
             "jest": {
               "testEnvironment": "node",
-              "testMatch": ["**/*.test.js"],
+              "testMatch": ["**/steam-quench.test.js"],
               "testTimeout": 30000,
               "reporters": [
                 "default",
@@ -72,17 +73,13 @@ jobs:
           EOF
           npm install --save-dev jest jest-junit node-fetch
 
-      # ── 4. Copy test file into working directory ──────────────────────────
+      # ── 4. Copy ONLY the steam-quench test file ───────────────────────────
       - name: Prepare test file
         run: |
           cp .github/tests/steam-quench.test.js ./steam-quench.test.js
           echo "Target API: $BASE_URL/api/steam-quench"
 
       # ── 5. Smoke-check API reachability ───────────────────────────────────
-      # Uses a complete valid calculate body (not preview action) so the API
-      # must do real work — guarantees 200 if routing + logic both work.
-      # -w prints HTTP status on a new line after the body for easy parsing.
-      # Response body is echoed (first 400 chars) so failures are diagnosable.
       - name: Smoke-check API reachability
         run: |
           BODY='{"P_s":30,"T1":280,"Tw":80,"Pw":40,"T2":250,"m_in":40000,"sh_min":10,"f_min":30,"f_max":110,"cv_in":0}'
@@ -97,10 +94,10 @@ jobs:
           echo "HTTP status : $STATUS"
           echo "Response    : ${BODY_OUT:0:400}"
           if [ "$STATUS" != "200" ]; then
-            echo "::error::API returned HTTP $STATUS. Check vercel.json routing and that steam-quench handler is deployed."
+            echo "::error::API returned HTTP $STATUS. Check vercel.json routing."
             exit 1
           fi
-          echo "API reachable and returning 200 ✅"
+          echo "API reachable ✅"
 
       # ── 6. Run tests ──────────────────────────────────────────────────────
       - name: Run Steam Quench test suite
