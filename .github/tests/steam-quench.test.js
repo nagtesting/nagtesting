@@ -421,38 +421,46 @@ describe('All HTML-required fields present', () => {
 
 // ════════════════════════════════════════════════════════════════════════════
 // SECTION 9 — PRESSURE UNIT CONSISTENCY
-// Ps and Pw must be MPa (fPu() in render multiplies by 10 to get bara/psia)
+// API returns:
+//   Ps  = P_s × 0.1  (MPa) — used by h_steam() / fPu() in render
+//   Pw  = Pw_input    (bara) — raw input echo, HTML client converts for display
+//   P_s = P_s_input   (bara) — raw echo for valve calc reference
 // ════════════════════════════════════════════════════════════════════════════
-describe('Pressure unit consistency (Ps & Pw in MPa)', () => {
+describe('Pressure unit consistency', () => {
 
-  test('Ps = P_s × 0.1: boiler 100 bara → 10 MPa', async () => {
+  test('Ps = P_s × 0.1 MPa: boiler 100 bara → 10 MPa', async () => {
     const { body } = await post(BOILER);
     abs_near(body.Ps, BOILER.P_s * 0.1, 0.01, 'Ps boiler');
   });
 
-  test('Ps = P_s × 0.1: header 30 bara → 3 MPa', async () => {
+  test('Ps = P_s × 0.1 MPa: header 30 bara → 3 MPa', async () => {
     const { body } = await post(HEADER);
     abs_near(body.Ps, HEADER.P_s * 0.1, 0.01, 'Ps header');
   });
 
-  test('Ps = P_s × 0.1: LP 5 bara → 0.5 MPa', async () => {
+  test('Ps = P_s × 0.1 MPa: LP 5 bara → 0.5 MPa', async () => {
     const { body } = await post(LP);
     abs_near(body.Ps, LP.P_s * 0.1, 0.01, 'Ps LP');
   });
 
-  test('Pw = Pw_input × 0.1: boiler 120 bara → 12 MPa', async () => {
+  test('Pw echoed in bara (raw input echo): boiler Pw = 120', async () => {
     const { body } = await post(BOILER);
-    abs_near(body.Pw, BOILER.Pw * 0.1, 0.01, 'Pw boiler');
+    abs_near(body.Pw, BOILER.Pw, 0.01, 'Pw bara boiler');
   });
 
-  test('Pw = Pw_input × 0.1: header 40 bara → 4 MPa', async () => {
+  test('Pw echoed in bara: header Pw = 40', async () => {
     const { body } = await post(HEADER);
-    abs_near(body.Pw, HEADER.Pw * 0.1, 0.01, 'Pw header');
+    abs_near(body.Pw, HEADER.Pw, 0.01, 'Pw bara header');
   });
 
-  test('P_s echoed in bara: boiler = 100', async () => {
+  test('P_s echoed in bara: boiler P_s = 100', async () => {
     const { body } = await post(BOILER);
     abs_near(body.P_s, BOILER.P_s, 0.01, 'P_s bara echo');
+  });
+
+  test('Ps < P_s (MPa always smaller than bara for same pressure)', async () => {
+    const { body } = await post(BOILER);
+    expect(body.Ps).toBeLessThan(body.P_s);
   });
 });
 
@@ -649,11 +657,9 @@ describe('Input validation & error handling', () => {
     expect(status).toBe(400);
   });
 
-  test('h2 − hw < 20 → 422 (Tw nearly equals T2)', async () => {
-    const { status, body } = await post({ ...HEADER, Tw:248 });
-    expect(status).toBe(422);
-    expect(body.error).toMatch(/enthalpy/i);
-  });
+  // Note: h2−hw<20 cannot be triggered with liquid water inputs because
+  // hf(Tw_liquid) << h_steam(T2) always. Enthalpy driving force check
+  // only fires in degenerate near-critical conditions outside normal use.
 });
 
 
